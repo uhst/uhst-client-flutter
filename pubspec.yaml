@@ -1,0 +1,13 @@
+name: dart_style
+version: 0.0.1-nullsafety.0
+author: Stefan Dimitrov
+
+description: >-
+  User Hosted Secure Transmission (UHST) 
+  for Flutter in Dart
+homepage: https://github.com/uhst/uhst-client-flutter
+environment:
+  sdk: ">=2.9.0 <3.0.0"
+
+dev_dependencies:
+  test: ^1.16.0-nullsafety.13
