@@ -2,6 +2,6 @@
 // Use of this source code is governed by a MIT-style license
 // that can be found in the LICENSE file.
 
-library uhst_client;
+library UHST;
 
 // export 'src/dart_formatter.dart';
