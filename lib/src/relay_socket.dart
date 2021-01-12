@@ -1,4 +1,5 @@
 import 'dart:html';
+import 'dart:typed_data';
 
 import 'package:UHST/src/contracts/uhst_api_client.dart';
 import 'package:UHST/src/models/socket_params.dart';
@@ -116,12 +117,21 @@ class RelaySocket implements UhstSocket {
 
   @override
   void sendArrayBuffer({required arrayBuffer}) {
-    // TODO: implement sendArrayBuffer
+    sendByteBufer(byteBuffer: arrayBuffer);
   }
 
   @override
+  void sendByteBufer({required ByteBuffer byteBuffer}) {
+    // TODO: implement sendByteBufer
+  }
+  @override
   void sendArrayBufferView({required arrayBufferView}) {
-    // TODO: implement sendArrayBufferView
+    sendTypedData(typedData: arrayBufferView);
+  }
+
+  @override
+  void sendTypedData({required TypedData typedData}) {
+    // TODO: implement sendTypedData
   }
 
   @override

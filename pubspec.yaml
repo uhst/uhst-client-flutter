@@ -9,5 +9,10 @@ homepage: https://github.com/uhst/uhst-client-flutter
 environment:
   sdk: ">=2.12.0-141.0.dev <3.0.0"
 
+dependences:
+  # https://github.com/dart-lang/mockito/blob/master/NULL_SAFETY_README.md
+  mockito: ^5.0.0-nullsafety.2
+
 dev_dependencies:
+  # https://pub.dev/packages/test
   test: ^1.16.0-nullsafety.13
