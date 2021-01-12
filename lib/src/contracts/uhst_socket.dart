@@ -41,6 +41,7 @@ abstract class UhstSocket {
   ///
   /// FIXME: does it needs to exists?
   /// see https://github.com/dart-lang/sdk/issues/12688
+  @Deprecated("Use sendByteBufer instead")
   void sendArrayBuffer({required ByteBuffer arrayBuffer});
 
   /// TypedData == ArrayBufferView
@@ -52,6 +53,7 @@ abstract class UhstSocket {
   ///
   /// FIXME: does it needs to exists?
   /// see https://api.dart.dev/stable/2.10.4/dart-html/PushMessageData/arrayBuffer.html
+  @Deprecated("Use sendTypedData instead")
   void sendArrayBufferView({required TypedData arrayBufferView});
 
   void close();
