@@ -4,31 +4,26 @@ import 'dart:html';
 import 'dart:typed_data';
 
 import '../models/message.dart';
-
-typedef void OpenHandler({required String data});
-typedef void MessageHandler({required String data});
-typedef void ErrorHandler({required Error error});
-typedef void CloseHandler();
-typedef void DiagnosticHandler({required String message});
+import '../uhst_event_handlers.dart';
 
 abstract class UhstSocket {
-  onOpen({required OpenHandler handler});
-  onMessage({required MessageHandler handler});
-  onError({required ErrorHandler handler});
-  onClose({required CloseHandler handler});
-  onDiagnostic({required DiagnosticHandler handler});
+  void onOpen({required OpenHandler handler});
+  void onMessage({required MessageHandler handler});
+  void onError({required ErrorHandler handler});
+  void onClose({required CloseHandler handler});
+  void onDiagnostic({required DiagnosticHandler handler});
 
-  onceOpen({required OpenHandler handler});
-  onceMessage({required MessageHandler handler});
-  onceError({required ErrorHandler handler});
-  onceClose({required CloseHandler handler});
-  onceDiagnostic({required DiagnosticHandler handler});
+  void onceOpen({required OpenHandler handler});
+  void onceMessage({required MessageHandler handler});
+  void onceError({required ErrorHandler handler});
+  void onceClose({required CloseHandler handler});
+  void onceDiagnostic({required DiagnosticHandler handler});
 
-  offOpen({required OpenHandler handler});
-  offMessage({required MessageHandler handler});
-  offError({required ErrorHandler handler});
-  offClose({required CloseHandler handler});
-  offDiagnostic({required DiagnosticHandler handler});
+  void offOpen({required OpenHandler handler});
+  void offMessage({required MessageHandler handler});
+  void offError({required ErrorHandler handler});
+  void offClose({required CloseHandler handler});
+  void offDiagnostic({required DiagnosticHandler handler});
 
   void sendString({required String message});
   void sendBlob({required Blob blob});

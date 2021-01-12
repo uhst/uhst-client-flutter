@@ -1,8 +1,8 @@
 library UHST;
 
-import '../contracts/uhst_socket.dart';
 import '../models/client_configuration.dart';
 import '../models/host_configration.dart';
+import '../uhst_event_handlers.dart';
 
 abstract class MessageStream {
   void close();

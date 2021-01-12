@@ -6,6 +6,7 @@ import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_provider.dart';
 import 'models/socket_params.dart';
 import 'relay_socket_provider.dart';
+import 'uhst_host.dart';
 
 class UHST {
   /// Deafult Fallback URL to a UHST API (server)
@@ -52,11 +53,12 @@ class UHST {
 
   /// TODO: describe host
   /// TODO: implement [UhstHost]
-  UhstHost host({required String hostId}) {
-    return UhstHost(
+  Future<UhstHost> host({required String hostId}) async {
+    var host = await UhstHost.create(
         apiClient: _apiClient,
         socketProvider: _socketProvider,
         hostId: hostId,
         debug: _debug);
+    return host;
   }
 }
