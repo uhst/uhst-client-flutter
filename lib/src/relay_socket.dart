@@ -1,30 +1,66 @@
 library UHST;
 
+import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
 
 import 'package:UHST/src/contracts/uhst_api_client.dart';
+import 'package:UHST/src/contracts/uhst_socket_events.dart';
 import 'package:UHST/src/models/socket_params.dart';
 
 import 'contracts/uhst_socket.dart';
 import 'models/message.dart';
+import 'socket_helper.dart';
 
 class RelaySocket implements UhstSocket {
+  late final SocketHelper _h;
   RelaySocket(
       {required UhstApiClient apiClient,
       ClientSocketParams? clientParams,
       HostSocketParams? hostParams,
       required bool debug}) {
-    // TODO: implement RelaySocket constructor
+    _h = SocketHelper(apiClient: apiClient, debug: debug);
+    if (hostParams is HostSocketParams) {
+      // client connected
+      _h.token = hostParams.token;
+      _h.sendUrl = hostParams.sendUrl;
+      // give consumer a chance to subscribe to open event
+      var timer = Timer(Duration(microseconds: 1), () {
+        _h.emit(message: UhstSocketEventType.open);
+      });
+      timer.cancel();
+    } else if (clientParams is ClientSocketParams) {
+      // will connect to host
+      _initClient(hostId: clientParams.hostId);
+    } else {
+      throw ArgumentError("Unsupported Socket Parameters Type");
+    }
   }
+  void _initClient({required String hostId}) {
+    try {
+        const config = await this.apiClient.initClient(hostId);
+        if (this.debug) { this._ee.emit("diagnostic", "Client configuration received from server."); }
+        this.token = config.clientToken;
+        this.sendUrl = config.sendUrl;
+        this.apiMessageStream = await this.apiClient.subscribeToMessages(config.clientToken, this.handleMessage, config.receiveUrl);
+        if (this.debug) { this._ee.emit("diagnostic", "Client subscribed to messages from server."); }
+        this._ee.emit("open");
+    } catch (error) {
+        if (this.debug) { this._ee.emit("diagnostic", "Client failed: " + JSON.stringify(error)); }
+        this._ee.emit("error", error);
+    }
+  }
+
   @override
   void close() {
-    // TODO: implement close
+    _h.apiMessageStream?.close();
   }
 
   @override
   void handleMessage({required Message message}) {
-    // TODO: implement handleMessage
+    // const payload = message.body.payload
+    // if (this.debug) { this._ee.emit("diagnostic", "Message received: " + payload); }
+    // this._ee.emit("message", payload);
   }
 
   @override
@@ -145,5 +181,16 @@ class RelaySocket implements UhstSocket {
   @override
   void sendString({required String message}) {
     // TODO: implement sendString
+  }
+  void _send() {
+    // const envelope = {
+    //         "type": "string",
+    //         "payload": message
+    //     }
+    //     this.apiClient.sendMessage(this.token, envelope, this.sendUrl).catch((error) => {
+    //         if (this.debug) { this._ee.emit("diagnostic", "Failed sending message: " + JSON.stringify(error)); }
+    //         this._ee.emit("error", error);
+    //     });
+    //     if (this.debug) { this._ee.emit("diagnostic", "Sent message " + message); }
   }
 }

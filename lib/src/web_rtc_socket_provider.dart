@@ -1,29 +1,45 @@
-export import 'package:UHST/src/models/socket_params.dart';
-
+import 'package:UHST/src/contracts/uhst_api_client.dart';
 import 'package:UHST/src/contracts/uhst_socket.dart';
 
-import 'package:UHST/src/contracts/uhst_api_client.dart';
-
 import 'contracts/uhst_socket_provider.dart';
+import 'models/rtc_configuration.dart';
+import 'models/socket_params.dart';
+import 'web_rtc_socket.dart';
 
-class WebRTCSocketProvider implements UhstSocketProvider {
+export 'package:UHST/src/models/socket_params.dart';
+
+class WebRtcSocketProvider implements UhstSocketProvider {
   /**
-   * Used when instantiating the WebRTC connection.
+   * Used when instantiating the WebRtc connection.
    * Most importantly allows specifying iceServers for NAT
    * traversal.
    * */
-  RTCConfiguration rtcConfiguration;
-  WebRTCSocketProvider(RTCConfiguration? configuration) {
-    // TODO: implement RTCConfiguration
-    // http://web.mit.edu/dart-lang_v1.24.2/gen-dartdocs/dart-html/RtcPeerConnection/RtcPeerConnection.html
-    // or use recreate web configuration
-    rtcConfiguration = configuration ?? { iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:global.stun.twilio.com:3478" }] };
+  late final RtcConfiguration rtcConfiguration;
+  WebRtcSocketProvider({RtcConfiguration? configuration}) {
+    rtcConfiguration = configuration ??
+        RtcConfiguration(iceServers: [
+          RtcIceServer(
+              urls: [
+                "stun:stun.l.google.com:19302",
+                "stun:global.stun.twilio.com:3478"
+              ],
+              // FIXME: by lb.dom.d.ts username must be inside RtcIceServer
+              // does it needs to be included there?
+              username: 'test')
+        ]);
   }
 
   @override
-  UhstSocket createUhstSocket({required UhstApiClient apiClient, ClientSocketParams? clientParams, HostSocketParams? hostParams, required bool debug}) {
-    // TODO: implement createUhstSocket
-    // new WebRTCSocket(apiClient, this.rtcConfiguration, params, debug);
-    throw UnimplementedError();
+  UhstSocket createUhstSocket(
+      {required UhstApiClient apiClient,
+      ClientSocketParams? clientParams,
+      HostSocketParams? hostParams,
+      required bool debug}) {
+    return WebRtcSocket(
+        apiClient: apiClient,
+        debug: debug,
+        configuration: this.rtcConfiguration,
+        hostSocketParams: hostParams,
+        clientSocketParams: clientParams);
   }
 }

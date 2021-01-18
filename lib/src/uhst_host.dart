@@ -39,9 +39,6 @@ class UhstHost implements UhstHostSocket {
     var uhstHost = UhstHost._create(
         apiClient: apiClient, debug: debug, socketProvider: socketProvider);
 
-    // FIXME: understand what it does and why was needed in TS
-    // uhstHost.handleMessage = this.handleMessage.bind(this);
-
     await uhstHost._init(hostId: hostId);
 
     return uhstHost;

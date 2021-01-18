@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
 
@@ -7,36 +8,50 @@ import 'package:UHST/src/models/socket_params.dart';
 import 'contracts/uhst_api_client.dart';
 import 'contracts/uhst_socket.dart';
 import 'models/message.dart';
+import 'models/rtc_configuration.dart';
+import 'socket_helper.dart';
 
-class WebRTCSocket implements UhstSocket {
-//  FIXME: implement socket and make final
-  late final Stream<UhstSocketEventType>? _ee;
-  // RTCIceCandidate | RTCIceCandidateInit
-  final _pendingCandidates = [];
+class WebRtcSocket implements UhstSocket {
+  late final SocketHelper _h;
+
+  final List<RtcIceCandidate?> _pendingCandidates = [];
 
   bool _offerAccepted = false;
-  late final String? _token;
-  RTCPeerConnection? _connection;
-  RTCDataChannel? _dataChannel;
-  MessageStream? _apiMessageStream;
-  final RTCConfiguration _configuration;
-  String? _sendUrl;
-  final bool _debug;
-  final UhstApiClient _apiClient;
-  WebRTCSocket(
+
+  RtcPeerConnection? _connection;
+  RtcPeerConnection get _verifiedConnection {
+    var connection = _connection;
+    if (connection == null) throw ArgumentError('Connection is null!');
+    return connection;
+  }
+
+  RtcDataChannel? _dataChannel;
+  RtcDataChannel get _verifiedDataChannel {
+    var dataChannel = _dataChannel;
+    if (dataChannel == null) throw ArgumentError('DataChannel is null!');
+    return dataChannel;
+  }
+
+  final RtcConfiguration _configuration;
+
+  WebRtcSocket(
       {required UhstApiClient apiClient,
-      required RTCConfiguration configuration,
+      required RtcConfiguration configuration,
       HostSocketParams? hostSocketParams,
       ClientSocketParams? clientSocketParams,
       required bool debug})
-      : _debug = debug,
-        _configuration = configuration,
-        _apiClient = apiClient {
+      : _configuration = configuration {
+    _h = SocketHelper(
+      debug: debug,
+      apiClient: apiClient,
+    );
+
     _connection = _createConnection();
+
     if (hostSocketParams is HostSocketParams) {
       // will connect to client
-      _token = hostSocketParams.token;
-      _sendUrl = hostSocketParams.sendUrl;
+      _h.token = hostSocketParams.token;
+      _h.sendUrl = hostSocketParams.sendUrl;
     } else if (clientSocketParams is ClientSocketParams) {
       // will connect to host
       _initClient(hostId: clientSocketParams.hostId);
@@ -44,186 +59,205 @@ class WebRTCSocket implements UhstSocket {
       throw ArgumentError(
           "Socket Parameters Type is not provided or unsupported");
     }
+    // TODO: implement for on, off, once methods
+    _h.eventStream.listen((event) {
+      if (event.containsKey(UhstSocketEventType.close)) {
+      } else if (event.containsKey(UhstSocketEventType.diagnostic)) {
+      } else if (event.containsKey(UhstSocketEventType.error)) {
+      } else if (event.containsKey(UhstSocketEventType.message)) {
+      } else if (event.containsKey(UhstSocketEventType.open)) {}
+    }, onDone: () {}, onError: () {});
   }
-
-  // on<EventName extends keyof SocketEventSet>(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _ee.on(eventName, handler);
+  // on(eventName: EventName, handler: SocketEventSet[EventName]) {
+  //     // _eventStream.on(eventName, handler);
   // }
 
-  // once<EventName extends keyof SocketEventSet>(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _ee.once(eventName, handler);
+  // once(eventName: EventName, handler: SocketEventSet[EventName]) {
+  //     // _eventStream.once(eventName, handler);
   // }
 
-  // off<EventName extends keyof SocketEventSet>(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _ee.off(eventName, handler);
+  // off(eventName: EventName, handler: SocketEventSet[EventName]) {
+  //     // _eventStream.off(eventName, handler);
   // }
 
   void close() {
-    _connection.close();
+    _verifiedConnection.close();
   }
 
   void handleMessage({Message? message}) {
-    if (message == null) throw Error('Message is null');
+    if (message == null) throw ArgumentError('Message is null');
     if (message.body?.type == "offer") {
-      if (_debug) _ee.emit("diagnostic", "Received offer: ${message.body}");
+      if (_h.debug) _h.emitDiagnostic(body: "Received offer: ${message.body}");
       _initHost(description: message.body);
     } else if (message.body.type == "answer") {
-      if (_debug) _ee.emit("diagnostic", "Received answer:  ${message.body}");
-      _connection.setRemoteDescription(message.body);
+      if (_h.debug) _h.emitDiagnostic(body: "Received answer: ${message.body}");
+      _verifiedConnection.setRemoteDescription(message.body);
       _offerAccepted = true;
       _processIceCandidates();
     } else {
-      if (_debug)
-        _ee.emit("diagnostic", "Received ICE Candidates: ${message.body}");
-      _pendingCandidates.push(message.body);
+      if (_h.debug)
+        _h.emitDiagnostic(body: "Received ICE Candidates: ${message.body}");
+      _pendingCandidates.add(message.body);
       _processIceCandidates();
     }
   }
 
-  RTCPeerConnection _createConnection() {
-    var connection = RTCPeerConnection(_configuration);
-    connection.onconnectionstatechange = _handleConnectionStateChange;
-    connection.onicecandidate = _handleIceCandidate;
+  RtcPeerConnection _createConnection() {
+    var connection = RtcPeerConnection(_configuration.toJson);
+    connection.onIceConnectionStateChange.listen((event) {
+      _handleConnectionStateChange(event: event);
+    });
+    connection.onIceCandidate.listen((event) {
+      _handleIceCandidate(event: event);
+    });
     return connection;
   }
 
   void _configureDataChannel() {
-    _dataChannel.onopen = () {
-      if (_debug) _ee.emit("diagnostic", "Data channel opened.");
-      if (_apiMessageStream != null) {
-        if (_debug) _ee.emit("diagnostic", "Closing API message stream.");
-        _apiMessageStream.close();
+    _verifiedDataChannel.onOpen.listen((event) {
+      if (_h.debug) _h.emitDiagnostic(body: "Data channel opened.");
+      if (_h.apiMessageStream != null) {
+        if (_h.debug) _h.emitDiagnostic(body: "Closing API message stream.");
       }
-      _ee.emit("open");
-    };
-    _dataChannel.onclose = () {
-      if (_debug) _ee.emit("diagnostic", "Data channel closed.");
-      _ee.emit("close");
-    };
-    _dataChannel.onmessage = (dynamic? event) {
-      if (_debug)
-        _ee.emit(
-            "diagnostic", "Message received on data channel: " + event?.data);
-      _ee.emit("message", event?.data);
-    };
+      _h.emit(message: UhstSocketEventType.diagnostic, body: "open.");
+    });
+    _verifiedDataChannel.onClose.listen((event) {
+      if (_h.debug) _h.emitDiagnostic(body: "Data channel closed.");
+      _h.emit(message: UhstSocketEventType.close);
+    });
+    _verifiedDataChannel.onMessage.listen((event) {
+      if (_h.debug)
+        _h.emitDiagnostic(
+            body: "Message received on data channel: ${event.data} ");
+      _h.emit(message: UhstSocketEventType.message, body: event.data);
+    });
   }
 
   void _handleConnectionStateChange({required Event event}) {
-    switch (_connection.connectionState) {
+    switch (_verifiedConnection.iceConnectionState) {
       case "connected":
         // The connection has become fully connected
-        if (_debug) _ee.emit("diagnostic", "WebRTC connection established.");
+        if (_h.debug) _h.emitDiagnostic(body: "WebRtc connection established.");
         break;
       case "disconnected":
-        if (_debug) _ee.emit("diagnostic", "WebRTC connection disconnected.");
+        if (_h.debug)
+          _h.emitDiagnostic(body: "WebRtc connection disconnected.");
         break;
       case "failed":
-        if (_debug) _ee.emit("diagnostic", "WebRTC connection failed.");
+        if (_h.debug) _h.emitDiagnostic(body: "WebRtc connection failed.");
         // One or more transports has terminated unexpectedly or in an error
         break;
       case "closed":
-        if (_debug) _ee.emit("diagnostic", "WebRTC connection closed.");
+        if (_h.debug) _h.emitDiagnostic(body: "WebRtc connection closed.");
         // The connection has been closed
         break;
     }
   }
 
-  void _handleIceCandidate({required RTCPeerConnectionIceEvent event}) async {
-    if (event.candidate) {
-      if (_debug)
-        _ee.emit("diagnostic", "Sending ICE candidate: ${event.candidate}");
+  void _handleIceCandidate({required RtcPeerConnectionIceEvent event}) async {
+    if (event.candidate != null) {
+      if (_h.debug)
+        _h.emitDiagnostic(body: "Sending ICE candidate: ${event.candidate}");
       try {
-        await _apiClient.sendMessage(
-            token: _token, message: event.candidate, sendUrl: _sendUrl);
+        await _h.apiClient.sendMessage(
+            token: _h.verifiedToken,
+            message: event.candidate,
+            sendUrl: _h.sendUrl);
       } catch (e) {
-        if (_debug) _ee.emit("diagnostic", "Failed sending ICE candidate: $e");
-        _ee.emit("error", e);
+        if (_h.debug)
+          _h.emitDiagnostic(body: "Failed sending ICE candidate: $e");
+        _h.emitError(body: e);
       }
     } else {
-      if (_debug) _ee.emit("diagnostic", "ICE gathering completed.");
+      if (_h.debug) _h.emitDiagnostic(body: "ICE gathering completed.");
     }
   }
 
-  Future _initHost({required RTCSessionDescriptionInit description}) async {
-    _connection.ondatachannel = (event) {
-      if (_debug)
-        _ee.emit("diagnostic", "Received new data channel: ${event.channel}");
+  Future _initHost({required RtcSessionDescription description}) async {
+    _verifiedConnection.onDataChannel.listen((event) {
+      if (_h.debug)
+        _h.emitDiagnostic(body: "Received new data channel: ${event.channel}");
       _dataChannel = event.channel;
       _configureDataChannel();
-    };
-    await _connection.setRemoteDescription(description);
-    if (_debug)
-      _ee.emit("diagnostic", "Set remote description on host: $description");
-    var answer = await _connection.createAnswer();
+    });
+    await _verifiedConnection.setRemoteDescription(
+        RtcSessionDescriptionInit(rtcSessionDescription: description).toJson);
+    if (_h.debug)
+      _h.emitDiagnostic(body: "Set remote description on host: $description");
+    var answer = await _verifiedConnection.createAnswer();
     try {
-      await _apiClient.sendMessage(
-          token: _token, message: answer, sendUrl: _sendUrl);
-      if (_debug) _ee.emit("diagnostic", "Host sent offer answer: $answer");
+      await _h.apiClient.sendMessage(
+          token: _h.verifiedToken, message: answer, sendUrl: _h.sendUrl);
+      if (_h.debug) _h.emitDiagnostic(body: "Host sent offer answer: $answer");
     } catch (e) {
-      if (_debug) _ee.emit("diagnostic", "Host failed responding to offer: $e");
-      _ee.emit("error", error);
+      if (_h.debug)
+        _h.emitDiagnostic(body: "Host failed responding to offer: $e");
+      _h.emitError(body: e);
     }
 
-    await _connection.setLocalDescription(answer);
-    if (_debug)
-      _ee.emit("diagnostic", "Local description set to offer answer on host.");
+    await _verifiedConnection.setLocalDescription(
+        RtcSessionDescriptionInit(rtcSessionDescription: answer).toJson);
+    if (_h.debug)
+      _h.emitDiagnostic(body: "Local description set to offer answer on host.");
     _offerAccepted = true;
     _processIceCandidates();
   }
 
   Future _initClient({required String hostId}) async {
     try {
-      _dataChannel = _connection.createDataChannel("uhst");
-      if (_debug) _ee.emit("diagnostic", "Data channel created on client.");
+      _dataChannel = _verifiedConnection.createDataChannel("uhst");
+      if (_h.debug) _h.emitDiagnostic(body: "Data channel created on client.");
       _configureDataChannel();
-      var config = await _apiClient.initClient(hostId: hostId);
-      if (_debug)
-        _ee.emit("diagnostic", "Client configuration received from server.");
-      _token = config.clientToken;
-      _sendUrl = config.sendUrl;
-      _apiMessageStream = await _apiClient.subscribeToMessages(
-          token: config.clientToken,
+      var config = await _h.apiClient.initClient(hostId: hostId);
+      if (_h.debug)
+        _h.emitDiagnostic(body: "Client configuration received from server.");
+      var token = config.clientToken;
+      _h.token = token;
+      _h.sendUrl = config.sendUrl;
+      _h.apiMessageStream = await _h.apiClient.subscribeToMessages(
+          token: _h.verifiedToken,
           handler: handleMessage,
           receiveUrl: config.receiveUrl);
-      if (_debug)
-        _ee.emit("diagnostic", "Client subscribed to messages from server.");
-      var offer = await _connection.createOffer();
+      if (_h.debug)
+        _h.emitDiagnostic(body: "Client subscribed to messages from server.");
+      var offer = await _verifiedConnection.createOffer();
 
       try {
-        await _apiClient.sendMessage(
-            token: _token, message: offer, sendUrl: _sendUrl);
-        if (_debug) _ee.emit("diagnostic", "Client offer sent to host: $offer");
+        await _h.apiClient
+            .sendMessage(token: token, message: offer, sendUrl: _h.sendUrl);
+        if (_h.debug)
+          _h.emitDiagnostic(body: "Client offer sent to host: $offer");
       } catch (e) {
-        if (_debug) _ee.emit("diagnostic", "Client failed: $e");
-        _ee.emit("error", e);
+        if (_h.debug) _h.emitDiagnostic(body: "Client failed: $e");
+        _h.emitError(body: e);
       }
 
-      await _connection.setLocalDescription(offer);
-      if (_debug) _ee.emit("diagnostic", "Local description set on client.");
+      await _verifiedConnection.setLocalDescription(
+          RtcSessionDescriptionInit(rtcSessionDescription: offer).toJson);
+      if (_h.debug) _h.emitDiagnostic(body: "Local description set on client.");
     } catch (error) {
-      if (_debug) _ee.emit("diagnostic", "Client failed: $error");
-      _ee.emit("error", error);
+      if (_h.debug) _h.emitDiagnostic(body: "Client failed: $error");
+      _h.emitError(body: error);
     }
   }
 
   _processIceCandidates() {
     if (!_offerAccepted) return;
-    if (_debug)
-      _ee.emit(
-          "diagnostic", "Offer accepted, processing cached ICE candidates.");
+    if (_h.debug)
+      _h.emitDiagnostic(
+          body: "Offer accepted, processing cached ICE candidates.");
     while (_pendingCandidates.length > 0) {
-      var candidate = _pendingCandidates.pop();
-      if (candidate) {
-        _connection.addIceCandidate(candidate);
-        if (_debug) _ee.emit("diagnostic", "Added ICE candidate: $candidate");
+      var candidate = _pendingCandidates.removeLast();
+      if (candidate != null) {
+        _verifiedConnection.addIceCandidate(candidate);
+        if (_h.debug)
+          _h.emitDiagnostic(body: "Added ICE candidate: $candidate");
       }
     }
   }
 
   @override
-  void offClose({required handler}) {
-    // TODO: implement offClose
-  }
+  void offClose({required handler}) {}
 
   @override
   void offDiagnostic({required handler}) {
@@ -296,43 +330,40 @@ class WebRTCSocket implements UhstSocket {
   }
 
   @override
+  @Deprecated("Use sendByteBufer instead")
   void sendArrayBuffer({required ByteBuffer arrayBuffer}) {
-    // TODO: implement sendArrayBuffer
+    sendByteBufer(byteBuffer: arrayBuffer);
   }
 
   @override
+  @Deprecated("Use sendTypedData instead")
   void sendArrayBufferView({required TypedData arrayBufferView}) {
-    // TODO: implement sendArrayBufferView
+    sendTypedData(typedData: arrayBufferView);
   }
 
   @override
   void sendBlob({required Blob blob}) {
-    // TODO: implement sendBlob
+    _send(message: blob);
   }
 
   @override
   void sendByteBufer({required ByteBuffer byteBuffer}) {
-    // TODO: implement sendByteBufer
+    _send(message: byteBuffer);
   }
 
   @override
   void sendString({required String message}) {
-    // TODO: implement sendString
+    _send(message: message);
   }
 
   @override
   void sendTypedData({required TypedData typedData}) {
-    // TODO: implement sendTypedData
+    _send(message: typedData);
   }
 
-  // send(message: string): void;
-  // send(message: Blob): void;
-  // send(message: ArrayBuffer): void;
-  // send(message: ArrayBufferView): void;
-
-  void send({dynamic? message}) {
-    if (_debug)
-      _ee.emit("diagnostic", "Sent message on data channel: $message");
-    _dataChannel.send(message);
+  void _send({dynamic? message}) {
+    if (_h.debug)
+      _h.emitDiagnostic(body: "Sent message on data channel: $message");
+    _verifiedDataChannel.send(message);
   }
 }
