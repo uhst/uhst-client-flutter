@@ -2,6 +2,8 @@ library UHST;
 
 import 'dart:async';
 
+import 'package:UHST/src/uhst_event_handlers.dart';
+
 import 'contracts/uhst_api_client.dart';
 import 'contracts/uhst_socket_events.dart';
 
@@ -9,6 +11,13 @@ class SocketHelper {
   late final MultiStreamController<Map<UhstSocketEventType, String>>
       eventStreamController;
   late final Stream<Map<UhstSocketEventType, String>> eventStream;
+
+  Set<DiagnosticHandler> diagntosticListenerHandlers = new Set();
+  Set<MessageHandler> messageListenerHandlers = new Set();
+  Set<ErrorHandler> errorListenerHandlers = new Set();
+  Set<CloseHandler> closeListenerHandlers = new Set();
+  Set<OpenHandler> openListenerHandlers = new Set();
+
   void emit({required UhstSocketEventType message, dynamic body}) {
     eventStreamController.add({message: body});
   }

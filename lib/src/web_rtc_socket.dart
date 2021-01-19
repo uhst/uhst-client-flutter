@@ -59,36 +59,17 @@ class WebRtcSocket implements UhstSocket {
       throw ArgumentError(
           "Socket Parameters Type is not provided or unsupported");
     }
-    // TODO: implement for on, off, once methods
-    _h.eventStream.listen((event) {
-      if (event.containsKey(UhstSocketEventType.close)) {
-      } else if (event.containsKey(UhstSocketEventType.diagnostic)) {
-      } else if (event.containsKey(UhstSocketEventType.error)) {
-      } else if (event.containsKey(UhstSocketEventType.message)) {
-      } else if (event.containsKey(UhstSocketEventType.open)) {}
-    }, onDone: () {}, onError: () {});
   }
-  // on(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _eventStream.on(eventName, handler);
-  // }
-
-  // once(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _eventStream.once(eventName, handler);
-  // }
-
-  // off(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _eventStream.off(eventName, handler);
-  // }
 
   void close() {
     _verifiedConnection.close();
   }
 
-  void handleMessage({Message? message}) {
+  Future<void> handleMessage({Message? message}) async {
     if (message == null) throw ArgumentError('Message is null');
     if (message.body?.type == "offer") {
       if (_h.debug) _h.emitDiagnostic(body: "Received offer: ${message.body}");
-      _initHost(description: message.body);
+      await _initHost(description: message.body);
     } else if (message.body.type == "answer") {
       if (_h.debug) _h.emitDiagnostic(body: "Received answer: ${message.body}");
       _verifiedConnection.setRemoteDescription(message.body);
@@ -241,7 +222,7 @@ class WebRtcSocket implements UhstSocket {
     }
   }
 
-  _processIceCandidates() {
+  void _processIceCandidates() {
     if (!_offerAccepted) return;
     if (_h.debug)
       _h.emitDiagnostic(
@@ -255,53 +236,102 @@ class WebRtcSocket implements UhstSocket {
       }
     }
   }
+  // on(eventName: EventName, handler: SocketEventSet[EventName]) {
+  //     // _eventStream.on(eventName, handler);
+  // }
 
+  // once(eventName: EventName, handler: SocketEventSet[EventName]) {
+  //     // _eventStream.once(eventName, handler);
+  // }
+
+  // off(eventName: EventName, handler: SocketEventSet[EventName]) {
+  //     // _eventStream.off(eventName, handler);
+  // }
+
+  // // TODO: implement for on, off, once methods
+  // _h.eventStream.listen((event) {
+  //   if (event.containsKey(UhstSocketEventType.close)) {
+  //   } else if (event.containsKey(UhstSocketEventType.diagnostic)) {
+  //   } else if (event.containsKey(UhstSocketEventType.error)) {
+  //   } else if (event.containsKey(UhstSocketEventType.message)) {
+  //   } else if (event.containsKey(UhstSocketEventType.open)) {}
+  // }, onDone: () {}, onError: () {});
   @override
-  void offClose({required handler}) {}
+  void offClose({required handler}) {
+    _h.errorListenerHandlers.remove(handler);
+  }
 
   @override
   void offDiagnostic({required handler}) {
-    // TODO: implement offDiagnostic
+    _h.diagntosticListenerHandlers.remove(handler);
   }
 
   @override
   void offError({required handler}) {
-    // TODO: implement offError
+    _h.errorListenerHandlers.remove(handler);
   }
 
   @override
   void offMessage({required handler}) {
-    // TODO: implement offMessage
+    _h.messageListenerHandlers.remove(handler);
   }
 
   @override
   void offOpen({required handler}) {
-    // TODO: implement offOpen
+    _h.openListenerHandlers.remove(handler);
   }
 
   @override
   void onClose({required handler}) {
-    // TODO: implement onClose
+    _h.closeListenerHandlers.add(handler);
+    var subsription = _h.eventStream.listen((event) {});
+    subsription.onData((data) {
+      if (data.containsKey(UhstSocketEventType.close)) {
+        handler();
+      }
+    });
   }
 
   @override
   void onDiagnostic({required handler}) {
-    // TODO: implement onDiagnostic
+    _h.diagntosticListenerHandlers.add(handler);
+    var subsription = _h.eventStream.listen((event) {});
+    subsription.onData((data) {
+      if (data.containsKey(UhstSocketEventType.diagnostic)) {
+        handler(message: data.values.first);
+      }
+    });
   }
 
   @override
   void onError({required handler}) {
-    // TODO: implement onError
+    _h.errorListenerHandlers.add(handler);
+    var subsription = _h.eventStream.listen((event) {});
+    subsription.onData((data) {
+      if (data.containsKey(UhstSocketEventType.error)) {
+        handler(error: data.values.first);
+      }
+    });
   }
 
   @override
   void onMessage({required handler}) {
-    // TODO: implement onMessage
+    _h.messageListenerHandlers.add(handler);
+    _h.eventStream.listen((event) {
+      if (event.containsKey(UhstSocketEventType.message)) {
+        handler(data: event.values.first);
+      }
+    });
   }
 
   @override
   void onOpen({required handler}) {
-    // TODO: implement onOpen
+    _h.openListenerHandlers.add(handler);
+    _h.eventStream.listen((event) {
+      if (event.containsKey(UhstSocketEventType.open)) {
+        handler(data: event.values.first);
+      }
+    });
   }
 
   @override

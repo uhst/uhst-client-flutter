@@ -36,18 +36,29 @@ class RelaySocket implements UhstSocket {
       throw ArgumentError("Unsupported Socket Parameters Type");
     }
   }
-  void _initClient({required String hostId}) {
+  Future<void> _initClient({required String hostId}) async {
     try {
-        const config = await this.apiClient.initClient(hostId);
-        if (this.debug) { this._ee.emit("diagnostic", "Client configuration received from server."); }
-        this.token = config.clientToken;
-        this.sendUrl = config.sendUrl;
-        this.apiMessageStream = await this.apiClient.subscribeToMessages(config.clientToken, this.handleMessage, config.receiveUrl);
-        if (this.debug) { this._ee.emit("diagnostic", "Client subscribed to messages from server."); }
-        this._ee.emit("open");
+      var config = await _h.apiClient.initClient(hostId: hostId);
+      if (this.debug) {
+        this
+            ._ee
+            .emit("diagnostic", "Client configuration received from server.");
+      }
+      this.token = config.clientToken;
+      this.sendUrl = config.sendUrl;
+      this.apiMessageStream = await this.apiClient.subscribeToMessages(
+          config.clientToken, this.handleMessage, config.receiveUrl);
+      if (this.debug) {
+        this
+            ._ee
+            .emit("diagnostic", "Client subscribed to messages from server.");
+      }
+      this._ee.emit("open");
     } catch (error) {
-        if (this.debug) { this._ee.emit("diagnostic", "Client failed: " + JSON.stringify(error)); }
-        this._ee.emit("error", error);
+      if (this.debug) {
+        this._ee.emit("diagnostic", "Client failed: " + JSON.stringify(error));
+      }
+      this._ee.emit("error", error);
     }
   }
 
