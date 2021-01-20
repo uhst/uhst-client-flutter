@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:UHST/src/contracts/uhst_socket_events.dart';
 import 'package:UHST/src/models/socket_params.dart';
+import 'package:UHST/src/socket_subsriptions.dart';
 
 import 'contracts/uhst_api_client.dart';
 import 'contracts/uhst_socket.dart';
@@ -11,10 +12,8 @@ import 'models/message.dart';
 import 'models/rtc_configuration.dart';
 import 'socket_helper.dart';
 
-class WebRtcSocket implements UhstSocket {
+class WebRtcSocket with SocketSubsriptions implements UhstSocket {
   final List<RtcIceCandidate?> _pendingCandidates = [];
-
-  late final SocketHelper _h;
 
   bool _offerAccepted = false;
 
@@ -41,7 +40,7 @@ class WebRtcSocket implements UhstSocket {
       ClientSocketParams? clientSocketParams,
       required bool debug})
       : _configuration = configuration {
-    _h = SocketHelper(
+    h = SocketHelper(
       debug: debug,
       apiClient: apiClient,
     );
@@ -50,8 +49,8 @@ class WebRtcSocket implements UhstSocket {
 
     if (hostSocketParams is HostSocketParams) {
       // will connect to client
-      _h.token = hostSocketParams.token;
-      _h.sendUrl = hostSocketParams.sendUrl;
+      h.token = hostSocketParams.token;
+      h.sendUrl = hostSocketParams.sendUrl;
     } else if (clientSocketParams is ClientSocketParams) {
       // will connect to host
       _initClient(hostId: clientSocketParams.hostId);
@@ -68,16 +67,16 @@ class WebRtcSocket implements UhstSocket {
   Future<void> handleMessage({Message? message}) async {
     if (message == null) throw ArgumentError('Message is null');
     if (message.body?.type == "offer") {
-      if (_h.debug) _h.emitDiagnostic(body: "Received offer: ${message.body}");
+      if (h.debug) h.emitDiagnostic(body: "Received offer: ${message.body}");
       await _initHost(description: message.body);
     } else if (message.body.type == "answer") {
-      if (_h.debug) _h.emitDiagnostic(body: "Received answer: ${message.body}");
+      if (h.debug) h.emitDiagnostic(body: "Received answer: ${message.body}");
       _verifiedConnection.setRemoteDescription(message.body);
       _offerAccepted = true;
       _processIceCandidates();
     } else {
-      if (_h.debug)
-        _h.emitDiagnostic(body: "Received ICE Candidates: ${message.body}");
+      if (h.debug)
+        h.emitDiagnostic(body: "Received ICE Candidates: ${message.body}");
       _pendingCandidates.add(message.body);
       _processIceCandidates();
     }
@@ -86,100 +85,98 @@ class WebRtcSocket implements UhstSocket {
   RtcPeerConnection _createConnection() {
     var connection = RtcPeerConnection(_configuration.toJson);
     connection.onIceConnectionStateChange.listen((event) {
-      _handleConnectionStateChange(event: event);
+      handleConnectionStateChange(event: event);
     });
     connection.onIceCandidate.listen((event) {
-      _handleIceCandidate(event: event);
+      handleIceCandidate(event: event);
     });
     return connection;
   }
 
   void _configureDataChannel() {
     _verifiedDataChannel.onOpen.listen((event) {
-      if (_h.debug) _h.emitDiagnostic(body: "Data channel opened.");
-      if (_h.apiMessageStream != null) {
-        if (_h.debug) _h.emitDiagnostic(body: "Closing API message stream.");
+      if (h.debug) h.emitDiagnostic(body: "Data channel opened.");
+      if (h.apiMessageStream != null) {
+        if (h.debug) h.emitDiagnostic(body: "Closing API message stream.");
       }
-      _h.emit(message: UhstSocketEventType.diagnostic, body: "open.");
+      h.emit(message: UhstSocketEventType.diagnostic, body: "open.");
     });
     _verifiedDataChannel.onClose.listen((event) {
-      if (_h.debug) _h.emitDiagnostic(body: "Data channel closed.");
-      _h.emit(message: UhstSocketEventType.close);
+      if (h.debug) h.emitDiagnostic(body: "Data channel closed.");
+      h.emit(message: UhstSocketEventType.close);
     });
     _verifiedDataChannel.onMessage.listen((event) {
-      if (_h.debug)
-        _h.emitDiagnostic(
+      if (h.debug)
+        h.emitDiagnostic(
             body: "Message received on data channel: ${event.data} ");
-      _h.emit(message: UhstSocketEventType.message, body: event.data);
+      h.emit(message: UhstSocketEventType.message, body: event.data);
     });
   }
 
-  void _handleConnectionStateChange({required Event event}) {
+  void handleConnectionStateChange({required Event event}) {
     switch (_verifiedConnection.iceConnectionState) {
       case "connected":
         // The connection has become fully connected
-        if (_h.debug) _h.emitDiagnostic(body: "WebRtc connection established.");
+        if (h.debug) h.emitDiagnostic(body: "WebRtc connection established.");
         break;
       case "disconnected":
-        if (_h.debug)
-          _h.emitDiagnostic(body: "WebRtc connection disconnected.");
+        if (h.debug) h.emitDiagnostic(body: "WebRtc connection disconnected.");
         break;
       case "failed":
-        if (_h.debug) _h.emitDiagnostic(body: "WebRtc connection failed.");
+        if (h.debug) h.emitDiagnostic(body: "WebRtc connection failed.");
         // One or more transports has terminated unexpectedly or in an error
         break;
       case "closed":
-        if (_h.debug) _h.emitDiagnostic(body: "WebRtc connection closed.");
+        if (h.debug) h.emitDiagnostic(body: "WebRtc connection closed.");
         // The connection has been closed
         break;
     }
   }
 
-  void _handleIceCandidate({required RtcPeerConnectionIceEvent event}) async {
+  void handleIceCandidate({required RtcPeerConnectionIceEvent event}) async {
     if (event.candidate != null) {
-      if (_h.debug)
-        _h.emitDiagnostic(body: "Sending ICE candidate: ${event.candidate}");
+      if (h.debug)
+        h.emitDiagnostic(body: "Sending ICE candidate: ${event.candidate}");
       try {
-        await _h.apiClient.sendMessage(
-            token: _h.verifiedToken,
+        await h.apiClient.sendMessage(
+            token: h.verifiedToken,
             message: event.candidate,
-            sendUrl: _h.sendUrl);
+            sendUrl: h.sendUrl);
       } catch (e) {
-        if (_h.debug)
-          _h.emitDiagnostic(body: "Failed sending ICE candidate: $e");
-        _h.emitError(body: e);
+        if (h.debug) h.emitDiagnostic(body: "Failed sending ICE candidate: $e");
+        h.emitError(body: e);
       }
     } else {
-      if (_h.debug) _h.emitDiagnostic(body: "ICE gathering completed.");
+      if (h.debug) h.emitDiagnostic(body: "ICE gathering completed.");
     }
   }
 
   Future _initHost({required RtcSessionDescription description}) async {
     _verifiedConnection.onDataChannel.listen((event) {
-      if (_h.debug)
-        _h.emitDiagnostic(body: "Received new data channel: ${event.channel}");
+      if (h.debug)
+        h.emitDiagnostic(body: "Received new data channel: ${event.channel}");
       _dataChannel = event.channel;
       _configureDataChannel();
     });
     await _verifiedConnection.setRemoteDescription(
         RtcSessionDescriptionInit(rtcSessionDescription: description).toJson);
-    if (_h.debug)
-      _h.emitDiagnostic(body: "Set remote description on host: $description");
+    if (h.debug)
+      h.emitDiagnostic(body: "Set remote description on host: $description");
     var answer = await _verifiedConnection.createAnswer();
     try {
-      await _h.apiClient.sendMessage(
-          token: _h.verifiedToken, message: answer, sendUrl: _h.sendUrl);
-      if (_h.debug) _h.emitDiagnostic(body: "Host sent offer answer: $answer");
+      await h.apiClient.sendMessage(
+          token: h.verifiedToken, message: answer, sendUrl: h.sendUrl);
+      if (h.debug) h.emitDiagnostic(body: "Host sent offer answer: $answer");
     } catch (e) {
-      if (_h.debug)
-        _h.emitDiagnostic(body: "Host failed responding to offer: $e");
-      _h.emitError(body: e);
+      if (h.debug)
+        h.emitDiagnostic(body: "Host failed responding to offer: $e");
+      h.emitError(body: e);
     }
 
     await _verifiedConnection.setLocalDescription(
         RtcSessionDescriptionInit(rtcSessionDescription: answer).toJson);
-    if (_h.debug)
-      _h.emitDiagnostic(body: "Local description set to offer answer on host.");
+    if (h.debug)
+      h.emitDiagnostic(body: "Local description set to offer answer on host.");
     _offerAccepted = true;
     _processIceCandidates();
   }
@@ -187,195 +184,54 @@ class WebRtcSocket implements UhstSocket {
   Future _initClient({required String hostId}) async {
     try {
       _dataChannel = _verifiedConnection.createDataChannel("uhst");
-      if (_h.debug) _h.emitDiagnostic(body: "Data channel created on client.");
+      if (h.debug) h.emitDiagnostic(body: "Data channel created on client.");
       _configureDataChannel();
-      var config = await _h.apiClient.initClient(hostId: hostId);
-      if (_h.debug)
-        _h.emitDiagnostic(body: "Client configuration received from server.");
+      var config = await h.apiClient.initClient(hostId: hostId);
+      if (h.debug)
+        h.emitDiagnostic(body: "Client configuration received from server.");
       var token = config.clientToken;
-      _h.token = token;
-      _h.sendUrl = config.sendUrl;
-      _h.apiMessageStream = await _h.apiClient.subscribeToMessages(
-          token: _h.verifiedToken,
+      h.token = token;
+      h.sendUrl = config.sendUrl;
+      h.apiMessageStream = await h.apiClient.subscribeToMessages(
+          token: h.verifiedToken,
+          // FIXME: why there is types difference?
           handler: handleMessage,
           receiveUrl: config.receiveUrl);
-      if (_h.debug)
-        _h.emitDiagnostic(body: "Client subscribed to messages from server.");
+      if (h.debug)
+        h.emitDiagnostic(body: "Client subscribed to messages from server.");
       var offer = await _verifiedConnection.createOffer();
 
       try {
-        await _h.apiClient
-            .sendMessage(token: token, message: offer, sendUrl: _h.sendUrl);
-        if (_h.debug)
-          _h.emitDiagnostic(body: "Client offer sent to host: $offer");
+        await h.apiClient
+            .sendMessage(token: token, message: offer, sendUrl: h.sendUrl);
+        if (h.debug)
+          h.emitDiagnostic(body: "Client offer sent to host: $offer");
       } catch (e) {
-        if (_h.debug) _h.emitDiagnostic(body: "Client failed: $e");
-        _h.emitError(body: e);
+        if (h.debug) h.emitDiagnostic(body: "Client failed: $e");
+        h.emitError(body: e);
       }
 
       await _verifiedConnection.setLocalDescription(
           RtcSessionDescriptionInit(rtcSessionDescription: offer).toJson);
-      if (_h.debug) _h.emitDiagnostic(body: "Local description set on client.");
+      if (h.debug) h.emitDiagnostic(body: "Local description set on client.");
     } catch (error) {
-      if (_h.debug) _h.emitDiagnostic(body: "Client failed: $error");
-      _h.emitError(body: error);
+      if (h.debug) h.emitDiagnostic(body: "Client failed: $error");
+      h.emitError(body: error);
     }
   }
 
   void _processIceCandidates() {
     if (!_offerAccepted) return;
-    if (_h.debug)
-      _h.emitDiagnostic(
+    if (h.debug)
+      h.emitDiagnostic(
           body: "Offer accepted, processing cached ICE candidates.");
     while (_pendingCandidates.length > 0) {
       var candidate = _pendingCandidates.removeLast();
       if (candidate != null) {
         _verifiedConnection.addIceCandidate(candidate);
-        if (_h.debug)
-          _h.emitDiagnostic(body: "Added ICE candidate: $candidate");
+        if (h.debug) h.emitDiagnostic(body: "Added ICE candidate: $candidate");
       }
     }
-  }
-
-  @override
-  void offClose({required handler}) {
-    var subsription = _h.errorListenerHandlers.remove(handler);
-    subsription?.cancel();
-  }
-
-  @override
-  void offDiagnostic({required handler}) {
-    var subsription = _h.diagntosticListenerHandlers.remove(handler);
-    subsription?.cancel();
-  }
-
-  @override
-  void offError({required handler}) {
-    var subsription = _h.errorListenerHandlers.remove(handler);
-    subsription?.cancel();
-  }
-
-  @override
-  void offMessage({required handler}) {
-    var subsription = _h.messageListenerHandlers.remove(handler);
-    subsription?.cancel();
-  }
-
-  @override
-  void offOpen({required handler}) {
-    var subsription = _h.openListenerHandlers.remove(handler);
-    subsription?.cancel();
-  }
-
-  @override
-  StreamSubscription<Map<UhstSocketEventType, String>> onClose(
-      {required handler}) {
-    var subsription = _h.eventStream.listen((event) {});
-    subsription.onData((data) {
-      if (data.containsKey(UhstSocketEventType.close)) {
-        handler();
-      }
-    });
-    _h.closeListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
-    return subsription;
-  }
-
-  @override
-  StreamSubscription<Map<UhstSocketEventType, String>> onDiagnostic(
-      {required handler}) {
-    var subsription = _h.eventStream.listen((event) {});
-    subsription.onData((data) {
-      if (data.containsKey(UhstSocketEventType.diagnostic)) {
-        handler(message: data.values.first);
-      }
-    });
-    _h.diagntosticListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
-    return subsription;
-  }
-
-  @override
-  StreamSubscription<Map<UhstSocketEventType, String>> onError(
-      {required handler}) {
-    var subsription = _h.eventStream.listen((event) {});
-    subsription.onData((data) {
-      if (data.containsKey(UhstSocketEventType.error)) {
-        handler(error: ArgumentError(data.values.first));
-      }
-    });
-    _h.errorListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
-    return subsription;
-  }
-
-  @override
-  StreamSubscription<Map<UhstSocketEventType, String>> onMessage(
-      {required handler}) {
-    var subsription = _h.eventStream.listen((event) {
-      if (event.containsKey(UhstSocketEventType.message)) {
-        handler(data: event.values.first);
-      }
-    });
-    _h.messageListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
-    return subsription;
-  }
-
-  @override
-  StreamSubscription<Map<UhstSocketEventType, String>> onOpen(
-      {required handler}) {
-    var subsription = _h.eventStream.listen((event) {
-      if (event.containsKey(UhstSocketEventType.open))
-        handler(data: event.values.first);
-    });
-    _h.openListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
-    return subsription;
-  }
-
-  @override
-  void onceClose({required handler}) {
-    var subscription = onClose(handler: handler);
-    subscription.onData((data) {
-      if (data.containsKey(UhstSocketEventType.close))
-        offClose(handler: handler);
-    });
-  }
-
-  @override
-  void onceDiagnostic({required handler}) {
-    var subscription = onDiagnostic(handler: handler);
-    subscription.onData((data) {
-      if (data.containsKey(UhstSocketEventType.diagnostic))
-        offDiagnostic(handler: handler);
-    });
-  }
-
-  @override
-  void onceError({required handler}) {
-    var subscription = onError(handler: handler);
-    subscription.onData((data) {
-      if (data.containsKey(UhstSocketEventType.error))
-        offError(handler: handler);
-    });
-  }
-
-  @override
-  void onceMessage({required handler}) {
-    var subscription = onMessage(handler: handler);
-    subscription.onData((data) {
-      if (data.containsKey(UhstSocketEventType.message))
-        offMessage(handler: handler);
-    });
-  }
-
-  @override
-  void onceOpen({required handler}) {
-    var subscription = onOpen(handler: handler);
-    subscription.onData((data) {
-      if (data.containsKey(UhstSocketEventType.open)) offOpen(handler: handler);
-    });
   }
 
   @override
@@ -411,8 +267,8 @@ class WebRtcSocket implements UhstSocket {
   }
 
   void _send({dynamic? message}) {
-    if (_h.debug)
-      _h.emitDiagnostic(body: "Sent message on data channel: $message");
+    if (h.debug)
+      h.emitDiagnostic(body: "Sent message on data channel: $message");
     _verifiedDataChannel.send(message);
   }
 }

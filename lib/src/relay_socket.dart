@@ -11,9 +11,11 @@ import 'package:UHST/src/models/socket_params.dart';
 import 'contracts/uhst_socket.dart';
 import 'models/message.dart';
 import 'socket_helper.dart';
+import 'socket_subsriptions.dart';
 
-class RelaySocket implements UhstSocket {
+class RelaySocket with SocketSubsriptions implements UhstSocket {
   late final SocketHelper _h;
+
   RelaySocket(
       {required UhstApiClient apiClient,
       ClientSocketParams? clientParams,
@@ -31,34 +33,34 @@ class RelaySocket implements UhstSocket {
       timer.cancel();
     } else if (clientParams is ClientSocketParams) {
       // will connect to host
+      // TODO: replace to factory
       _initClient(hostId: clientParams.hostId);
     } else {
       throw ArgumentError("Unsupported Socket Parameters Type");
     }
   }
+
   Future<void> _initClient({required String hostId}) async {
     try {
       var config = await _h.apiClient.initClient(hostId: hostId);
-      if (this.debug) {
-        this
-            ._ee
-            .emit("diagnostic", "Client configuration received from server.");
-      }
-      this.token = config.clientToken;
-      this.sendUrl = config.sendUrl;
-      this.apiMessageStream = await this.apiClient.subscribeToMessages(
-          config.clientToken, this.handleMessage, config.receiveUrl);
-      if (this.debug) {
-        this
-            ._ee
-            .emit("diagnostic", "Client subscribed to messages from server.");
-      }
-      this._ee.emit("open");
+      if (_h.debug)
+        _h.emitDiagnostic(body: "Client configuration received from server.");
+
+      _h.token = config.clientToken;
+      _h.sendUrl = config.sendUrl;
+      _h.apiMessageStream = await _h.apiClient.subscribeToMessages(
+          token: config.clientToken,
+          // FIXME: fix types
+          handler: handleMessage,
+          receiveUrl: config.receiveUrl);
+      if (_h.debug)
+        _h.emitDiagnostic(body: "Client subscribed to messages from server.");
+
+      _h.emit(message: UhstSocketEventType.open);
     } catch (error) {
-      if (this.debug) {
-        this._ee.emit("diagnostic", "Client failed: " + JSON.stringify(error));
-      }
-      this._ee.emit("error", error);
+      if (_h.debug) _h.emitDiagnostic(body: "Client failed: $error");
+
+      _h.emitError(body: error);
     }
   }
 
@@ -69,105 +71,17 @@ class RelaySocket implements UhstSocket {
 
   @override
   void handleMessage({required Message message}) {
-    // const payload = message.body.payload
-    // if (this.debug) { this._ee.emit("diagnostic", "Message received: " + payload); }
-    // this._ee.emit("message", payload);
-  }
+    var payload = message.body.payload;
+    if (_h.debug) _h.emitDiagnostic(body: "Message received: $payload");
 
-  @override
-  offClose({required handler}) {
-    // TODO: implement offClose
-    throw UnimplementedError();
-  }
-
-  @override
-  offDiagnostic({required handler}) {
-    // TODO: implement offDiagnostic
-    throw UnimplementedError();
-  }
-
-  @override
-  offError({required handler}) {
-    // TODO: implement offError
-    throw UnimplementedError();
-  }
-
-  @override
-  offMessage({required handler}) {
-    // TODO: implement offMessage
-    throw UnimplementedError();
-  }
-
-  @override
-  offOpen({required handler}) {
-    // TODO: implement offOpen
-    throw UnimplementedError();
-  }
-
-  @override
-  onClose({required handler}) {
-    // TODO: implement onClose
-    throw UnimplementedError();
-  }
-
-  @override
-  onDiagnostic({required handler}) {
-    // TODO: implement onDiagnostic
-    throw UnimplementedError();
-  }
-
-  @override
-  onError({required handler}) {
-    // TODO: implement onError
-    throw UnimplementedError();
-  }
-
-  @override
-  onMessage({required handler}) {
-    // TODO: implement onMessage
-    throw UnimplementedError();
-  }
-
-  @override
-  onOpen({required handler}) {
-    // TODO: implement onOpen
-    throw UnimplementedError();
-  }
-
-  @override
-  onceClose({required handler}) {
-    // TODO: implement onceClose
-    throw UnimplementedError();
-  }
-
-  @override
-  onceDiagnostic({required handler}) {
-    // TODO: implement onceDiagnostic
-    throw UnimplementedError();
-  }
-
-  @override
-  onceError({required handler}) {
-    // TODO: implement onceError
-    throw UnimplementedError();
-  }
-
-  @override
-  onceMessage({required handler}) {
-    // TODO: implement onceMessage
-    throw UnimplementedError();
-  }
-
-  @override
-  onceOpen({required handler}) {
-    // TODO: implement onceOpen
-    throw UnimplementedError();
+    _h.emit(message: payload);
   }
 
   @override
   void sendByteBufer({required ByteBuffer byteBuffer}) {
-    // TODO: implement sendByteBufer
+    _send(message: byteBuffer);
   }
+
   @override
   @Deprecated("Use sendByteBufer instead")
   void sendArrayBuffer({required arrayBuffer}) {
@@ -176,8 +90,9 @@ class RelaySocket implements UhstSocket {
 
   @override
   void sendTypedData({required TypedData typedData}) {
-    // TODO: implement sendTypedData
+    _send(message: typedData);
   }
+
   @override
   @Deprecated("Use sendTypedData instead")
   void sendArrayBufferView({required arrayBufferView}) {
@@ -186,22 +101,26 @@ class RelaySocket implements UhstSocket {
 
   @override
   void sendBlob({required Blob blob}) {
-    // TODO: implement sendBlob
+    _send(message: blob);
   }
 
   @override
   void sendString({required String message}) {
-    // TODO: implement sendString
+    _send(message: message);
   }
-  void _send() {
-    // const envelope = {
-    //         "type": "string",
-    //         "payload": message
-    //     }
-    //     this.apiClient.sendMessage(this.token, envelope, this.sendUrl).catch((error) => {
-    //         if (this.debug) { this._ee.emit("diagnostic", "Failed sending message: " + JSON.stringify(error)); }
-    //         this._ee.emit("error", error);
-    //     });
-    //     if (this.debug) { this._ee.emit("diagnostic", "Sent message " + message); }
+
+  void _send({dynamic? message}) {
+    var envelope = {"type": "string", "payload": message};
+    try {
+      _h.apiClient.sendMessage(
+          token: _h.verifiedToken, message: envelope, sendUrl: _h.sendUrl);
+    } catch (e) {
+      if (_h.debug) _h.emitDiagnostic(body: "Failed sending message: $e");
+      _h.emitError(body: e);
+    }
+
+    if (_h.debug) {
+      _h.emitDiagnostic(body: "Sent message $message");
+    }
   }
 }
