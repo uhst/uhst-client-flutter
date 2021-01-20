@@ -11,12 +11,12 @@ class SocketHelper {
   late final MultiStreamController<Map<UhstSocketEventType, String>>
       eventStreamController;
   late final Stream<Map<UhstSocketEventType, String>> eventStream;
-
-  Set<DiagnosticHandler> diagntosticListenerHandlers = new Set();
-  Set<MessageHandler> messageListenerHandlers = new Set();
-  Set<ErrorHandler> errorListenerHandlers = new Set();
-  Set<CloseHandler> closeListenerHandlers = new Set();
-  Set<OpenHandler> openListenerHandlers = new Set();
+  Map<DiagnosticHandler?, StreamSubscription> diagntosticListenerHandlers =
+      Map();
+  Map<MessageHandler?, StreamSubscription> messageListenerHandlers = Map();
+  Map<ErrorHandler?, StreamSubscription> errorListenerHandlers = Map();
+  Map<CloseHandler?, StreamSubscription> closeListenerHandlers = Map();
+  Map<OpenHandler?, StreamSubscription> openListenerHandlers = Map();
 
   void emit({required UhstSocketEventType message, dynamic body}) {
     eventStreamController.add({message: body});

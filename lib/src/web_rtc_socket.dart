@@ -12,9 +12,9 @@ import 'models/rtc_configuration.dart';
 import 'socket_helper.dart';
 
 class WebRtcSocket implements UhstSocket {
-  late final SocketHelper _h;
-
   final List<RtcIceCandidate?> _pendingCandidates = [];
+
+  late final SocketHelper _h;
 
   bool _offerAccepted = false;
 
@@ -236,127 +236,146 @@ class WebRtcSocket implements UhstSocket {
       }
     }
   }
-  // on(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _eventStream.on(eventName, handler);
-  // }
 
-  // once(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _eventStream.once(eventName, handler);
-  // }
-
-  // off(eventName: EventName, handler: SocketEventSet[EventName]) {
-  //     // _eventStream.off(eventName, handler);
-  // }
-
-  // // TODO: implement for on, off, once methods
-  // _h.eventStream.listen((event) {
-  //   if (event.containsKey(UhstSocketEventType.close)) {
-  //   } else if (event.containsKey(UhstSocketEventType.diagnostic)) {
-  //   } else if (event.containsKey(UhstSocketEventType.error)) {
-  //   } else if (event.containsKey(UhstSocketEventType.message)) {
-  //   } else if (event.containsKey(UhstSocketEventType.open)) {}
-  // }, onDone: () {}, onError: () {});
   @override
   void offClose({required handler}) {
-    _h.errorListenerHandlers.remove(handler);
+    var subsription = _h.errorListenerHandlers.remove(handler);
+    subsription?.cancel();
   }
 
   @override
   void offDiagnostic({required handler}) {
-    _h.diagntosticListenerHandlers.remove(handler);
+    var subsription = _h.diagntosticListenerHandlers.remove(handler);
+    subsription?.cancel();
   }
 
   @override
   void offError({required handler}) {
-    _h.errorListenerHandlers.remove(handler);
+    var subsription = _h.errorListenerHandlers.remove(handler);
+    subsription?.cancel();
   }
 
   @override
   void offMessage({required handler}) {
-    _h.messageListenerHandlers.remove(handler);
+    var subsription = _h.messageListenerHandlers.remove(handler);
+    subsription?.cancel();
   }
 
   @override
   void offOpen({required handler}) {
-    _h.openListenerHandlers.remove(handler);
+    var subsription = _h.openListenerHandlers.remove(handler);
+    subsription?.cancel();
   }
 
   @override
-  void onClose({required handler}) {
-    _h.closeListenerHandlers.add(handler);
+  StreamSubscription<Map<UhstSocketEventType, String>> onClose(
+      {required handler}) {
     var subsription = _h.eventStream.listen((event) {});
     subsription.onData((data) {
       if (data.containsKey(UhstSocketEventType.close)) {
         handler();
       }
     });
+    _h.closeListenerHandlers
+        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    return subsription;
   }
 
   @override
-  void onDiagnostic({required handler}) {
-    _h.diagntosticListenerHandlers.add(handler);
+  StreamSubscription<Map<UhstSocketEventType, String>> onDiagnostic(
+      {required handler}) {
     var subsription = _h.eventStream.listen((event) {});
     subsription.onData((data) {
       if (data.containsKey(UhstSocketEventType.diagnostic)) {
         handler(message: data.values.first);
       }
     });
+    _h.diagntosticListenerHandlers
+        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    return subsription;
   }
 
   @override
-  void onError({required handler}) {
-    _h.errorListenerHandlers.add(handler);
+  StreamSubscription<Map<UhstSocketEventType, String>> onError(
+      {required handler}) {
     var subsription = _h.eventStream.listen((event) {});
     subsription.onData((data) {
       if (data.containsKey(UhstSocketEventType.error)) {
-        handler(error: data.values.first);
+        handler(error: ArgumentError(data.values.first));
       }
     });
+    _h.errorListenerHandlers
+        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    return subsription;
   }
 
   @override
-  void onMessage({required handler}) {
-    _h.messageListenerHandlers.add(handler);
-    _h.eventStream.listen((event) {
+  StreamSubscription<Map<UhstSocketEventType, String>> onMessage(
+      {required handler}) {
+    var subsription = _h.eventStream.listen((event) {
       if (event.containsKey(UhstSocketEventType.message)) {
         handler(data: event.values.first);
       }
     });
+    _h.messageListenerHandlers
+        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    return subsription;
   }
 
   @override
-  void onOpen({required handler}) {
-    _h.openListenerHandlers.add(handler);
-    _h.eventStream.listen((event) {
-      if (event.containsKey(UhstSocketEventType.open)) {
+  StreamSubscription<Map<UhstSocketEventType, String>> onOpen(
+      {required handler}) {
+    var subsription = _h.eventStream.listen((event) {
+      if (event.containsKey(UhstSocketEventType.open))
         handler(data: event.values.first);
-      }
     });
+    _h.openListenerHandlers
+        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    return subsription;
   }
 
   @override
   void onceClose({required handler}) {
-    // TODO: implement onceClose
+    var subscription = onClose(handler: handler);
+    subscription.onData((data) {
+      if (data.containsKey(UhstSocketEventType.close))
+        offClose(handler: handler);
+    });
   }
 
   @override
   void onceDiagnostic({required handler}) {
-    // TODO: implement onceDiagnostic
+    var subscription = onDiagnostic(handler: handler);
+    subscription.onData((data) {
+      if (data.containsKey(UhstSocketEventType.diagnostic))
+        offDiagnostic(handler: handler);
+    });
   }
 
   @override
   void onceError({required handler}) {
-    // TODO: implement onceError
+    var subscription = onError(handler: handler);
+    subscription.onData((data) {
+      if (data.containsKey(UhstSocketEventType.error))
+        offError(handler: handler);
+    });
   }
 
   @override
   void onceMessage({required handler}) {
-    // TODO: implement onceMessage
+    var subscription = onMessage(handler: handler);
+    subscription.onData((data) {
+      if (data.containsKey(UhstSocketEventType.message))
+        offMessage(handler: handler);
+    });
   }
 
   @override
   void onceOpen({required handler}) {
-    // TODO: implement onceOpen
+    var subscription = onOpen(handler: handler);
+    subscription.onData((data) {
+      if (data.containsKey(UhstSocketEventType.open)) offOpen(handler: handler);
+    });
   }
 
   @override
