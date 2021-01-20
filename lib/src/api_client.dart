@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
@@ -7,94 +8,108 @@ import 'models/host_configration.dart';
 import 'uhst_errors.dart';
 import 'uhst_exceptions.dart';
 
-const REQUEST_OPTIONS = {
-  'method': 'POST',
-  'headers': {
-    'Content-Type': 'application/json',
-  }
-};
-const RequestMethod = 'POST';
+class _Consts{
+  static const requestMethod = 'POST';
+static const requestHeaderContentName = 'Content-type';
+static const requestHeaderContentValue = 'application/json';
+
+}
+
+typedef T fromJson<T>(Map<String, String>  map );
 
 class ApiClient implements UhstApiClient {
   final String apiUrl;
   ApiClient({required this.apiUrl});
-
-  @override
-  Future<ClientConfiguration> initClient({required String hostId})async {
-        void requestComplete(HttpRequest request) {
+  
+  Future<T> _fetch<T>({required String url, required int hostId, required fromJson<T> fromJson }) async {
+        T requestComplete(HttpRequest request) {
           switch (request.status) {
             case 200:
-            var responseText = request.responseText;
-            if(responseText == null) throw ArgumentError('response text is empty');
-           var response = jsonDecode(responseText);
-
-          var configuration = ClientConfiguration.fromJson(response);
-break;
+              var responseText = request.responseText;
+              if(responseText == null) throw ArgumentError('response text is empty');
+              var response = jsonDecode(responseText);
+              var configuration = fromJson(response);
+              return configuration;
             case 400:
-              throw InvalidHostId(int.parse(hostId), argName: request.response.statusText);
+              throw InvalidHostId((hostId), argName: request.response.statusText);
             default:
-              throw  ApiError(uri: Uri(port: int.parse(hostId),host: request.responseUrl, userInfo: '${request.response.status} ${request.response.statusText}'));
+              throw  ApiError(uri: Uri(port: hostId,host: request.responseUrl, userInfo: '${request.response.status} ${request.response.statusText}'));
           }
         }
+       
+        StreamSubscription<ProgressEvent>?  streamSubscription;
+          var httpRequest= HttpRequest();
 
         try {
-         var httpRequest= HttpRequest();
-         var url = '${apiUrl}?action=join&hostId=${hostId}';
-         httpRequest
-         ..setRequestHeader('Content-Type', 'application/json')
-         ..open(RequestMethod, url)
-         ..onLoadEnd.listen((event) { 
-            requestComplete(httpRequest);
-         })
-         ..send('');
+          var url = '${apiUrl}?action=join&hostId=${hostId}';
+          httpRequest
+          ..setRequestHeader(_Consts.requestHeaderContentName, _Consts.requestHeaderContentValue)
+          ..open(_Consts.requestMethod, url);
+          streamSubscription = httpRequest.onLoadEnd.listen((event) {});
+          httpRequest.send('');
         } catch (error) {
             throw ApiUnreachable(uri: Uri(userInfo: error.toString()));
         }
-       
+        return Future.any([streamSubscription.asFuture(((){
+          return requestComplete(httpRequest);
+        })())]);
   }
 
   @override
-  Future<HostConfiguration> initHost({required String hostId}) {
-    let response: Response;
-        try {
-            response = await fetch(`${this.apiUrl}?action=host&hostId=${hostId}`, REQUEST_OPTIONS);
-        } catch (error) {
-            console.log(error);
-            throw new ApiUnreachable(error);
-        }
-        if (response.status == 200) {
-            const jsonResponse = await response.json();
-            return jsonResponse;
-        } else if (response.status == 400) {
-            throw new HostIdAlreadyInUse(response.statusText);
-        } else {
-            throw new ApiError(`${response.status} ${response.statusText}`);
-        }
+  Future<ClientConfiguration> initClient({required String hostId})async {
+      var url = '${apiUrl}?action=join&hostId=${hostId}';
+     var response= await _fetch(fromJson: ClientConfiguration.fromJson,hostId: int.parse(hostId) ,url: url);
+ return response;
+  }
+
+  @override
+  Future<HostConfiguration> initHost({required String hostId}) async {
+      var url = '${this.apiUrl}?action=host&hostId=${hostId}';
+     var response= await _fetch(fromJson: HostConfiguration.fromJson,hostId: int.parse(hostId) ,url: url);
+ return response;
   }
 
   @override
   Future sendMessage(
       {required String token, required message, String? sendUrl}) {
-    const url = sendUrl ?? this.apiUrl;
-        let response: Response;
+    requestComplete(HttpRequest request) {
+          switch (request.status) {
+            case 200:
+              var responseText = request.responseText;
+              if(responseText == null) throw ArgumentError('response text is empty');
+              var responseData = jsonDecode(responseText);
+              return responseData;
+            case 400:
+              throw InvalidClientOrHostId(request.responseUrl, );
+            case 401:    
+              var response = request.response;
+
+throw new InvalidToken(response.statusText);
+            default:
+      var response = request.response;
+
+              throw  ApiError(uri: Uri(host: request.responseUrl, userInfo: '${response.status} ${response.statusText}'));
+          }
+            
+        }
+       
+        StreamSubscription<ProgressEvent>?  streamSubscription;
+          var httpRequest= HttpRequest();
+
         try {
-            response = await fetch(`${url}?token=${token}`, {
-                ...REQUEST_OPTIONS,
-                body: JSON.stringify(message),
-            });
+          var hostUrl = sendUrl ?? apiUrl;
+          var url = '$hostUrl?token=$token';
+          httpRequest
+          ..setRequestHeader(_Consts.requestHeaderContentName, _Consts.requestHeaderContentValue)
+          ..open(_Consts.requestMethod, url);
+          streamSubscription = httpRequest.onLoadEnd.listen((event) {});
+          httpRequest.send(message);
         } catch (error) {
-            console.log(error);
-            throw new ApiUnreachable(error);
+            throw ApiUnreachable(uri: Uri(userInfo: error.toString()));
         }
-        if (response.status == 200) {
-            return;
-        } else if (response.status == 400) {
-            throw new InvalidClientOrHostId(response.statusText);
-        } else if (response.status == 401) {
-            throw new InvalidToken(response.statusText);
-        } else {
-            throw new ApiError(`${response.status} ${response.statusText}`);
-        }
+        return Future.any([streamSubscription.asFuture(((){
+          return requestComplete(httpRequest);
+        })())]);
   }
 
   @override

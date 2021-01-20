@@ -10,6 +10,6 @@ class ClientConfiguration {
   static ClientConfiguration fromJson(Map<String, String> map) =>
       new ClientConfiguration(
           clientToken: map['clientToken'] ?? '',
-          receiveUrl: map['receiveUrl'] ?? '',
-          sendUrl: map['sendUrl'] ?? '');
+          receiveUrl: map['receiveUrl'],
+          sendUrl: map['sendUrl']);
 }

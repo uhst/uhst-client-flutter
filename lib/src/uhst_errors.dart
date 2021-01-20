@@ -24,7 +24,7 @@ class InvalidHostId extends ArgumentError {
 
 /// TODO: implement doc InvalidClientOrHostId
 class InvalidClientOrHostId extends ArgumentError {
-  InvalidClientOrHostId(int value, {dynamic? argName})
+  InvalidClientOrHostId(dynamic value, {dynamic? argName})
       : super.value(
           value,
           argName,

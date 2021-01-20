@@ -10,4 +10,11 @@ class HostConfiguration {
       required this.hostToken,
       this.receiveUrl,
       this.sendUrl});
+
+  static HostConfiguration fromJson(Map<String, String> map) =>
+      new HostConfiguration(
+          hostId: map['hostId'] ?? '',
+          hostToken: map['hostToken'] ?? '',
+          sendUrl: map['sendUrl'],
+          receiveUrl: map['receiveUrl']);
 }
