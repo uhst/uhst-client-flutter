@@ -6,7 +6,7 @@ import 'uhst_socket.dart';
 
 abstract class UhstSocketProvider {
   /// [clientParams] or [hostParams] must be defined
-  UhstSocket createUhstSocket(
+  Future<UhstSocket> createUhstSocket(
       {required UhstApiClient apiClient,
       ClientSocketParams? clientParams,
       HostSocketParams? hostParams,

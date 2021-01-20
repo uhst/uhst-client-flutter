@@ -7,12 +7,12 @@ import 'relay_socket.dart';
 
 class RelaySocketProvider implements UhstSocketProvider {
   @override
-  UhstSocket createUhstSocket(
+  Future<UhstSocket> createUhstSocket(
       {required UhstApiClient apiClient,
       clientParams,
       hostParams,
-      required bool debug}) {
-    return RelaySocket(
+      required bool debug}) async {
+    return await RelaySocket.create(
         apiClient: apiClient,
         clientParams: clientParams,
         hostParams: hostParams,
