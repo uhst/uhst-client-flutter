@@ -115,9 +115,9 @@ throw new InvalidToken(response.statusText);
   @override
   Future<MessageStream> subscribeToMessages(
       {required String token, required handler, String? receiveUrl}) {
-     const url = receiveUrl ?? this.apiUrl;
-        return new Promise<MessageStream>((resolve, reject) => {
-            const stream = new EventSource(`${url}?token=${token}`);
+     var url = receiveUrl ?? this.apiUrl;
+        return Future<MessageStream>((resolve, reject) => {
+            var stream = new EventSource('$url?token=$token');
             stream.onopen = (ev: Event) => {
                 resolve(stream);
             };
