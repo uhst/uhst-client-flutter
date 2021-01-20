@@ -45,14 +45,13 @@ class UHST {
   }
 
   /// TODO: describe join
-  UhstSocket join({required String hostId}) {
+  Future<UhstSocket> join({required String hostId}) async {
     var clientParams = ClientSocketParams(hostId: hostId);
-    return _socketProvider.createUhstSocket(
+    return await _socketProvider.createUhstSocket(
         apiClient: _apiClient, clientParams: clientParams, debug: _debug);
   }
 
   /// TODO: describe host
-  /// TODO: implement [UhstHost]
   Future<UhstHost> host({required String hostId}) async {
     var host = await UhstHost.create(
         apiClient: _apiClient,
