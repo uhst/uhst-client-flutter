@@ -1,3 +1,5 @@
+library UHST;
+
 import 'dart:async';
 
 import 'contracts/uhst_socket_events.dart';

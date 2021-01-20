@@ -1,3 +1,5 @@
+library UHST;
+
 import 'package:UHST/src/uhst_host_event.dart';
 
 import 'contracts/uhst_api_client.dart';

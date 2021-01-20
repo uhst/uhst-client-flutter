@@ -35,7 +35,6 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       timer.cancel();
     } else if (clientParams is ClientSocketParams) {
       // will connect to host
-      // TODO: replace to factory
       await socket._initClient(hostId: clientParams.hostId);
     } else {
       throw ArgumentError("Unsupported Socket Parameters Type");
@@ -53,7 +52,6 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       h.sendUrl = config.sendUrl;
       h.apiMessageStream = await h.apiClient.subscribeToMessages(
           token: config.clientToken,
-          // FIXME: fix types
           handler: handleMessage,
           receiveUrl: config.receiveUrl);
       if (h.debug)
@@ -73,8 +71,8 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
   }
 
   @override
-  void handleMessage({required Message message}) {
-    var payload = message.body.payload;
+  void handleMessage({Message? message}) {
+    var payload = message?.body?.payload;
     if (h.debug) h.emitDiagnostic(body: "Message received: $payload");
 
     h.emit(message: payload);

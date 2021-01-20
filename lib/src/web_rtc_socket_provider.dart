@@ -1,3 +1,5 @@
+library UHST;
+
 import 'package:UHST/src/contracts/uhst_api_client.dart';
 import 'package:UHST/src/contracts/uhst_socket.dart';
 

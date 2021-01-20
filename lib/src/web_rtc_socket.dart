@@ -1,3 +1,5 @@
+library UHST;
+
 import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
@@ -202,7 +204,6 @@ class WebRtcSocket with SocketSubsriptions implements UhstSocket {
       h.sendUrl = config.sendUrl;
       h.apiMessageStream = await h.apiClient.subscribeToMessages(
           token: h.verifiedToken,
-          // FIXME: why there is types difference?
           handler: handleMessage,
           receiveUrl: config.receiveUrl);
       if (h.debug)

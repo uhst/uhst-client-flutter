@@ -1,3 +1,5 @@
+library UHST;
+
 import 'message.dart';
 
 class HostMessage extends Message {
