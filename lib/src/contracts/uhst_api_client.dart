@@ -9,7 +9,7 @@ abstract class MessageStream {
 }
 
 abstract class UhstApiClient {
-  Future<HostConfiguration> initHost({required String hostId});
+  Future<HostConfiguration> initHost({String? hostId});
   Future<ClientConfiguration> initClient({required String hostId});
   Future<dynamic> sendMessage(
       {required String token, required dynamic message, String? sendUrl});

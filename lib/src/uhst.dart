@@ -52,7 +52,7 @@ class UHST {
   }
 
   /// TODO: describe host
-  Future<UhstHost> host({required String hostId}) async {
+  Future<UhstHost> host({String? hostId}) async {
     var host = await UhstHost.create(
         apiClient: _apiClient,
         socketProvider: _socketProvider,

@@ -9,6 +9,7 @@ import 'contracts/uhst_socket_provider.dart';
 import 'models/host_configration.dart';
 import 'models/host_message.dart';
 
+// FIXME:
 class UhstHost implements UhstHostSocket {
   // TODO: replace to socket
   final Stream<HostEventType> _ee = Stream<HostEventType>.empty();
@@ -35,7 +36,7 @@ class UhstHost implements UhstHostSocket {
   static Future<UhstHost> create(
       {required apiClient,
       required socketProvider,
-      required String hostId,
+      String? hostId,
       required debug}) async {
     // Call the private constructor
     var uhstHost = UhstHost._create(
@@ -48,7 +49,7 @@ class UhstHost implements UhstHostSocket {
 
   /// Initialize function must be called from within
   /// static create factory function
-  Future<void> _init({required String hostId}) async {
+  Future<void> _init({String? hostId}) async {
     try {
       _config = await _apiClient.initHost(hostId: hostId);
       // if (_debug) _ee.emit("diagnostic", "Host configuration received from server.");
