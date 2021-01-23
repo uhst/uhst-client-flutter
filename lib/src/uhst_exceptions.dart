@@ -3,25 +3,30 @@
 
 library UHST;
 
-// FIXME: does we need to use IO or only html will be enough?
-import 'dart:io';
-
 /// TODO: implement doc HostIdAlreadyInUse
-class HostIdAlreadyInUse extends SocketException {
-  HostIdAlreadyInUse({
-    required int? port,
-    InternetAddress? address,
-    OSError? osError,
-  }) : super('HostIdAlreadyInUse',
-            address: address, osError: osError, port: port);
+class HostIdAlreadyInUse extends _ExceptionMessage {
+  HostIdAlreadyInUse([int? portId])
+      : super(exceptionName: 'HostIdAlreadyInUse', message: portId);
 }
 
 /// TODO: implement doc ApiUnreachable
-class ApiUnreachable extends HttpException {
-  ApiUnreachable({required Uri? uri}) : super('ApiUnreachable', uri: uri);
+class ApiUnreachable extends _ExceptionMessage {
+  ApiUnreachable([Uri? message])
+      : super(exceptionName: 'ApiUnreachable', message: message);
 }
 
 /// TODO: implement doc ApiError
-class ApiError extends HttpException {
-  ApiError({required Uri? uri}) : super('ApiError', uri: uri);
+class ApiError extends _ExceptionMessage {
+  ApiError([Uri? message]) : super(exceptionName: 'ApiError', message: message);
+}
+
+class _ExceptionMessage implements Exception {
+  final dynamic message;
+  final String exceptionName;
+  _ExceptionMessage({this.message, required this.exceptionName});
+  String toString() {
+    Object? message = this.message;
+    if (message == null) return "Exception";
+    return "$exceptionName exception: $message";
+  }
 }

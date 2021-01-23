@@ -24,9 +24,7 @@ class ApiClient implements UhstApiClient {
   ApiClient({required this.apiUrl});
 
   Future<T> _fetch<T>(
-      {required String url,
-      required int hostId,
-      required fromJson<T> fromJson}) async {
+      {required String url, int? hostId, required fromJson<T> fromJson}) async {
     T requestComplete(HttpRequest request) {
       switch (request.status) {
         case 200:
@@ -39,12 +37,11 @@ class ApiClient implements UhstApiClient {
         case 400:
           throw InvalidHostId((hostId), argName: request.response.statusText);
         default:
-          throw ApiError(
-              uri: Uri(
-                  port: hostId,
-                  host: request.responseUrl,
-                  userInfo:
-                      '${request.response.status} ${request.response.statusText}'));
+          throw ApiError(Uri(
+              port: hostId,
+              host: request.responseUrl,
+              userInfo:
+                  '${request.response.status} ${request.response.statusText}'));
       }
     }
 
@@ -60,7 +57,7 @@ class ApiClient implements UhstApiClient {
       streamSubscription = httpRequest.onLoadEnd.listen((event) {});
       httpRequest.send('');
     } catch (error) {
-      throw ApiUnreachable(uri: Uri(userInfo: error.toString()));
+      throw ApiUnreachable(Uri(userInfo: error.toString()));
     }
     return Future.any([
       streamSubscription.asFuture((() {
@@ -80,11 +77,11 @@ class ApiClient implements UhstApiClient {
   }
 
   @override
-  Future<HostConfiguration> initHost({required String hostId}) async {
+  Future<HostConfiguration> initHost({String? hostId}) async {
     var url = '${this.apiUrl}?action=host&hostId=${hostId}';
     var response = await _fetch(
         fromJson: HostConfiguration.fromJson,
-        hostId: int.parse(hostId),
+        hostId: hostId != null ? int.parse(hostId) : null,
         url: url);
     return response;
   }
@@ -111,10 +108,9 @@ class ApiClient implements UhstApiClient {
         default:
           var response = request.response;
 
-          throw ApiError(
-              uri: Uri(
-                  host: request.responseUrl,
-                  userInfo: '${response.status} ${response.statusText}'));
+          throw ApiError(Uri(
+              host: request.responseUrl,
+              userInfo: '${response.status} ${response.statusText}'));
       }
     }
 
@@ -131,7 +127,7 @@ class ApiClient implements UhstApiClient {
       streamSubscription = httpRequest.onLoadEnd.listen((event) {});
       httpRequest.send(message);
     } catch (error) {
-      throw ApiUnreachable(uri: Uri(userInfo: error.toString()));
+      throw ApiUnreachable(Uri(userInfo: error.toString()));
     }
     return Future.any([
       streamSubscription.asFuture((() {
@@ -150,7 +146,7 @@ class ApiClient implements UhstApiClient {
       EventSource stream = EventSource(finalUrl);
       var onOpenSubcription = stream.onOpen.listen((event) {});
       var onErrorSubcription = stream.onError.listen((event) {
-        throw ApiError(uri: uri);
+        throw ApiError(uri);
       });
       var onMessageSubcription = stream.onMessage.listen((event) {
         Message message = Message.fromJson(jsonDecode(event.data));
