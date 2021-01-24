@@ -59,19 +59,26 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
+  bool isHostInitialized = false;
+  bool isClientInitialized = false;
+
   void initHost() async {
-    uhst = Uhst(
-        debug: true,
-        apiUrl: _textController.text.isEmpty
-            ? 'http://localhost:3000'
-            : _textController.text,
-        socketProvider: RelaySocketProvider());
-    host = await uhst.host(hostId: 'testHost');
+    if (!isHostInitialized) {
+      uhst = Uhst(
+          debug: true,
+          apiUrl: _textController.text.isEmpty
+              ? 'http://localhost:3000'
+              : _textController.text,
+          socketProvider: RelaySocketProvider());
+      host = await uhst.host(hostId: 'testHost');
+    }
 
     host.onReady(handler: () {
       hostMessages.add('Host Ready!');
+      print('host is ready!');
     });
     host.onError(handler: ({required Error error}) {
+      print('error received! $error');
       if (error is HostIdAlreadyInUse) {
         // this is expected if you refresh the page
         // connection is still alive on the meeting point
@@ -86,23 +93,30 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
     host.onDiagnostic(handler: ({required String message}) {
+      print('onDiagnostic! $message');
       hostMessages.add(message);
     });
     host.onConnection(handler: ({required UhstSocket uhstSocket}) {
+      print('onConnection! $uhstSocket');
       uhstSocket.onDiagnostic(handler: ({required String message}) {
         hostMessages.add(message);
       });
       uhstSocket.onMessage(handler: ({required Message? message}) {
+        print('onMessage! $message');
         hostMessages.add("Host received: ${message.toString()}");
       });
       uhstSocket.onOpen(handler: ({required String? data}) {
+        print('onMessage! $data');
         uhstSocket.sendString(message: 'Host sent message!');
       });
     });
+    isHostInitialized = true;
   }
 
   Future<void> join() async {
-    client = await uhst.join(hostId: 'testHost');
+    if (!isClientInitialized) {
+      client = await uhst.join(hostId: 'testHost');
+    }
     client.onError(handler: ({required Error error}) {
       if (error is InvalidHostId || error is InvalidClientOrHostId) {
         clientMessages.add('Invalid hostId!');
@@ -119,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
     client.onMessage(handler: ({required Message? message}) {
       clientMessages.add('Client received: $message');
     });
+    isClientInitialized = true;
   }
 
   @override
