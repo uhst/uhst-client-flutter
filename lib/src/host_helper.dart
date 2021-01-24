@@ -8,7 +8,7 @@ import 'package:uhst/src/uhst_host_event.dart';
 import 'contracts/uhst_api_client.dart';
 
 class HostHelper {
-  late final MultiStreamController<Map<HostEventType, dynamic>>
+  late final StreamController<Map<HostEventType, dynamic>>
       eventStreamController;
   late final Stream<Map<HostEventType, dynamic>> eventStream;
   Map<DiagnosticHandler?, StreamSubscription> diagntosticListenerHandlers =
@@ -48,8 +48,9 @@ class HostHelper {
     required this.apiClient,
     required this.debug,
   }) {
-    eventStream = Stream.multi((controller) {
-      eventStreamController = controller;
-    });
+    eventStreamController =
+        StreamController<Map<HostEventType, dynamic>>.broadcast();
+
+    eventStream = eventStreamController.stream;
   }
 }

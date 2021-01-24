@@ -47,24 +47,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<String> hostMessages = [];
-  List<String> clientMessages = [];
+  final List<String> hostMessages = [];
+  final List<String> clientMessages = [];
   late final Uhst uhst;
   late final UhstHost host;
   late final UhstSocket client;
+  final TextEditingController _textController =
+      TextEditingController(text: 'http://localhost:3000');
   @override
-  void initState() async {
-    uhst = Uhst(
-        debug: true,
-        // apiUrl: 'http://localhost:3000',
-        socketProvider: RelaySocketProvider());
-    host = await uhst.host(hostId: 'testHost');
-
-    initHost();
+  void initState() {
     super.initState();
   }
 
-  void initHost() {
+  void initHost() async {
+    uhst = Uhst(
+        debug: true,
+        apiUrl: _textController.text.isEmpty
+            ? 'http://localhost:3000'
+            : _textController.text,
+        socketProvider: RelaySocketProvider());
+    host = await uhst.host(hostId: 'testHost');
+
     host.onReady(handler: () {
       hostMessages.add('Host Ready!');
     });
@@ -173,6 +176,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Column(
                   children: [
                     Text('Host test'),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: ElevatedButton(
+                          onPressed: () => initHost(), child: Text('Run host')),
+                    ),
+                    TextField(
+                      decoration:
+                          InputDecoration(labelText: 'enter server address'),
+                      controller: _textController,
+                    ),
                     Divider(
                       height: 22,
                     ),

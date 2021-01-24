@@ -36,7 +36,7 @@ mixin SocketSubsriptions implements UhstSocket {
     subsription?.cancel();
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onClose(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onClose(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
@@ -49,7 +49,7 @@ mixin SocketSubsriptions implements UhstSocket {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onDiagnostic(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onDiagnostic(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
@@ -62,7 +62,7 @@ mixin SocketSubsriptions implements UhstSocket {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onError(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onError(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
@@ -75,7 +75,7 @@ mixin SocketSubsriptions implements UhstSocket {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onMessage(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onMessage(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {
       if (event.containsKey(UhstSocketEventType.message)) {
@@ -87,7 +87,7 @@ mixin SocketSubsriptions implements UhstSocket {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onOpen(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onOpen(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {
       if (event.containsKey(UhstSocketEventType.open))

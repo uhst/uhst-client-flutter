@@ -1,6 +1,6 @@
 library uhst;
 
-import 'dart:html';
+import 'package:universal_html/html.dart';
 
 class RtcConfiguration {
   final RtcBundlePolicy? bundlePolicy;
