@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 import '../models/socket_params.dart';
 import 'uhst_api_client.dart';

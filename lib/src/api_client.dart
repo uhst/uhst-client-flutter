@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 import 'dart:async';
 import 'dart:convert';

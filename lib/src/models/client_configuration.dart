@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 class ClientConfiguration {
   final String clientToken;

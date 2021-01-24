@@ -1,7 +1,7 @@
-import 'package:UHST/src/api_client.dart';
-import 'package:UHST/src/models/socket_params.dart';
-import 'package:UHST/src/relay_socket_provider.dart';
 import 'package:test/test.dart';
+import 'package:uhst/src/api_client.dart';
+import 'package:uhst/src/models/socket_params.dart';
+import 'package:uhst/src/relay_socket_provider.dart';
 
 void main() {
   group('# RelaySocketProvider', () {

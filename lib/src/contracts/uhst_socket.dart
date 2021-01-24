@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 import 'dart:html';
 import 'dart:typed_data';

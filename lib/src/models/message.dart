@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 class Message {
   final dynamic body;

@@ -1,9 +1,9 @@
-library UHST;
+library uhst;
 
 import 'dart:async';
 
-import 'package:UHST/src/uhst_event_handlers.dart';
-import 'package:UHST/src/uhst_host_event.dart';
+import 'package:uhst/src/uhst_event_handlers.dart';
+import 'package:uhst/src/uhst_host_event.dart';
 
 import 'contracts/uhst_api_client.dart';
 

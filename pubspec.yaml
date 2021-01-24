@@ -1,9 +1,9 @@
-name: UHST
+name: uhst
 version: 0.0.1-nullsafety.0
 author: Stefan Dimitrov, Anton Malofeev
 
 description: >-
-  User Hosted Secure Transmission (UHST) 
+  User Hosted Secure Transmission (uhst) 
   for Flutter in Dart
 homepage: https://github.com/uhst/uhst-client-flutter
 environment:

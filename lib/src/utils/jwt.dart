@@ -1,8 +1,8 @@
-library UHST;
+library uhst;
 
 import 'dart:convert';
 
-import 'package:UHST/src/uhst_errors.dart';
+import 'package:uhst/src/uhst_errors.dart';
 
 //  see at https://prafullkumar77.medium.com/flutter-how-to-decode-jwt-token-using-dart-a9657aeaeedf
 class Jwt {

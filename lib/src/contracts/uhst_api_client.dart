@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 import '../models/client_configuration.dart';
 import '../models/host_configration.dart';

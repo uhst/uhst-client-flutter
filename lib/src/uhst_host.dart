@@ -1,9 +1,9 @@
-library UHST;
+library uhst;
 
-import 'package:UHST/src/host_helper.dart';
-import 'package:UHST/src/uhst_errors.dart';
-import 'package:UHST/src/uhst_host_event.dart';
-import 'package:UHST/src/utils/jwt.dart';
+import 'package:uhst/src/host_helper.dart';
+import 'package:uhst/src/uhst_errors.dart';
+import 'package:uhst/src/uhst_host_event.dart';
+import 'package:uhst/src/utils/jwt.dart';
 
 import 'contracts/uhst_host_socket.dart';
 import 'contracts/uhst_socket.dart';

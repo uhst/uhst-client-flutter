@@ -1,5 +1,5 @@
-import 'package:UHST/src/models/relay_message.dart';
 import 'package:test/test.dart';
+import 'package:uhst/src/models/relay_message.dart';
 
 void main() {
   group('# RelayMessage', () {

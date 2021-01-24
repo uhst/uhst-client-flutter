@@ -1,7 +1,7 @@
 /// How to determine and use Exception or Error
 /// https://stackoverflow.com/questions/17315945/error-vs-exception-in-dart
 
-library UHST;
+library uhst;
 
 /// TODO: implement doc HostIdAlreadyInUse
 class HostIdAlreadyInUse extends _ExceptionMessage {

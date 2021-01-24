@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 import 'contracts/uhst_socket.dart';
 import 'models/message.dart';
