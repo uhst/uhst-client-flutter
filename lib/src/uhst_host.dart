@@ -1,6 +1,7 @@
 library UHST;
 
 import 'package:UHST/src/host_helper.dart';
+import 'package:UHST/src/uhst_errors.dart';
 import 'package:UHST/src/uhst_host_event.dart';
 import 'package:UHST/src/utils/jwt.dart';
 
@@ -9,7 +10,7 @@ import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_provider.dart';
 import 'host_subscriptions.dart';
 import 'models/host_configration.dart';
-import 'models/host_message.dart';
+import 'models/message.dart';
 import 'models/socket_params.dart';
 
 class UhstHost with HostSubsriptions implements UhstHostSocket {
@@ -59,7 +60,6 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       if (h.debug)
         h.emitDiagnostic(body: "Host subscribed to messages from server.");
 
-      // _ee.emit("ready");
       h.emit(message: HostEventType.ready);
     } catch (error) {
       if (h.debug)
@@ -68,12 +68,16 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     }
   }
 
-  void _handleMessage({required HostMessage message}) async {
-    String clientId = Jwt.decodeSubject(token: message.responseToken);
+  void _handleMessage({required Message? message}) async {
+    if (message == null) throw ArgumentError.notNull('message cannot be null');
+    var token = message.responseToken;
+
+    if (token == null) throw InvalidToken(token);
+    String clientId = Jwt.decodeSubject(token: token);
     var hostSocket = _clients[clientId];
+
     if (hostSocket == null) {
-      var hostParams = HostSocketParams(
-          token: message.responseToken, sendUrl: _config.sendUrl);
+      var hostParams = HostSocketParams(token: token, sendUrl: _config.sendUrl);
       var socket = await _socketProvider.createUhstSocket(
           apiClient: h.apiClient, hostParams: hostParams, debug: h.debug);
       if (h.debug)

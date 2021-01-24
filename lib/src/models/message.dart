@@ -2,6 +2,8 @@ library UHST;
 
 class Message {
   final dynamic body;
-  Message({required this.body});
-  static fromJson(Map<String, dynamic> map) => Message(body: map['body'] ?? '');
+  final String? responseToken;
+  Message({required this.body, this.responseToken});
+  static fromJson(Map<String, dynamic> map) => Message(
+      body: map['body'] ?? '', responseToken: map['responseToken'] ?? '');
 }
