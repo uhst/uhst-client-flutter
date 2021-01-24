@@ -8,7 +8,7 @@ import 'models/socket_params.dart';
 import 'relay_socket_provider.dart';
 import 'uhst_host.dart';
 
-class uhst {
+class Uhst {
   /// Deafult Fallback URL to a uhst API (server)
   /// if [apiUrl] is not defined
   static final String _uhst_API_URL = "https://demo.uhst.io/";
@@ -32,7 +32,7 @@ class uhst {
   ///
   /// If both [apiClient] and [apiUrl] are defined,
   /// then [apiClient] will be used.
-  uhst(
+  Uhst(
       {String? apiUrl,
       bool? debug,
       UhstApiClient? apiClient,

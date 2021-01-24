@@ -2,10 +2,12 @@ library uhst;
 
 import 'dart:async';
 
+import 'contracts/uhst_host_socket.dart';
+import 'contracts/uhst_socket.dart';
 import 'host_helper.dart';
 import 'uhst_host_event.dart';
 
-mixin HostSubsriptions {
+mixin HostSubsriptions implements UhstHostSocket {
   late final HostHelper h;
 
   void offConnection({required handler}) {
@@ -28,11 +30,14 @@ mixin HostSubsriptions {
     subsription?.cancel();
   }
 
-  StreamSubscription<Map<HostEventType, String>> onConnection(
+  StreamSubscription<Map<HostEventType, dynamic>> onConnection(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {
       if (event.containsKey(HostEventType.connection)) {
-        handler(data: event.values.first);
+        var maybeSocket = event.values.first;
+        if (maybeSocket is UhstSocket) {
+          handler(uhstSocket: maybeSocket);
+        }
       }
     });
     h.connectionListenerHandlers
@@ -40,7 +45,7 @@ mixin HostSubsriptions {
     return subsription;
   }
 
-  StreamSubscription<Map<HostEventType, String>> onDiagnostic(
+  StreamSubscription<Map<HostEventType, dynamic>> onDiagnostic(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
@@ -53,7 +58,7 @@ mixin HostSubsriptions {
     return subsription;
   }
 
-  StreamSubscription<Map<HostEventType, String>> onError({required handler}) {
+  StreamSubscription<Map<HostEventType, dynamic>> onError({required handler}) {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
       if (data.containsKey(HostEventType.error)) {
@@ -65,10 +70,9 @@ mixin HostSubsriptions {
     return subsription;
   }
 
-  StreamSubscription<Map<HostEventType, String>> onReady({required handler}) {
+  StreamSubscription<Map<HostEventType, dynamic>> onReady({required handler}) {
     var subsription = h.eventStream.listen((event) {
-      if (event.containsKey(HostEventType.ready))
-        handler(data: event.values.first);
+      if (event.containsKey(HostEventType.ready)) handler();
     });
     h.readyListenerHandlers
         .update(handler, (value) => subsription, ifAbsent: () => subsription);

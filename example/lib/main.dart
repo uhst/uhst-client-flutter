@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/basic.dart';
-import 'package:flutter/src/widgets/container.dart';
+import 'package:uhst/uhst.dart';
 
 void main() {
   runApp(MyApp());
@@ -48,6 +47,77 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<String> hostMessages = [];
+  List<String> clientMessages = [];
+  late final Uhst uhst;
+  late final UhstHost host;
+  late final UhstSocket client;
+  @override
+  void initState() async {
+    uhst = Uhst(
+        debug: true,
+        // apiUrl: 'http://localhost:3000',
+        socketProvider: RelaySocketProvider());
+    host = await uhst.host(hostId: 'testHost');
+
+    initHost();
+    super.initState();
+  }
+
+  void initHost() {
+    host.onReady(handler: () {
+      hostMessages.add('Host Ready!');
+    });
+    host.onError(handler: ({required Error error}) {
+      if (error is HostIdAlreadyInUse) {
+        // this is expected if you refresh the page
+        // connection is still alive on the meeting point
+        // just need to wait
+        // TODO: why is it needed? what it do?
+        // setTimeout(function () {
+        //   location.reload();
+        // }, 15000);
+        hostMessages.add('HostId already in use, retrying in 15 seconds...!');
+      } else {
+        hostMessages.add(error.toString());
+      }
+    });
+    host.onDiagnostic(handler: ({required String message}) {
+      hostMessages.add(message);
+    });
+    host.onConnection(handler: ({required UhstSocket uhstSocket}) {
+      uhstSocket.onDiagnostic(handler: ({required String message}) {
+        hostMessages.add(message);
+      });
+      uhstSocket.onMessage(handler: ({required Message? message}) {
+        hostMessages.add("Host received: ${message.toString()}");
+      });
+      uhstSocket.onOpen(handler: ({required String? data}) {
+        uhstSocket.sendString(message: 'Host sent message!');
+      });
+    });
+  }
+
+  Future<void> join() async {
+    client = await uhst.join(hostId: 'testHost');
+    client.onError(handler: ({required Error error}) {
+      if (error is InvalidHostId || error is InvalidClientOrHostId) {
+        clientMessages.add('Invalid hostId!');
+      } else {
+        clientMessages.add(error.toString());
+      }
+    });
+    client.onDiagnostic(handler: ({required String message}) {
+      clientMessages.add(message);
+    });
+    client.onOpen(handler: ({required String data}) {
+      client.sendString(message: 'Hello host!');
+    });
+    client.onMessage(handler: ({required Message? message}) {
+      clientMessages.add('Client received: $message');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -72,19 +142,50 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: EdgeInsets.symmetric(horizontal: 8),
                     child: Column(
                       children: [
+                        Text('Client test'),
+                        Divider(
+                          height: 22,
+                        ),
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 10),
                           child: ElevatedButton(
-                              onPressed: () {}, child: Text('Click to start')),
+                              onPressed: () async => await join(),
+                              child: Text('Click to start')),
                         ),
+                        Divider(
+                          height: 22,
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            itemBuilder: (context, index) {
+                              return Text(hostMessages[index]);
+                            },
+                            itemCount: hostMessages.length,
+                          ),
+                        )
                       ],
                     ),
                   ))),
           Flexible(
               flex: 3,
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [],
+              child: Container(
+                padding: EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    Text('Host test'),
+                    Divider(
+                      height: 22,
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemBuilder: (context, index) {
+                          return Text(hostMessages[index]);
+                        },
+                        itemCount: hostMessages.length,
+                      ),
+                    )
+                  ],
+                ),
               ))
         ],
       ),

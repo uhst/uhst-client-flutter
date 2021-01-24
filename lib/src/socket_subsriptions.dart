@@ -2,10 +2,13 @@ library uhst;
 
 import 'dart:async';
 
+import 'package:uhst/src/models/message.dart';
+
+import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_events.dart';
 import 'socket_helper.dart';
 
-mixin SocketSubsriptions {
+mixin SocketSubsriptions implements UhstSocket {
   late final SocketHelper h;
 
   void offClose({required handler}) {
@@ -76,7 +79,7 @@ mixin SocketSubsriptions {
       {required handler}) {
     var subsription = h.eventStream.listen((event) {
       if (event.containsKey(UhstSocketEventType.message)) {
-        handler(data: event.values.first);
+        handler(message: Message(body: event.values.first));
       }
     });
     h.messageListenerHandlers
