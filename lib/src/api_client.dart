@@ -2,8 +2,8 @@ library uhst;
 
 import 'dart:async';
 import 'dart:convert';
-
-import 'package:universal_html/html.dart';
+// import 'package:universal_html/html.dart';
+import 'dart:html';
 
 import 'contracts/uhst_api_client.dart';
 import 'models/client_configuration.dart';

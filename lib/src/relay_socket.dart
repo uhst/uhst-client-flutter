@@ -1,12 +1,12 @@
 library uhst;
 
 import 'dart:async';
+import 'dart:html';
 import 'dart:typed_data';
 
 import 'package:uhst/src/contracts/uhst_api_client.dart';
 import 'package:uhst/src/contracts/uhst_socket_events.dart';
 import 'package:uhst/src/models/socket_params.dart';
-import 'package:universal_html/html.dart';
 
 import 'contracts/uhst_socket.dart';
 import 'models/message.dart';
