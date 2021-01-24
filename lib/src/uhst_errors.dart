@@ -4,9 +4,9 @@ library UHST;
 
 /// TODO: implement doc InvalidToken
 class InvalidToken extends ArgumentError {
-  InvalidToken(int value, {dynamic? argName})
+  InvalidToken(String token, {dynamic? argName})
       : super.value(
-          value,
+          token,
           argName,
           'InvalidToken',
         );
