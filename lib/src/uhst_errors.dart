@@ -14,7 +14,7 @@ class InvalidToken extends ArgumentError {
 
 /// TODO: implement doc InvalidHostId
 class InvalidHostId extends ArgumentError {
-  InvalidHostId(int? value, {dynamic? argName})
+  InvalidHostId(String? value, {dynamic? argName})
       : super.value(
           value,
           argName,

@@ -11,11 +11,10 @@ import 'web_rtc_socket.dart';
 export 'package:uhst/src/models/socket_params.dart';
 
 class WebRtcSocketProvider implements UhstSocketProvider {
-  /**
-   * Used when instantiating the WebRtc connection.
-   * Most importantly allows specifying iceServers for NAT
-   * traversal.
-   * */
+  /// Used when instantiating the WebRtc connection.
+  /// Most importantly allows specifying iceServers for NAT
+  /// traversal.
+  ///
   late final RtcConfiguration rtcConfiguration;
   WebRtcSocketProvider({RtcConfiguration? configuration}) {
     rtcConfiguration = configuration ??

@@ -12,10 +12,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # https://github.com/dart-lang/mockito/blob/master/NULL_SAFETY_README.md
-  mockito: ^5.0.0-nullsafety.2
-  # universal_html: ^1.2.4
+  universal_html: ^1.2.4
+  # universal_io: ^1.0.2
 
 dev_dependencies:
   # https://pub.dev/packages/test
   test: ^1.16.0-nullsafety.13
+  # https://github.com/dart-lang/mockito/blob/master/NULL_SAFETY_README.md
+  mockito: ^5.0.0-nullsafety.2

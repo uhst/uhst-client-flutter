@@ -2,8 +2,10 @@ library uhst;
 
 import 'dart:async';
 import 'dart:convert';
-// import 'package:universal_html/html.dart';
-import 'dart:html';
+
+import 'package:universal_html/html.dart';
+
+// import 'dart:html';
 
 import 'contracts/uhst_api_client.dart';
 import 'models/client_configuration.dart';
@@ -18,14 +20,16 @@ class _Consts {
   static const requestHeaderContentValue = 'application/json';
 }
 
-typedef T fromJson<T>(Map<String, String> map);
+typedef T FromJson<T>(Map<String, String> map);
 
 class ApiClient implements UhstApiClient {
   final String apiUrl;
   ApiClient({required this.apiUrl});
 
   Future<T> _fetch<T>(
-      {required String url, int? hostId, required fromJson<T> fromJson}) async {
+      {required String url,
+      String? hostId,
+      required FromJson<T> fromJson}) async {
     T requestComplete(HttpRequest request) {
       switch (request.status) {
         case 200:
@@ -39,10 +43,9 @@ class ApiClient implements UhstApiClient {
           throw InvalidHostId((hostId), argName: request.response.statusText);
         default:
           throw ApiError(Uri(
-              port: hostId,
               host: request.responseUrl,
               userInfo:
-                  '${request.response.status} ${request.response.statusText}'));
+                  'hostId $hostId ${request.response.status} ${request.response.statusText}'));
       }
     }
 
@@ -50,7 +53,7 @@ class ApiClient implements UhstApiClient {
     var httpRequest = HttpRequest();
 
     try {
-      var url = '${apiUrl}?action=join&hostId=${hostId}';
+      var url = '$apiUrl?action=join&hostId=$hostId';
       httpRequest
         ..setRequestHeader(
             _Consts.requestHeaderContentName, _Consts.requestHeaderContentValue)
@@ -69,21 +72,18 @@ class ApiClient implements UhstApiClient {
 
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    var url = '${apiUrl}?action=join&hostId=${hostId}';
+    var url = '$apiUrl?action=join&hostId=$hostId';
     var response = await _fetch(
-        fromJson: ClientConfiguration.fromJson,
-        hostId: int.parse(hostId),
-        url: url);
+        fromJson: ClientConfiguration.fromJson, hostId: (hostId), url: url);
     return response;
   }
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    var url = '${this.apiUrl}?action=host&hostId=${hostId}';
+    var url = '${this.apiUrl}?action=host&hostId=$hostId';
+    print(url);
     var response = await _fetch(
-        fromJson: HostConfiguration.fromJson,
-        hostId: hostId != null ? int.parse(hostId) : null,
-        url: url);
+        fromJson: HostConfiguration.fromJson, hostId: hostId, url: url);
     return response;
   }
 

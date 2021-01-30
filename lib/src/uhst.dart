@@ -11,7 +11,7 @@ import 'uhst_host.dart';
 class Uhst {
   /// Deafult Fallback URL to a uhst API (server)
   /// if [apiUrl] is not defined
-  static final String _uhst_API_URL = "https://demo.uhst.io/";
+  static final String _uhstApiUrl = "https://demo.uhst.io/";
 
   /// An API client for communication with the server,
   /// normally used for testing or if implementing
@@ -39,7 +39,7 @@ class Uhst {
       RelaySocketProvider? socketProvider}) {
     _debug = debug ?? false;
 
-    var definedApiUrl = apiUrl ?? _uhst_API_URL;
+    var definedApiUrl = apiUrl ?? _uhstApiUrl;
     _apiClient = apiClient ?? ApiClient(apiUrl: definedApiUrl);
     _socketProvider = socketProvider ?? RelaySocketProvider();
   }
