@@ -49,7 +49,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final List<String> hostMessages = [];
   final List<String> clientMessages = [];
-  late final Uhst uhst;
+  late Uhst uhst;
   UhstHost? host;
   UhstSocket? client;
   final TextEditingController _textController =

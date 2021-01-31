@@ -3,9 +3,8 @@ library uhst;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:universal_html/html.dart';
-
-// import 'dart:html';
 
 import 'contracts/uhst_api_client.dart';
 import 'models/client_configuration.dart';
@@ -15,12 +14,11 @@ import 'uhst_errors.dart';
 import 'uhst_exceptions.dart';
 
 class _Consts {
-  static const requestMethod = 'POST';
   static const requestHeaderContentName = 'Content-type';
   static const requestHeaderContentValue = 'application/json';
 }
 
-typedef T FromJson<T>(Map<String, String> map);
+typedef T FromJson<T>(Map<String, dynamic> map);
 
 class ApiClient implements UhstApiClient {
   final String apiUrl;
@@ -30,48 +28,37 @@ class ApiClient implements UhstApiClient {
       {required String url,
       String? hostId,
       required FromJson<T> fromJson}) async {
-    T requestComplete(HttpRequest request) {
-      switch (request.status) {
+    T handleResponse({required http.Response response}) {
+      switch (response.statusCode) {
         case 200:
-          var responseText = request.responseText;
-          if (responseText == null)
+          var responseText = response.body;
+          if (responseText.isEmpty)
             throw ArgumentError('response text is empty');
-          var response = jsonDecode(responseText);
-          var configuration = fromJson(response);
+          print(responseText);
+          var decodedBody = jsonDecode(responseText);
+          var configuration = fromJson(decodedBody);
           return configuration;
         case 400:
-          throw InvalidHostId((hostId), argName: request.response.statusText);
+          throw InvalidHostId((hostId), argName: response.reasonPhrase);
         default:
-          throw ApiError(Uri(
-              host: request.responseUrl,
-              userInfo:
-                  'hostId $hostId ${request.response.status} ${request.response.statusText}'));
+          throw ApiError(response.request?.url);
       }
     }
 
-    StreamSubscription<ProgressEvent>? streamSubscription;
-    var httpRequest = HttpRequest();
-
+    var uri = Uri.parse(url);
     try {
-      var url = '$apiUrl?action=join&hostId=$hostId';
-      httpRequest
-        ..setRequestHeader(
-            _Consts.requestHeaderContentName, _Consts.requestHeaderContentValue)
-        ..open(_Consts.requestMethod, url);
-      streamSubscription = httpRequest.onLoadEnd.listen((event) {});
-      httpRequest.send('');
+      var response = await http.post(uri, headers: <String, String>{
+        _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
+      });
+      return handleResponse(response: response);
     } catch (error) {
       throw ApiUnreachable(Uri(userInfo: error.toString()));
     }
-    return Future.any([
-      streamSubscription.asFuture((() {
-        return requestComplete(httpRequest);
-      })())
-    ]);
   }
 
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
+    print('joining');
     var url = '$apiUrl?action=join&hostId=$hostId';
     var response = await _fetch(
         fromJson: ClientConfiguration.fromJson, hostId: (hostId), url: url);
@@ -80,6 +67,7 @@ class ApiClient implements UhstApiClient {
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
+    print('hosting');
     var url = '${this.apiUrl}?action=host&hostId=$hostId';
     print(url);
     var response = await _fetch(
@@ -89,52 +77,44 @@ class ApiClient implements UhstApiClient {
 
   @override
   Future sendMessage(
-      {required String token, required message, String? sendUrl}) {
-    dynamic requestComplete(HttpRequest request) {
-      switch (request.status) {
+      {required String token, required message, String? sendUrl}) async {
+    dynamic handleResponse({required http.Response response}) {
+      print({'readyState': response.statusCode});
+      switch (response.statusCode) {
         case 200:
-          var responseText = request.responseText;
-          if (responseText == null)
+          var responseText = response.body;
+          if (responseText.isEmpty)
             throw ArgumentError('response text is empty');
           var responseData = jsonDecode(responseText);
           return responseData;
         case 400:
           throw InvalidClientOrHostId(
-            request.responseUrl,
+            response.request?.url,
           );
         case 401:
-          var response = request.response;
-
-          throw new InvalidToken(response.statusText);
+          throw new InvalidToken(response.reasonPhrase);
         default:
-          var response = request.response;
-
-          throw ApiError(Uri(
-              host: request.responseUrl,
-              userInfo: '${response.status} ${response.statusText}'));
+          throw ApiError(response.request?.url);
       }
     }
 
-    StreamSubscription<ProgressEvent>? streamSubscription;
-    var httpRequest = HttpRequest();
-
     try {
       var hostUrl = sendUrl ?? apiUrl;
-      var url = '$hostUrl?token=$token';
-      httpRequest
-        ..setRequestHeader(
-            _Consts.requestHeaderContentName, _Consts.requestHeaderContentValue)
-        ..open(_Consts.requestMethod, url);
-      streamSubscription = httpRequest.onLoadEnd.listen((event) {});
-      httpRequest.send(message);
+      var uri = Uri.parse('$hostUrl?token=$token');
+      try {
+        var response = await http.post(uri,
+            headers: <String, String>{
+              _Consts.requestHeaderContentName:
+                  _Consts.requestHeaderContentValue,
+            },
+            body: message);
+        return handleResponse(response: response);
+      } catch (error) {
+        throw ApiUnreachable(Uri(userInfo: error.toString()));
+      }
     } catch (error) {
       throw ApiUnreachable(Uri(userInfo: error.toString()));
     }
-    return Future.any([
-      streamSubscription.asFuture((() {
-        return requestComplete(httpRequest);
-      })())
-    ]);
   }
 
   @override
@@ -142,7 +122,7 @@ class ApiClient implements UhstApiClient {
       {required String token, required handler, String? receiveUrl}) {
     var url = receiveUrl ?? this.apiUrl;
     var finalUrl = '$url?token=$token';
-    var uri = Uri.http(finalUrl, '');
+    var uri = Uri.parse(finalUrl);
     return Future.microtask(() {
       EventSource stream = EventSource(finalUrl);
       var onOpenSubcription = stream.onOpen.listen((event) {});

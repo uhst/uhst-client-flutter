@@ -11,7 +11,7 @@ class HostConfiguration {
       this.receiveUrl,
       this.sendUrl});
 
-  static HostConfiguration fromJson(Map<String, String> map) =>
+  static HostConfiguration fromJson(Map<String, dynamic> map) =>
       new HostConfiguration(
           hostId: map['hostId'] ?? '',
           hostToken: map['hostToken'] ?? '',

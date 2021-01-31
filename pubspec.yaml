@@ -14,6 +14,7 @@ dependencies:
     sdk: flutter
   universal_html: ^1.2.4
   # universal_io: ^1.0.2
+  http: ^0.13.0-nullsafety.0
 
 dev_dependencies:
   # https://pub.dev/packages/test
