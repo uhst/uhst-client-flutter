@@ -77,18 +77,20 @@ class WebRtcSocket with SocketSubsriptions implements UhstSocket {
 
   Future<void> handleMessage({Message? message}) async {
     if (message == null) throw ArgumentError('Message is null');
-    if (message.body?.type == "offer") {
-      if (h.debug) h.emitDiagnostic(body: "Received offer: ${message.body}");
-      await _initHost(description: message.body);
-    } else if (message.body.type == "answer") {
-      if (h.debug) h.emitDiagnostic(body: "Received answer: ${message.body}");
-      _verifiedConnection.setRemoteDescription(message.body);
+    var body = message.body;
+    if (body == null) throw ArgumentError('Message body is null');
+    if (message.type == "offer") {
+      if (h.debug) h.emitDiagnostic(body: "Received offer: $body");
+      await _initHost(description: RtcSessionDescription(body));
+    } else if (message.type == "answer") {
+      if (h.debug) h.emitDiagnostic(body: "Received answer: $body");
+      _verifiedConnection.setRemoteDescription(body);
       _offerAccepted = true;
       _processIceCandidates();
     } else {
       if (h.debug)
         h.emitDiagnostic(body: "Received ICE Candidates: ${message.body}");
-      _pendingCandidates.add(message.body);
+      _pendingCandidates.add(RtcIceCandidate(body));
       _processIceCandidates();
     }
   }

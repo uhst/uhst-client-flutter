@@ -21,7 +21,7 @@ class Jwt {
 
   static String decodeSubject({required String token}) {
     var tokenBody = decode(token: token);
-    String? subject = tokenBody['sub'];
+    String? subject = tokenBody['clientId'];
     if (subject == null) {
       throw InvalidToken(token, argName: 'Jwt decodeSubject');
     }

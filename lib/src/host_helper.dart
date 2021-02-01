@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:uhst/src/uhst_event_handlers.dart';
 import 'package:uhst/src/uhst_host_event.dart';
+import 'package:universal_html/html.dart';
 
 import 'contracts/uhst_api_client.dart';
 
@@ -43,7 +44,7 @@ class HostHelper {
   final bool debug;
 
   String? sendUrl;
-  MessageStream? apiMessageStream;
+  EventSource? apiMessageStream;
   HostHelper({
     required this.apiClient,
     required this.debug,

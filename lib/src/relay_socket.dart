@@ -1,6 +1,7 @@
 library uhst;
 
 import 'dart:async';
+import 'dart:convert';
 // import 'dart:html';
 import 'dart:typed_data';
 
@@ -25,13 +26,20 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       required UhstApiClient apiClient,
       required bool debug}) async {
     var socket = RelaySocket._create(apiClient: apiClient, debug: debug);
+
+    if (debug)
+      socket.h.emitDiagnostic(body: {
+        'create relay host': hostParams is HostSocketParams,
+        'create relay client': clientParams is ClientSocketParams
+      });
+
     if (hostParams is HostSocketParams) {
       // client connected
       socket.h.token = hostParams.token;
       socket.h.sendUrl = hostParams.sendUrl;
       // give consumer a chance to subscribe to open event
       var timer = Timer(Duration(microseconds: 1), () {
-        socket.h.emit(message: UhstSocketEventType.open);
+        socket.h.emit(message: UhstSocketEventType.open, body: 'opened');
       });
       timer.cancel();
     } else if (clientParams is ClientSocketParams) {
@@ -58,7 +66,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       if (h.debug)
         h.emitDiagnostic(body: "Client subscribed to messages from server.");
 
-      h.emit(message: UhstSocketEventType.open);
+      h.emit(message: UhstSocketEventType.open, body: 'opened');
     } catch (error) {
       if (h.debug) h.emitDiagnostic(body: "Client failed: $error");
 
@@ -73,10 +81,10 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
   @override
   void handleMessage({Message? message}) {
-    var payload = message?.body?.payload;
-    if (h.debug) h.emitDiagnostic(body: "Message received: $payload");
+    if (h.debug)
+      h.emitDiagnostic(body: "Message received: ${message?.payload}");
 
-    h.emit(message: payload);
+    h.emit(message: UhstSocketEventType.message, body: message);
   }
 
   @override
@@ -112,7 +120,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
   }
 
   void _send({dynamic? message}) {
-    var envelope = {"type": "string", "payload": message};
+    var envelope = jsonEncode({"type": "string", "payload": message});
     try {
       h.apiClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);

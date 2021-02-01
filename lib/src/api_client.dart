@@ -34,7 +34,6 @@ class ApiClient implements UhstApiClient {
           var responseText = response.body;
           if (responseText.isEmpty)
             throw ArgumentError('response text is empty');
-          print(responseText);
           var decodedBody = jsonDecode(responseText);
           var configuration = fromJson(decodedBody);
           return configuration;
@@ -58,7 +57,6 @@ class ApiClient implements UhstApiClient {
 
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    print('joining');
     var url = '$apiUrl?action=join&hostId=$hostId';
     var response = await _fetch(
         fromJson: ClientConfiguration.fromJson, hostId: (hostId), url: url);
@@ -67,9 +65,7 @@ class ApiClient implements UhstApiClient {
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    print('hosting');
     var url = '${this.apiUrl}?action=host&hostId=$hostId';
-    print(url);
     var response = await _fetch(
         fromJson: HostConfiguration.fromJson, hostId: hostId, url: url);
     return response;
@@ -79,7 +75,6 @@ class ApiClient implements UhstApiClient {
   Future sendMessage(
       {required String token, required message, String? sendUrl}) async {
     dynamic handleResponse({required http.Response response}) {
-      print({'readyState': response.statusCode});
       switch (response.statusCode) {
         case 200:
           var responseText = response.body;
@@ -118,27 +113,21 @@ class ApiClient implements UhstApiClient {
   }
 
   @override
-  Future<MessageStream> subscribeToMessages(
+  EventSource subscribeToMessages(
       {required String token, required handler, String? receiveUrl}) {
     var url = receiveUrl ?? this.apiUrl;
     var finalUrl = '$url?token=$token';
     var uri = Uri.parse(finalUrl);
-    return Future.microtask(() {
-      EventSource stream = EventSource(finalUrl);
-      var onOpenSubcription = stream.onOpen.listen((event) {});
-      var onErrorSubcription = stream.onError.listen((event) {
-        throw ApiError(uri);
-      });
-      var onMessageSubcription = stream.onMessage.listen((event) {
-        Message message = Message.fromJson(jsonDecode(event.data));
-        handler(message: message);
-      });
 
-      return Future.any([
-        onMessageSubcription.asFuture(),
-        onOpenSubcription.asFuture(),
-        onErrorSubcription.asFuture()
-      ]);
+    EventSource source = EventSource(finalUrl);
+    var onOpenSubcription = source.onOpen.listen((event) {});
+    var onErrorSubcription = source.onError.listen((event) {
+      throw ApiError(uri);
     });
+    var onMessageSubcription = source.onMessage.listen((event) {
+      Message message = Message.fromJson(jsonDecode(event.data));
+      handler(message: message);
+    });
+    return source;
   }
 }

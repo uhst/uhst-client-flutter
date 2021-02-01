@@ -36,13 +36,10 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       required socketProvider,
       String? hostId,
       required debug}) async {
-    print('Future<UhstHost> debug $debug');
     // Call the private constructor
     var uhstHost = UhstHost._create(
         apiClient: apiClient, debug: debug, socketProvider: socketProvider);
-    print('Future<UhstHost> created');
     await uhstHost._init(hostId: hostId);
-    print('Future<UhstHost> _init');
 
     return uhstHost;
   }
@@ -54,21 +51,18 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       _config = await h.apiClient.initHost(hostId: hostId);
       if (h.debug)
         h.emitDiagnostic(body: "Host configuration received from server.");
-      print('Future<UhstHost> _config');
-
       h.apiMessageStream = await h.apiClient.subscribeToMessages(
           token: _config.hostToken,
           handler: _handleMessage,
           receiveUrl: _config.receiveUrl);
+
       if (h.debug)
         h.emitDiagnostic(body: "Host subscribed to messages from server.");
-
-      h.emit(message: HostEventType.ready);
+      h.emit(message: HostEventType.ready, body: 'is ready');
     } catch (error) {
       if (h.debug)
         h.emitDiagnostic(body: "Host failed subscribing to messages: $error");
       h.emitError(body: error);
-      print(error);
     }
   }
 
