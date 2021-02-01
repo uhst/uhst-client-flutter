@@ -44,6 +44,7 @@ class ApiClient implements UhstApiClient {
       }
     }
 
+    print({'url': url});
     var uri = Uri.parse(url);
     try {
       var response = await http.post(uri, headers: <String, String>{
@@ -65,7 +66,7 @@ class ApiClient implements UhstApiClient {
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    var url = '${this.apiUrl}?action=host&hostId=$hostId';
+    var url = '$apiUrl?action=host&hostId=$hostId';
     var response = await _fetch(
         fromJson: HostConfiguration.fromJson, hostId: hostId, url: url);
     return response;
@@ -77,6 +78,8 @@ class ApiClient implements UhstApiClient {
     dynamic handleResponse({required http.Response response}) {
       switch (response.statusCode) {
         case 200:
+          // TODO: what is in body when host is messaging?
+          print(response.body);
           var responseText = response.body;
           if (responseText.isEmpty)
             throw ArgumentError('response text is empty');
@@ -93,22 +96,21 @@ class ApiClient implements UhstApiClient {
       }
     }
 
+    var hostUrl = sendUrl ?? apiUrl;
+    // TODO: investigate actual url as it causing an error
+    print('$hostUrl?token=$token');
+    var uri = Uri.parse('$hostUrl?token=$token');
+
     try {
-      var hostUrl = sendUrl ?? apiUrl;
-      var uri = Uri.parse('$hostUrl?token=$token');
-      try {
-        var response = await http.post(uri,
-            headers: <String, String>{
-              _Consts.requestHeaderContentName:
-                  _Consts.requestHeaderContentValue,
-            },
-            body: message);
-        return handleResponse(response: response);
-      } catch (error) {
-        throw ApiUnreachable(Uri(userInfo: error.toString()));
-      }
+      var response = await http.post(uri,
+          headers: <String, String>{
+            _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
+          },
+          body: message);
+      return handleResponse(response: response);
     } catch (error) {
-      throw ApiUnreachable(Uri(userInfo: error.toString()));
+      print(error);
+      throw ApiUnreachable(uri);
     }
   }
 
@@ -117,6 +119,7 @@ class ApiClient implements UhstApiClient {
       {required String token, required handler, String? receiveUrl}) {
     var url = receiveUrl ?? this.apiUrl;
     var finalUrl = '$url?token=$token';
+    print(finalUrl);
     var uri = Uri.parse(finalUrl);
 
     EventSource source = EventSource(finalUrl);
