@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Uhst Example',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Uhst Example'),
     );
   }
 }
@@ -46,27 +46,24 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+final defaultHostUrl = 'http://localhost:3000';
+
 class _MyHomePageState extends State<MyHomePage> {
   final List<String> hostMessages = [];
   final List<String> clientMessages = [];
-  late Uhst uhst;
+  Uhst? uhst;
   UhstHost? host;
   UhstSocket? client;
   final TextEditingController _textController =
-      TextEditingController(text: 'http://localhost:3000');
+      TextEditingController(text: defaultHostUrl);
   @override
   void initState() {
     super.initState();
   }
 
   void initHost() async {
-    uhst = Uhst(
-        debug: true,
-        apiUrl: _textController.text.isEmpty
-            ? 'http://localhost:3000'
-            : _textController.text,
-        socketProvider: RelaySocketProvider());
-    host = await uhst.host(hostId: 'testHost');
+    initUhst();
+    host = await uhst?.host(hostId: 'testHost');
 
     host?.onReady(handler: () {
       setState(() {
@@ -94,33 +91,41 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
     host?.onDiagnostic(handler: ({required String message}) {
-      print('onDiagnostic! $message');
       setState(() {
         hostMessages.add(message);
       });
     });
     host?.onConnection(handler: ({required UhstSocket uhstSocket}) {
-      print('onConnection! $uhstSocket');
       uhstSocket.onDiagnostic(handler: ({required String message}) {
         setState(() {
           hostMessages.add(message);
         });
       });
       uhstSocket.onMessage(handler: ({required Message? message}) {
-        print('onMessage! ${message.toString()}');
         setState(() {
-          hostMessages.add("Host received: ${message.toString()}");
+          hostMessages.add("Host received: ${message?.body} ${message?.type}");
         });
       });
       uhstSocket.onOpen(handler: ({required String? data}) {
-        print('onMessage! $data');
         // uhstSocket.sendString(message: 'Host sent message!');
       });
     });
   }
 
+  initUhst() {
+    if (uhst == null) {
+      uhst = Uhst(
+          debug: true,
+          apiUrl: _textController.text.isEmpty
+              ? defaultHostUrl
+              : _textController.text,
+          socketProvider: RelaySocketProvider());
+    }
+  }
+
   Future<void> join() async {
-    client = await uhst.join(hostId: 'testHost');
+    initUhst();
+    client = await uhst?.join(hostId: 'testHost');
     client?.onError(handler: ({required Error error}) {
       if (error is InvalidHostId || error is InvalidClientOrHostId) {
         setState(() {
@@ -168,47 +173,74 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           Flexible(
               flex: 1,
-              child: Material(
-                  elevation: 4,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Column(
-                      children: [
-                        Text('Client test'),
-                        Divider(
-                          height: 22,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: ElevatedButton(
-                              onPressed: () async => await join(),
-                              child: Text('Click to start')),
-                        ),
-                        Divider(
-                          height: 22,
-                        ),
-                        Expanded(
-                          child: ListView.builder(
-                            itemBuilder: (context, index) {
-                              return Text(clientMessages[index]);
-                            },
-                            itemCount: clientMessages.length,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: 250),
+                child: Material(
+                    elevation: 4,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            height: 20,
                           ),
-                        )
-                      ],
-                    ),
-                  ))),
+                          Center(
+                            child: Text(
+                              'Setup & checks',
+                            ),
+                          ),
+                          Divider(
+                            height: 22,
+                          ),
+                          TextField(
+                            decoration: InputDecoration(
+                                labelText: 'Uhst host server address'),
+                            controller: _textController,
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          TextButton(
+                              onPressed: () => initHost(),
+                              child: Text('Start hosting')),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          TextButton(
+                              onPressed: () async => await join(),
+                              child: Text('Click to join a host')),
+                          Divider(
+                            height: 22,
+                            thickness: 1,
+                          ),
+                          Center(
+                            child: Text('Host debugging chat'),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemBuilder: (context, index) {
+                                return Text(hostMessages[index]);
+                              },
+                              itemCount: hostMessages.length,
+                            ),
+                          )
+                        ],
+                      ),
+                    )),
+              )),
           Flexible(
               flex: 3,
               child: Container(
                 padding: EdgeInsets.all(10),
                 child: Column(
                   children: [
-                    Text('Host test'),
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: ElevatedButton(
-                          onPressed: () => initHost(), child: Text('Run host')),
+                    Text('Test chat'),
+                    Divider(
+                      height: 22,
                     ),
                     TextField(
                       controller: hostTextFieldController,
@@ -220,20 +252,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                     message: hostTextFieldController.text);
                               })),
                     ),
-                    TextField(
-                      decoration:
-                          InputDecoration(labelText: 'enter server address'),
-                      controller: _textController,
-                    ),
-                    Divider(
-                      height: 22,
-                    ),
                     Expanded(
                       child: ListView.builder(
                         itemBuilder: (context, index) {
-                          return Text(hostMessages[index]);
+                          return Text(clientMessages[index]);
                         },
-                        itemCount: hostMessages.length,
+                        itemCount: clientMessages.length,
                       ),
                     )
                   ],

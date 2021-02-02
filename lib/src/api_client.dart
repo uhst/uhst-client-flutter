@@ -78,11 +78,13 @@ class ApiClient implements UhstApiClient {
     dynamic handleResponse({required http.Response response}) {
       switch (response.statusCode) {
         case 200:
-          // TODO: what is in body when host is messaging?
-          print(response.body);
           var responseText = response.body;
           if (responseText.isEmpty)
             throw ArgumentError('response text is empty');
+
+          // In case if all is ok, then ok
+          if (responseText.toLowerCase() == 'ok') return 'OK';
+
           var responseData = jsonDecode(responseText);
           return responseData;
         case 400:
