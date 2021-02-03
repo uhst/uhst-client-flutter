@@ -130,6 +130,7 @@ class ApiClient implements UhstApiClient {
       throw ApiError(uri);
     });
     var onMessageSubcription = source.onMessage.listen((event) {
+      print({'subscribeToMessages event': event.data});
       Message message = Message.fromJson(jsonDecode(event.data));
       handler(message: message);
     });

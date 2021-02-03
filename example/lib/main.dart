@@ -47,6 +47,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 final defaultHostUrl = 'http://localhost:3000';
+final defaultHostId = 'testHost';
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<String> hostMessages = [];
@@ -56,6 +57,9 @@ class _MyHomePageState extends State<MyHomePage> {
   UhstSocket? client;
   final TextEditingController _textController =
       TextEditingController(text: defaultHostUrl);
+  final TextEditingController _hostIdController =
+      TextEditingController(text: defaultHostId);
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void initHost() async {
     initUhst();
-    host = await uhst?.host(hostId: 'testHost');
+    host = await uhst?.host(hostId: _hostIdController.text);
 
     host?.onReady(handler: () {
       setState(() {
@@ -125,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> join() async {
     initUhst();
-    client = await uhst?.join(hostId: 'testHost');
+    client = await uhst?.join(hostId: _hostIdController.text);
     client?.onError(handler: ({required Error error}) {
       if (error is InvalidHostId || error is InvalidClientOrHostId) {
         setState(() {
@@ -148,6 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // });
     });
     client?.onMessage(handler: ({required Message? message}) {
+      print({'ollll': message});
       setState(() {
         clientMessages.add('Client received: $message');
       });
@@ -172,73 +177,72 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Row(
         children: [
           Flexible(
-              flex: 1,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: 250),
-                child: Material(
-                    elevation: 4,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Center(
-                            child: Text(
-                              'Setup & checks',
-                            ),
-                          ),
-                          Divider(
-                            height: 22,
-                          ),
-                          TextField(
-                            decoration: InputDecoration(
-                                labelText: 'Uhst host server address'),
-                            controller: _textController,
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          TextButton(
-                              onPressed: () => initHost(),
-                              child: Text('Start hosting')),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          TextButton(
-                              onPressed: () async => await join(),
-                              child: Text('Click to join a host')),
-                          Divider(
-                            height: 22,
-                            thickness: 1,
-                          ),
-                          Center(
-                            child: Text('Host debugging chat'),
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Expanded(
-                            child: ListView.builder(
-                              itemBuilder: (context, index) {
-                                return Text(hostMessages[index]);
-                              },
-                              itemCount: hostMessages.length,
-                            ),
-                          )
-                        ],
+            flex: 2,
+            child: Material(
+                elevation: 4,
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Text(
+                          'Setup & checks',
+                        ),
                       ),
-                    )),
-              )),
+                      Divider(
+                        height: 22,
+                      ),
+                      TextField(
+                        decoration: InputDecoration(
+                            labelText: 'Uhst host server address'),
+                        controller: _textController,
+                      ),
+                      TextField(
+                        decoration: InputDecoration(labelText: 'Host id'),
+                        controller: _hostIdController,
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      TextButton(
+                          onPressed: () => initHost(),
+                          child: Text('Start hosting')),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      TextButton(
+                          onPressed: () async => await join(),
+                          child: Text('Click to join a host')),
+                      Divider(
+                        height: 22,
+                        thickness: 1,
+                      ),
+                      Center(
+                        child: Text('Host chat'),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemBuilder: (context, index) {
+                            return Text(hostMessages[index]);
+                          },
+                          itemCount: hostMessages.length,
+                        ),
+                      )
+                    ],
+                  ),
+                )),
+          ),
           Flexible(
-              flex: 3,
+              flex: 2,
               child: Container(
                 padding: EdgeInsets.all(10),
                 child: Column(
                   children: [
-                    Text('Test chat'),
+                    Text('Client chat'),
                     Divider(
                       height: 22,
                     ),

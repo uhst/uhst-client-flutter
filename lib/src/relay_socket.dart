@@ -38,7 +38,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       socket.h.token = hostParams.token;
       socket.h.sendUrl = hostParams.sendUrl;
       // give consumer a chance to subscribe to open event
-      var timer = Timer(Duration(microseconds: 1), () {
+      var timer = Timer(Duration(milliseconds: 1), () {
         socket.h.emit(message: UhstSocketEventType.open, body: 'opened');
       });
       timer.cancel();
