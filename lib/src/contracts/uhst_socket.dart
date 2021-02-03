@@ -1,7 +1,9 @@
-library UHST;
+library uhst;
 
-import 'dart:html';
+// import 'dart:html';
 import 'dart:typed_data';
+
+import 'package:universal_html/html.dart';
 
 import '../models/message.dart';
 import '../uhst_event_handlers.dart';

@@ -1,11 +1,12 @@
-library UHST;
+library uhst;
 
 import 'dart:async';
 
+import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_events.dart';
 import 'socket_helper.dart';
 
-mixin SocketSubsriptions {
+mixin SocketSubsriptions implements UhstSocket {
   late final SocketHelper h;
 
   void offClose({required handler}) {
@@ -33,7 +34,7 @@ mixin SocketSubsriptions {
     subsription?.cancel();
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onClose(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onClose(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
@@ -46,7 +47,7 @@ mixin SocketSubsriptions {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onDiagnostic(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onDiagnostic(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
@@ -59,7 +60,7 @@ mixin SocketSubsriptions {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onError(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onError(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
@@ -72,11 +73,11 @@ mixin SocketSubsriptions {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onMessage(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onMessage(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {
       if (event.containsKey(UhstSocketEventType.message)) {
-        handler(data: event.values.first);
+        handler(message: event.values.first);
       }
     });
     h.messageListenerHandlers
@@ -84,7 +85,7 @@ mixin SocketSubsriptions {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, String>> onOpen(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onOpen(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {
       if (event.containsKey(UhstSocketEventType.open))

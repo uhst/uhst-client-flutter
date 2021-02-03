@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 import '../uhst_event_handlers.dart';
 

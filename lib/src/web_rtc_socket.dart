@@ -1,12 +1,13 @@
-library UHST;
+library uhst;
 
 import 'dart:async';
-import 'dart:html';
+// import 'dart:html';
 import 'dart:typed_data';
 
-import 'package:UHST/src/contracts/uhst_socket_events.dart';
-import 'package:UHST/src/models/socket_params.dart';
-import 'package:UHST/src/socket_subsriptions.dart';
+import 'package:uhst/src/contracts/uhst_socket_events.dart';
+import 'package:uhst/src/models/socket_params.dart';
+import 'package:uhst/src/socket_subsriptions.dart';
+import 'package:universal_html/html.dart';
 
 import 'contracts/uhst_api_client.dart';
 import 'contracts/uhst_socket.dart';
@@ -76,18 +77,20 @@ class WebRtcSocket with SocketSubsriptions implements UhstSocket {
 
   Future<void> handleMessage({Message? message}) async {
     if (message == null) throw ArgumentError('Message is null');
-    if (message.body?.type == "offer") {
-      if (h.debug) h.emitDiagnostic(body: "Received offer: ${message.body}");
-      await _initHost(description: message.body);
-    } else if (message.body.type == "answer") {
-      if (h.debug) h.emitDiagnostic(body: "Received answer: ${message.body}");
-      _verifiedConnection.setRemoteDescription(message.body);
+    var body = message.body;
+    if (body == null) throw ArgumentError('Message body is null');
+    if (message.type == "offer") {
+      if (h.debug) h.emitDiagnostic(body: "Received offer: $body");
+      await _initHost(description: RtcSessionDescription(body));
+    } else if (message.type == "answer") {
+      if (h.debug) h.emitDiagnostic(body: "Received answer: $body");
+      _verifiedConnection.setRemoteDescription(body);
       _offerAccepted = true;
       _processIceCandidates();
     } else {
       if (h.debug)
         h.emitDiagnostic(body: "Received ICE Candidates: ${message.body}");
-      _pendingCandidates.add(message.body);
+      _pendingCandidates.add(RtcIceCandidate(body));
       _processIceCandidates();
     }
   }

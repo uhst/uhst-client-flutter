@@ -1,16 +1,17 @@
-library UHST;
+library uhst;
 
 import 'dart:async';
 
-import 'package:UHST/src/uhst_event_handlers.dart';
+import 'package:uhst/src/uhst_event_handlers.dart';
+import 'package:universal_html/html.dart';
 
 import 'contracts/uhst_api_client.dart';
 import 'contracts/uhst_socket_events.dart';
 
 class SocketHelper {
-  late final MultiStreamController<Map<UhstSocketEventType, String>>
+  late final StreamController<Map<UhstSocketEventType, dynamic>>
       eventStreamController;
-  late final Stream<Map<UhstSocketEventType, String>> eventStream;
+  late final Stream<Map<UhstSocketEventType, dynamic>> eventStream;
   Map<DiagnosticHandler?, StreamSubscription> diagntosticListenerHandlers =
       Map();
   Map<MessageHandler?, StreamSubscription> messageListenerHandlers = Map();
@@ -19,6 +20,9 @@ class SocketHelper {
   Map<OpenHandler?, StreamSubscription> openListenerHandlers = Map();
 
   void emit({required UhstSocketEventType message, dynamic body}) {
+    eventStreamController.stream.listen((event) {
+      if (debug) print({'stream message': event});
+    });
     eventStreamController.add({message: body});
   }
 
@@ -42,13 +46,14 @@ class SocketHelper {
   final bool debug;
 
   String? sendUrl;
-  MessageStream? apiMessageStream;
+  EventSource? apiMessageStream;
   SocketHelper({
     required this.apiClient,
     required this.debug,
   }) {
-    eventStream = Stream.multi((controller) {
-      eventStreamController = controller;
-    });
+    eventStreamController =
+        StreamController<Map<UhstSocketEventType, dynamic>>.broadcast();
+
+    eventStream = eventStreamController.stream;
   }
 }

@@ -1,10 +1,10 @@
-import 'package:UHST/uhst.dart';
 import 'package:test/test.dart';
+import 'package:uhst/uhst.dart';
 
 void main() {
-  group('# UHST', () {
-    test('should create UHST', () {
-      expect(UHST(), isNotNull);
+  group('# uhst', () {
+    test('should create uhst', () {
+      expect(uhst(), isNotNull);
     });
 
     test('should accept socketProvider', () {
@@ -13,7 +13,7 @@ void main() {
     });
     test('should accept meetingPointUrl', () {
       var apiUrl = "test";
-      expect(UHST(apiUrl: apiUrl), isNotNull);
+      expect(uhst(apiUrl: apiUrl), isNotNull);
     });
   });
 }

@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 class ClientConfiguration {
   final String clientToken;
@@ -7,7 +7,7 @@ class ClientConfiguration {
   ClientConfiguration(
       {required this.clientToken, this.receiveUrl, this.sendUrl});
 
-  static ClientConfiguration fromJson(Map<String, String> map) =>
+  static ClientConfiguration fromJson(Map<String, dynamic> map) =>
       new ClientConfiguration(
           clientToken: map['clientToken'] ?? '',
           receiveUrl: map['receiveUrl'],

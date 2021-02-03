@@ -1,6 +1,6 @@
 # uhst-client-flutter
 
-User Hosted Secure Transmission (UHST) for Flutter in Dart
+User Hosted Secure Transmission (uhst) for Flutter in Dart
 
 ## Getting Started
 

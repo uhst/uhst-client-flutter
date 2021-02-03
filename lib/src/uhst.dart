@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 import 'api_client.dart';
 import 'contracts/uhst_api_client.dart';
@@ -8,10 +8,10 @@ import 'models/socket_params.dart';
 import 'relay_socket_provider.dart';
 import 'uhst_host.dart';
 
-class UHST {
-  /// Deafult Fallback URL to a UHST API (server)
+class Uhst {
+  /// Deafult Fallback URL to a uhst API (server)
   /// if [apiUrl] is not defined
-  static final String _UHST_API_URL = "https://demo.uhst.io/";
+  static final String _uhstApiUrl = "https://demo.uhst.io/";
 
   /// An API client for communication with the server,
   /// normally used for testing or if implementing
@@ -25,21 +25,21 @@ class UHST {
   /// TODO: describe _socketProvider
   late UhstSocketProvider _socketProvider;
 
-  /// [apiUrl] to a server implementing the UHST protocol.
+  /// [apiUrl] to a server implementing the uhst protocol.
   ///
   /// If no [apiClient] is provided or [apiUrl] is not defined in [apiClient]
-  /// then [UHST_API_URL] will be used.
+  /// then [uhst_API_URL] will be used.
   ///
   /// If both [apiClient] and [apiUrl] are defined,
   /// then [apiClient] will be used.
-  UHST(
+  Uhst(
       {String? apiUrl,
       bool? debug,
       UhstApiClient? apiClient,
       RelaySocketProvider? socketProvider}) {
     _debug = debug ?? false;
 
-    var definedApiUrl = apiUrl ?? _UHST_API_URL;
+    var definedApiUrl = apiUrl ?? _uhstApiUrl;
     _apiClient = apiClient ?? ApiClient(apiUrl: definedApiUrl);
     _socketProvider = socketProvider ?? RelaySocketProvider();
   }
@@ -52,7 +52,7 @@ class UHST {
   }
 
   /// TODO: describe host
-  Future<UhstHost> host({required String hostId}) async {
+  Future<UhstHost> host({String? hostId}) async {
     var host = await UhstHost.create(
         apiClient: _apiClient,
         socketProvider: _socketProvider,

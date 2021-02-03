@@ -1,46 +1,44 @@
-library UHST;
+library uhst;
 
-import 'package:UHST/src/uhst_host_event.dart';
+import 'package:uhst/src/host_helper.dart';
+import 'package:uhst/src/uhst_errors.dart';
+import 'package:uhst/src/uhst_host_event.dart';
+import 'package:uhst/src/utils/jwt.dart';
 
-import 'contracts/uhst_api_client.dart';
 import 'contracts/uhst_host_socket.dart';
 import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_provider.dart';
+import 'host_subscriptions.dart';
 import 'models/host_configration.dart';
-import 'models/host_message.dart';
+import 'models/message.dart';
+import 'models/socket_params.dart';
 
-class UhstHost implements UhstHostSocket {
-  // TODO: replace to socket
-  final Stream<HostEventType> _ee = Stream<HostEventType>.empty();
+class UhstHost with HostSubsriptions implements UhstHostSocket {
   final Map<String, UhstSocket> _clients = <String, UhstSocket>{};
 
   /// Initilizing during init method
   late final HostConfiguration _config;
 
   /// Initilizing during init method
-  late final MessageStream _apiMessageStream;
-  final UhstApiClient _apiClient;
   final UhstSocketProvider _socketProvider;
-  final bool _debug;
 
   /// Private factory.
   /// Call it only from static create factory function
   UhstHost._create(
       {required apiClient, required socketProvider, required debug})
-      : this._apiClient = apiClient,
-        this._socketProvider = socketProvider,
-        this._debug = debug;
+      : this._socketProvider = socketProvider {
+    h = HostHelper(apiClient: apiClient, debug: debug);
+  }
 
   /// Public factory
   static Future<UhstHost> create(
       {required apiClient,
       required socketProvider,
-      required String hostId,
+      String? hostId,
       required debug}) async {
     // Call the private constructor
     var uhstHost = UhstHost._create(
         apiClient: apiClient, debug: debug, socketProvider: socketProvider);
-
     await uhstHost._init(hostId: hostId);
 
     return uhstHost;
@@ -48,44 +46,47 @@ class UhstHost implements UhstHostSocket {
 
   /// Initialize function must be called from within
   /// static create factory function
-  Future<void> _init({required String hostId}) async {
+  Future<void> _init({String? hostId}) async {
     try {
-      _config = await _apiClient.initHost(hostId: hostId);
-      // if (_debug) _ee.emit("diagnostic", "Host configuration received from server.");
-      // _apiMessageStream = await _apiClient.subscribeToMessages(
-      //     token: _config.hostToken,
-      //     handler: _handleMessage,
-      //     receiveUrl: _config.receiveUrl);
-      // if (_debug)
-      //   _ee.emit("diagnostic", "Host subscribed to messages from server.");
+      _config = await h.apiClient.initHost(hostId: hostId);
+      if (h.debug)
+        h.emitDiagnostic(body: "Host configuration received from server.");
+      h.apiMessageStream = await h.apiClient.subscribeToMessages(
+          token: _config.hostToken,
+          handler: _handleMessage,
+          receiveUrl: _config.receiveUrl);
 
-      // _ee.emit("ready");
+      if (h.debug)
+        h.emitDiagnostic(body: "Host subscribed to messages from server.");
+      h.emit(message: HostEventType.ready, body: 'is ready');
     } catch (error) {
-      if (_debug) {
-        // _ee.emit("diagnostic", "Host failed subscribing to messages: " + error);
-      }
-      // ._ee.emit("error", error);
+      if (h.debug)
+        h.emitDiagnostic(body: "Host failed subscribing to messages: $error");
+      h.emitError(body: error);
     }
   }
 
-  void _handleMessage({required HostMessage message}) {
-    // String clientId = (JwtDecode(message.responseToken) as any).clientId;
-    // var hostSocket = _clients[clientId];
-    // if (hostSocket == null) {
-    //   var hostParams = HostSocketParams(
-    //       token: message.responseToken, sendUrl: _config.sendUrl);
-    //   var socket = _socketProvider.createUhstSocket(
-    //       apiClient: _apiClient, hostParams: hostParams, debug: _debug);
-    //   if (_debug) {
-    //     _ee.emit("diagnostic",
-    //         "Host received client connection from clientId: " + clientId);
-    //   }
-    //   _ee.emit("connection", socket);
-    //   _clients.update(clientId, (value) => value = socket,
-    //       ifAbsent: () => socket);
-    //   hostSocket = socket;
-    // }
-    // hostSocket.handleMessage(message: message);
+  void _handleMessage({required Message? message}) async {
+    if (message == null) throw ArgumentError.notNull('message cannot be null');
+    var token = message.responseToken;
+
+    if (token == null) throw InvalidToken(token);
+    String clientId = Jwt.decodeSubject(token: token);
+    var hostSocket = _clients[clientId];
+
+    if (hostSocket == null) {
+      var hostParams = HostSocketParams(token: token, sendUrl: _config.sendUrl);
+      var socket = await _socketProvider.createUhstSocket(
+          apiClient: h.apiClient, hostParams: hostParams, debug: h.debug);
+      if (h.debug)
+        h.emitDiagnostic(
+            body: "Host received client connection from clientId: $clientId");
+      h.emit(message: HostEventType.connection, body: socket);
+      _clients.update(clientId, (value) => value = socket,
+          ifAbsent: () => socket);
+      hostSocket = socket;
+    }
+    hostSocket.handleMessage(message: message);
   }
 
   String get hostId {
@@ -93,65 +94,6 @@ class UhstHost implements UhstHostSocket {
   }
 
   void disconnect() {
-    // _apiMessageStream?.close();
-  }
-  @override
-  void offConnection({required handler}) {
-    // TODO: implement offConnection
-  }
-
-  @override
-  void offDiagnostic({required handler}) {
-    // TODO: implement offDiagnostic
-  }
-
-  @override
-  void offError({required handler}) {
-    // TODO: implement offError
-  }
-
-  @override
-  void offReady({required handler}) {
-    // TODO: implement offReady
-  }
-
-  @override
-  void onConnection({required handler}) {
-    // TODO: implement onConnection
-  }
-
-  @override
-  void onDiagnostic({required handler}) {
-    // TODO: implement onDiagnostic
-  }
-
-  @override
-  void onError({required handler}) {
-    // TODO: implement onError
-  }
-
-  @override
-  void onReady({required handler}) {
-    // TODO: implement onReady
-  }
-
-  @override
-  void onceConnection({required handler}) {
-    // TODO: implement onceConnection
-  }
-
-  @override
-  void onceDiagnostic({required handler}) {
-    // TODO: implement onceDiagnostic
-  }
-
-  @override
-  void onceError({required handler}) {
-    // TODO: implement onceError
-  }
-
-  @override
-  void onceReady({required handler}) {
-    // TODO: implement onceReady
+    h.apiMessageStream?.close();
   }
 }

@@ -1,12 +1,12 @@
 /// How to determine and use Exception or Error
 /// https://stackoverflow.com/questions/17315945/error-vs-exception-in-dart
-library UHST;
+library uhst;
 
 /// TODO: implement doc InvalidToken
 class InvalidToken extends ArgumentError {
-  InvalidToken(int value, {dynamic? argName})
+  InvalidToken(String? token, {dynamic? argName})
       : super.value(
-          value,
+          token,
           argName,
           'InvalidToken',
         );
@@ -14,7 +14,7 @@ class InvalidToken extends ArgumentError {
 
 /// TODO: implement doc InvalidHostId
 class InvalidHostId extends ArgumentError {
-  InvalidHostId(int value, {dynamic? argName})
+  InvalidHostId(String? value, {dynamic? argName})
       : super.value(
           value,
           argName,

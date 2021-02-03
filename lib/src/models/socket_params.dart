@@ -1,4 +1,4 @@
-library UHST;
+library uhst;
 
 class HostSocketParams {
   final String token;
