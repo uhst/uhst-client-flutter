@@ -49,12 +49,12 @@ class WebRtcSocket with SocketSubsriptions implements UhstSocket {
     _connection = _createConnection();
   }
 
-  static Future<WebRtcSocket> create(
+  static WebRtcSocket create(
       {required UhstApiClient apiClient,
       required RtcConfiguration configuration,
       HostSocketParams? hostSocketParams,
       ClientSocketParams? clientSocketParams,
-      required bool debug}) async {
+      required bool debug}) {
     var socket = WebRtcSocket._create(
         apiClient: apiClient, configuration: configuration, debug: debug);
     if (hostSocketParams is HostSocketParams) {
@@ -63,7 +63,7 @@ class WebRtcSocket with SocketSubsriptions implements UhstSocket {
       socket.h.sendUrl = hostSocketParams.sendUrl;
     } else if (clientSocketParams is ClientSocketParams) {
       // will connect to host
-      await socket._initClient(hostId: clientSocketParams.hostId);
+      socket._initClient(hostId: clientSocketParams.hostId);
     } else {
       throw ArgumentError(
           "Socket Parameters Type is not provided or unsupported");

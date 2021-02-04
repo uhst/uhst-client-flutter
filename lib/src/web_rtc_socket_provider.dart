@@ -31,12 +31,12 @@ class WebRtcSocketProvider implements UhstSocketProvider {
   }
 
   @override
-  Future<UhstSocket> createUhstSocket(
+  UhstSocket createUhstSocket(
       {required UhstApiClient apiClient,
       ClientSocketParams? clientParams,
       HostSocketParams? hostParams,
-      required bool debug}) async {
-    return await WebRtcSocket.create(
+      required bool debug}) {
+    return WebRtcSocket.create(
         apiClient: apiClient,
         debug: debug,
         configuration: this.rtcConfiguration,

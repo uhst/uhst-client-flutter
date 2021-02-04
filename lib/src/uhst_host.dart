@@ -31,15 +31,15 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   }
 
   /// Public factory
-  static Future<UhstHost> create(
+  static UhstHost create(
       {required apiClient,
       required socketProvider,
       String? hostId,
-      required debug}) async {
+      required debug}) {
     // Call the private constructor
     var uhstHost = UhstHost._create(
         apiClient: apiClient, debug: debug, socketProvider: socketProvider);
-    await uhstHost._init(hostId: hostId);
+    uhstHost._init(hostId: hostId);
 
     return uhstHost;
   }

@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void initHost() async {
     initUhst();
-    host = await uhst?.host(hostId: _hostIdController.text);
+    host = uhst?.host(hostId: _hostIdController.text);
 
     host?.onReady(handler: () {
       setState(() {
@@ -129,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> join() async {
     initUhst();
-    client = await uhst?.join(hostId: _hostIdController.text);
+    client = uhst?.join(hostId: _hostIdController.text);
     client?.onError(handler: ({required Error error}) {
       if (error is InvalidHostId || error is InvalidClientOrHostId) {
         setState(() {

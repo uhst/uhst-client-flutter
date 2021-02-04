@@ -20,11 +20,11 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
     h = SocketHelper(apiClient: apiClient, debug: debug);
   }
 
-  static Future<RelaySocket> create(
+  static RelaySocket create(
       {ClientSocketParams? clientParams,
       HostSocketParams? hostParams,
       required UhstApiClient apiClient,
-      required bool debug}) async {
+      required bool debug}) {
     var socket = RelaySocket._create(apiClient: apiClient, debug: debug);
 
     if (debug)
@@ -44,7 +44,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       timer.cancel();
     } else if (clientParams is ClientSocketParams) {
       // will connect to host
-      await socket._initClient(hostId: clientParams.hostId);
+      socket._initClient(hostId: clientParams.hostId);
     } else {
       throw ArgumentError("Unsupported Socket Parameters Type");
     }
