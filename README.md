@@ -2,7 +2,7 @@
 
 > User Hosted Secure Transmission (uhst) for Flutter in Dart
 
-[![Pub](https://img.shields.io/pub/v/rxdart.svg)](https://pub.dartlang.org/packages/uhst)
+[![Pub](https://img.shields.io/pub/v/uhst.svg)](https://pub.dartlang.org/packages/uhst)
 [![Gitter](https://badges.gitter.im/uhst/community.svg)](https://gitter.im/uhst/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![GitHub](https://img.shields.io/github/license/uhst/uhst-client-flutter)](LICENSE)
 
@@ -15,6 +15,8 @@ It is able to:
 - send messages from client and listen messages broadcasted from host
 - broadcast messages by host
 - listen messages from multiple clients by host
+
+You can see [an implemented example](http://docs.uhst.io/uhst-client-flutter/) and source for it [on GitHub](https://github.com/uhst/uhst-client-flutter/tree/next/example)
 
 ### Support and discussions
 
