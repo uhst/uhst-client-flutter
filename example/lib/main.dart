@@ -68,54 +68,49 @@ class _MyHomePageState extends State<MyHomePage> {
   void initHost() async {
     initUhst();
     host = uhst?.host(hostId: _hostIdController.text);
+    host
+      ?..onReady(handler: () {
+        setState(() {
+          hostMessages.add('Host Ready!');
+        });
+        print('host is ready!');
+      })
+      ..onError(handler: ({required Error error}) {
+        print('error received! $error');
+        if (error is HostIdAlreadyInUse) {
+          // this is expected if you refresh the page
+          // connection is still alive on the meeting point
+          // just need to wait
+          setState(() {
+            hostMessages
+                .add('HostId already in use, retrying in 15 seconds...!');
+          });
+        } else {
+          setState(() {
+            hostMessages.add(error.toString());
+          });
+        }
+      })
+      ..onConnection(handler: ({required UhstSocket uhstSocket}) {
+        uhstSocket.onDiagnostic(handler: ({required String message}) {
+          setState(() {
+            hostMessages.add(message);
+          });
+        });
 
-    host?.onReady(handler: () {
-      setState(() {
-        hostMessages.add('Host Ready!');
-      });
-      print('host is ready!');
-    });
-    host?.onError(handler: ({required Error error}) {
-      print('error received! $error');
-      if (error is HostIdAlreadyInUse) {
-        // this is expected if you refresh the page
-        // connection is still alive on the meeting point
-        // just need to wait
-        // TODO: why is it needed? what it do?
-        // setTimeout(function () {
-        //   location.reload();
-        // }, 15000);
-        setState(() {
-          hostMessages.add('HostId already in use, retrying in 15 seconds...!');
+        uhstSocket.onMessage(handler: ({required Message? message}) {
+          setState(() {
+            hostMessages
+                .add("Host received: ${message?.body} ${message?.type}");
+            var payload = message?.payload;
+            if (payload != null) host?.broadcastString(message: payload);
+          });
         });
-      } else {
-        setState(() {
-          hostMessages.add(error.toString());
-        });
-      }
-    });
-    host?.onDiagnostic(handler: ({required String message}) {
-      setState(() {
-        hostMessages.add(message);
-      });
-    });
-    host?.onConnection(handler: ({required UhstSocket uhstSocket}) {
-      uhstSocket.onDiagnostic(handler: ({required String message}) {
-        setState(() {
-          hostMessages.add(message);
+
+        uhstSocket.onOpen(handler: ({required String? data}) {
+          uhstSocket.sendString(message: 'Host sent message!');
         });
       });
-      uhstSocket.onMessage(handler: ({required Message? message}) {
-        setState(() {
-          hostMessages.add("Host received: ${message?.body} ${message?.type}");
-          var payload = message?.payload;
-          if (payload != null) host?.broadcastString(message: payload);
-        });
-      });
-      uhstSocket.onOpen(handler: ({required String? data}) {
-        // uhstSocket.sendString(message: 'Host sent message!');
-      });
-    });
   }
 
   initUhst() {
@@ -132,33 +127,33 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> join() async {
     initUhst();
     client = uhst?.join(hostId: _hostIdController.text);
-    client?.onError(handler: ({required Error error}) {
-      if (error is InvalidHostId || error is InvalidClientOrHostId) {
+    client
+      ?..onError(handler: ({required Error error}) {
+        if (error is InvalidHostId || error is InvalidClientOrHostId) {
+          setState(() {
+            clientMessages.add('Invalid hostId!');
+          });
+        } else {
+          setState(() {
+            clientMessages.add(error.toString());
+          });
+        }
+      })
+      ..onDiagnostic(handler: ({required String message}) {
         setState(() {
-          clientMessages.add('Invalid hostId!');
+          clientMessages.add(message);
         });
-      } else {
+      })
+      ..onOpen(handler: ({required String data}) {
         setState(() {
-          clientMessages.add(error.toString());
+          client?.sendString(message: 'Hello host!');
         });
-      }
-    });
-    client?.onDiagnostic(handler: ({required String message}) {
-      setState(() {
-        clientMessages.add(message);
+      })
+      ..onMessage(handler: ({required Message? message}) {
+        setState(() {
+          clientMessages.add('Client received: $message');
+        });
       });
-    });
-    client?.onOpen(handler: ({required String data}) {
-      // setState(() {
-      //   client?.sendString(message: 'Hello host!');
-      // });
-    });
-    client?.onMessage(handler: ({required Message? message}) {
-      print({'ollll': message});
-      setState(() {
-        clientMessages.add('Client received: $message');
-      });
-    });
   }
 
   TextEditingController hostTextFieldController = TextEditingController();

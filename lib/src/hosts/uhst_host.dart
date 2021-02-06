@@ -16,11 +16,66 @@ import '../utils/uhst_errors.dart';
 import 'host_helper.dart';
 import 'host_subscriptions.dart';
 
+/// [UhstHost] in UHST is a peer which every other peer ([UhstSocket])
+/// connects to. This concept is similar to listen-server in multiplayer games.
+///
 /// [UhstHost] used to:
 /// - listen messages from [UhstSocket]
 /// - broadcast messages to all subscsribed Client [UhstSocket]
 ///
-/// Correct way to init this class is to use [Uhst().host()] in [Uhst]
+/// The simplest way to create a new host is:
+///
+/// ```dart
+/// var host = uhst.host("testHost");
+/// host
+///   ..onReady(handler: () {
+///     setState(() {
+///         hostMessages.add('Host Ready!');
+///       });
+///       print('host is ready!');
+///     })
+///   ..onError(handler: ({required Error error}) {
+///       print('error received! $error');
+///       if (error is HostIdAlreadyInUse) {
+///         // this is expected if you refresh the page
+///         // connection is still alive on the meeting point
+///         // just need to wait
+///         setState(() {
+///           hostMessages
+///               .add('HostId already in use, retrying in 15 seconds...!');
+///         });
+///       } else {
+///         setState(() {
+///           hostMessages.add(error.toString());
+///         });
+///       }
+///     })
+///   ..onConnection(handler: ({required UhstSocket uhstSocket}) {
+///     uhstSocket.onDiagnostic(handler: ({required String message}) {
+///       setState(() {
+///         hostMessages.add(message);
+///       });
+///     });
+///     uhstSocket.onMessage(handler: ({required Message? message}) {
+///       setState(() {
+///         hostMessages
+///             .add("Host received: ${message?.body} ${message?.type}");
+///         var payload = message?.payload;
+///         if (payload != null) host.broadcastString(message: payload);
+///       });
+///     });
+///     uhstSocket.onOpen(handler: ({required String? data}) {
+///       uhstSocket.sendString(message: 'Host sent message!');
+///     });
+///   });
+/// }
+/// ```
+///
+/// Note that your requested host id may not be accepted
+/// by the signalling server, you should always use the `hostId`
+/// you get after receiving a [UhstHost().onReady()] event
+/// when connecting to the host.
+///
 class UhstHost with HostSubsriptions implements UhstHostSocket {
   final Map<String, UhstSocket> _clients = <String, UhstSocket>{};
 

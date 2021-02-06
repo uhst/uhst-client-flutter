@@ -20,4 +20,4 @@ dev_dependencies:
   # https://pub.dev/packages/test
   test: ^1.16.0-nullsafety.13
   # https://github.com/dart-lang/mockito/blob/master/NULL_SAFETY_README.md
-  mockito: ^5.0.0-nullsafety.2
+  # mockito: ^5.0.0-nullsafety.2
