@@ -4,9 +4,9 @@ import 'dart:async';
 
 import 'package:universal_html/html.dart';
 
-import 'contracts/uhst_api_client.dart';
-import 'contracts/uhst_host_event.dart';
-import 'uhst_event_handlers.dart';
+import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_event_handlers.dart';
+import '../contracts/uhst_host_event.dart';
 
 class HostHelper {
   late final StreamController<Map<HostEventType, dynamic>>

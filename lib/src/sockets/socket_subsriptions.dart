@@ -2,8 +2,8 @@ library uhst;
 
 import 'dart:async';
 
-import 'contracts/uhst_socket.dart';
-import 'contracts/uhst_socket_events.dart';
+import '../contracts/uhst_socket.dart';
+import '../contracts/uhst_socket_events.dart';
 import 'socket_helper.dart';
 
 mixin SocketSubsriptions implements UhstSocket {

@@ -1,14 +1,17 @@
 library uhst;
 
-import 'api_client.dart';
+import 'api_clients/api_client.dart';
 import 'contracts/uhst_api_client.dart';
 import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_provider.dart';
+import 'hosts/uhst_host.dart';
 import 'models/socket_params.dart';
-import 'relay_socket_provider.dart';
-import 'uhst_host.dart';
+import 'sockets/relay_socket_provider.dart';
 
 /// Provides a way to init Client [UhstSocket] and [UhstHost]
+///
+/// For server you can use ready to go
+/// [Uhst Node Server](https://github.com/uhst/uhst-server-node)
 class Uhst {
   /// Deafult Fallback URL to a uhst API (server)
   /// if [apiUrl] is not defined

@@ -2,7 +2,7 @@ library uhst;
 
 import 'dart:convert';
 
-import '../uhst_errors.dart';
+import 'uhst_errors.dart';
 
 /// The util converts Jwt token into data map
 ///

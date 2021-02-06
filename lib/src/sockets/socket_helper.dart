@@ -4,9 +4,9 @@ import 'dart:async';
 
 import 'package:universal_html/html.dart';
 
-import 'contracts/uhst_api_client.dart';
-import 'contracts/uhst_socket_events.dart';
-import 'uhst_event_handlers.dart';
+import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_event_handlers.dart';
+import '../contracts/uhst_socket_events.dart';
 
 class SocketHelper {
   late final StreamController<Map<UhstSocketEventType, dynamic>>

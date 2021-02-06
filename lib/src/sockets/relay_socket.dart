@@ -6,11 +6,11 @@ import 'dart:typed_data';
 
 import 'package:universal_html/html.dart';
 
-import 'contracts/uhst_api_client.dart';
-import 'contracts/uhst_socket.dart';
-import 'contracts/uhst_socket_events.dart';
-import 'models/message.dart';
-import 'models/socket_params.dart';
+import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_socket.dart';
+import '../contracts/uhst_socket_events.dart';
+import '../models/message.dart';
+import '../models/socket_params.dart';
 import 'socket_helper.dart';
 import 'socket_subsriptions.dart';
 

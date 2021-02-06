@@ -4,7 +4,7 @@ import 'package:universal_html/html.dart';
 
 import '../models/client_configuration.dart';
 import '../models/host_configration.dart';
-import '../uhst_event_handlers.dart';
+import 'uhst_event_handlers.dart';
 
 abstract class UhstApiClient {
   Future<HostConfiguration> initHost({String? hostId});

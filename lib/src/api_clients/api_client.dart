@@ -6,19 +6,18 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:universal_html/html.dart';
 
-import 'contracts/uhst_api_client.dart';
-import 'models/client_configuration.dart';
-import 'models/host_configration.dart';
-import 'models/message.dart';
-import 'uhst_errors.dart';
-import 'uhst_exceptions.dart';
+import '../contracts/type_definitions.dart';
+import '../contracts/uhst_api_client.dart';
+import '../models/client_configuration.dart';
+import '../models/host_configration.dart';
+import '../models/message.dart';
+import '../utils/uhst_errors.dart';
+import '../utils/uhst_exceptions.dart';
 
 class _Consts {
   static const requestHeaderContentName = 'Content-type';
   static const requestHeaderContentValue = 'application/json';
 }
-
-typedef T FromJson<T>(Map<String, dynamic> map);
 
 /// [ApiClient] is a standard host and client provider which used
 /// to subscribe to event source, send messages and init [UhstHost]

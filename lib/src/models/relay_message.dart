@@ -2,7 +2,7 @@ library uhst;
 
 import 'package:universal_html/html.dart';
 
-enum PayloadType { string, blob }
+import '../contracts/type_definitions.dart';
 
 class RelayMessage {
   String? _payload;

@@ -4,7 +4,7 @@ import 'package:uhst/uhst.dart';
 void main() {
   group('# uhst', () {
     test('should create uhst', () {
-      expect(uhst(), isNotNull);
+      expect(Uhst(), isNotNull);
     });
 
     test('should accept socketProvider', () {
@@ -13,7 +13,7 @@ void main() {
     });
     test('should accept meetingPointUrl', () {
       var apiUrl = "test";
-      expect(uhst(apiUrl: apiUrl), isNotNull);
+      expect(Uhst(apiUrl: apiUrl), isNotNull);
     });
   });
 }

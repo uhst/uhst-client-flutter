@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:universal_html/html.dart';
 
-import '../uhst_event_handlers.dart';
+import 'uhst_event_handlers.dart';
 
 abstract class UhstHostSocket {
   void onReady({required HostReadyHandler handler});

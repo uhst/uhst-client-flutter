@@ -2,10 +2,10 @@ library uhst;
 
 import 'dart:async';
 
-import 'contracts/uhst_host_socket.dart';
-import 'contracts/uhst_socket.dart';
+import '../contracts/uhst_host_event.dart';
+import '../contracts/uhst_host_socket.dart';
+import '../contracts/uhst_socket.dart';
 import 'host_helper.dart';
-import 'contracts/uhst_host_event.dart';
 
 mixin HostSubsriptions implements UhstHostSocket {
   late final HostHelper h;

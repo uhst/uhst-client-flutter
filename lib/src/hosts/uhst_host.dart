@@ -4,17 +4,17 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:typed_data';
 
-import 'contracts/uhst_host_event.dart';
-import 'contracts/uhst_host_socket.dart';
-import 'contracts/uhst_socket.dart';
-import 'contracts/uhst_socket_provider.dart';
+import '../contracts/uhst_host_event.dart';
+import '../contracts/uhst_host_socket.dart';
+import '../contracts/uhst_socket.dart';
+import '../contracts/uhst_socket_provider.dart';
+import '../models/host_configration.dart';
+import '../models/message.dart';
+import '../models/socket_params.dart';
+import '../utils/jwt.dart';
+import '../utils/uhst_errors.dart';
 import 'host_helper.dart';
 import 'host_subscriptions.dart';
-import 'models/host_configration.dart';
-import 'models/message.dart';
-import 'models/socket_params.dart';
-import 'uhst_errors.dart';
-import 'utils/jwt.dart';
 
 /// [UhstHost] used to:
 /// - listen messages from [UhstSocket]
