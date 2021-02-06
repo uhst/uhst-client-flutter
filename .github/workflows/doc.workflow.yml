@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - feature/host-broadcast
 jobs:
   build:
     name: Publishing flutter_uhst_example to GitHub pages
