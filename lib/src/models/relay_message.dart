@@ -1,7 +1,6 @@
 library uhst;
 
 import 'package:universal_html/html.dart';
-// import 'dart:html';
 
 enum PayloadType { string, blob }
 
@@ -29,7 +28,8 @@ class RelayMessage {
       case PayloadType.string:
         return _payload;
       case PayloadType.blob:
-        print(_payload);
+      default:
+        throw Exception("Unsupported message type.");
       // TODO: implement method
       // const result = await fetch(_payload).then(res => res.blob());
       // return result;
@@ -38,7 +38,7 @@ class RelayMessage {
 
   Future<String> blobToBase64({Blob? blob}) async {
     // TODO: implement method
-    return '';
+    return throw Exception("Unimplemented blobToBase64 method.");
     // return new Promise((resolve) => {
     //   const reader = new FileReader();
     //   reader.readAsDataURL(blob);

@@ -4,18 +4,17 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:typed_data';
 
-import 'package:uhst/src/host_helper.dart';
-import 'package:uhst/src/uhst_errors.dart';
-import 'package:uhst/src/uhst_host_event.dart';
-import 'package:uhst/src/utils/jwt.dart';
-
+import 'contracts/uhst_host_event.dart';
 import 'contracts/uhst_host_socket.dart';
 import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_provider.dart';
+import 'host_helper.dart';
 import 'host_subscriptions.dart';
 import 'models/host_configration.dart';
 import 'models/message.dart';
 import 'models/socket_params.dart';
+import 'uhst_errors.dart';
+import 'utils/jwt.dart';
 
 class UhstHost with HostSubsriptions implements UhstHostSocket {
   final Map<String, UhstSocket> _clients = <String, UhstSocket>{};

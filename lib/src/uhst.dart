@@ -8,6 +8,7 @@ import 'models/socket_params.dart';
 import 'relay_socket_provider.dart';
 import 'uhst_host.dart';
 
+/// Provides a way to init Client [UhstSocket] and [UhstHost]
 class Uhst {
   /// Deafult Fallback URL to a uhst API (server)
   /// if [apiUrl] is not defined
@@ -25,13 +26,23 @@ class Uhst {
   /// TODO: describe _socketProvider
   late UhstSocketProvider _socketProvider;
 
-  /// [apiUrl] to a server implementing the uhst protocol.
+  /// [apiUrl] is a server url [String], implementing the uhst protocol.
+  ///
+  /// For server you can use ready to go
+  /// [Uhst Node Server](https://github.com/uhst/uhst-server-node)
+  ///
+  /// [apiClient] is a standard host and client provider which used
+  /// to subscribe to event source, send messages and init [UhstHost]
+  /// and Client [UhstSocket]
   ///
   /// If no [apiClient] is provided or [apiUrl] is not defined in [apiClient]
   /// then [uhst_API_URL] will be used.
   ///
   /// If both [apiClient] and [apiUrl] are defined,
   /// then [apiClient] will be used.
+  ///
+  /// Use [debug] = true to turn on debug messages
+  /// on stream events
   Uhst(
       {String? apiUrl,
       bool? debug,
@@ -44,14 +55,19 @@ class Uhst {
     _socketProvider = socketProvider ?? RelaySocketProvider();
   }
 
-  /// TODO: describe join
+  /// Returns [UhstSocket] which able to:
+  /// - subscribes to one [UhstHost]
+  /// - listen [UhstHost] messages
+  /// - send messages to [UhstHost]
   UhstSocket join({required String hostId}) {
     var clientParams = ClientSocketParams(hostId: hostId);
     return _socketProvider.createUhstSocket(
         apiClient: _apiClient, clientParams: clientParams, debug: _debug);
   }
 
-  /// TODO: describe host
+  /// Returns [UhstHost] which able to:
+  /// - listen messages from [UhstSocket]
+  /// - broadcast messages to all subscsribed Client [UhstSocket]
   UhstHost host({String? hostId}) {
     var host = UhstHost.create(
         apiClient: _apiClient,

@@ -20,10 +20,15 @@ class _Consts {
 
 typedef T FromJson<T>(Map<String, dynamic> map);
 
+/// [ApiClient] is a standard host and client provider which used
+/// to subscribe to event source, send messages and init [UhstHost]
+/// and Client [UhstSocket]
 class ApiClient implements UhstApiClient {
   final String apiUrl;
   ApiClient({required this.apiUrl});
 
+  /// Returns generic [T] type from response
+  /// Handles error cases
   Future<T> _fetch<T>(
       {required String url,
       String? hostId,
@@ -44,7 +49,6 @@ class ApiClient implements UhstApiClient {
       }
     }
 
-    print({'url': url});
     var uri = Uri.parse(url);
     try {
       var response = await http.post(uri, headers: <String, String>{
@@ -99,8 +103,6 @@ class ApiClient implements UhstApiClient {
     }
 
     var hostUrl = sendUrl ?? apiUrl;
-    // TODO: investigate actual url as it causing an error
-    print('$hostUrl?token=$token');
     var uri = Uri.parse('$hostUrl?token=$token');
 
     try {
@@ -121,7 +123,6 @@ class ApiClient implements UhstApiClient {
       {required String token, required handler, String? receiveUrl}) {
     var url = receiveUrl ?? this.apiUrl;
     var finalUrl = '$url?token=$token';
-    print(finalUrl);
     var uri = Uri.parse(finalUrl);
 
     EventSource source = EventSource(finalUrl);
@@ -130,9 +131,7 @@ class ApiClient implements UhstApiClient {
       throw ApiError(uri);
     });
     var onMessageSubcription = source.onMessage.listen((event) {
-      print({'subscribeToMessages event': event.data});
       Message message = Message.fromJson(jsonDecode(event.data));
-      handler(message: message);
     });
     return source;
   }

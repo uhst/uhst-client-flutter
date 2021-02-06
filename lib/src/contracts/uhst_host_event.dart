@@ -1,29 +1,29 @@
 library uhst;
 
 /// Defines message types for event streams
-/// inside client sockets
+/// inside host sockets
 ///
 /// Usage example:
 /// ```dart
 ///
 /// /// Event stream
-/// final Stream<Map<UhstSocketEventType, dynamic>> eventStream;
+/// final Stream<Map<HostEventType, dynamic>> eventStream;
 ///
 /// /// Event stream controller
-/// final StreamController<Map<UhstSocketEventType, dynamic>> eventStreamController;
+/// final StreamController<Map<HostEventType, dynamic>> eventStreamController;
 ///
 /// /// Stream and controller initialization
-/// eventStreamController = StreamController<Map<UhstSocketEventType, dynamic>>.broadcast();
+/// eventStreamController = StreamController<Map<HostEventType, dynamic>>.broadcast();
 /// eventStream = eventStreamController.stream;
 ///
 /// /// Send event and message to stream
-/// void emit({required UhstSocketEventType message, dynamic body}) {
+/// void emit({required HostEventType message, dynamic body}) {
 ///   eventStreamController.add({message: body});
 /// }
 ///
 /// /// Listen event and message
 /// eventStream.listen((event) {
-///   if (event.containsKey(UhstSocketEventType.connection)) {
+///   if (event.containsKey(HostEventType.connection)) {
 ///     var message = event.values.first;
 ///     print(message);
 ///   }
@@ -31,4 +31,4 @@ library uhst;
 ///
 /// ```
 ///
-enum UhstSocketEventType { error, message, open, close, diagnostic }
+enum HostEventType { ready, connection, error, diagnostic }
