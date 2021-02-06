@@ -16,6 +16,11 @@ import 'models/socket_params.dart';
 import 'uhst_errors.dart';
 import 'utils/jwt.dart';
 
+/// [UhstHost] used to:
+/// - listen messages from [UhstSocket]
+/// - broadcast messages to all subscsribed Client [UhstSocket]
+///
+/// Correct way to init this class is to use [Uhst().host()] in [Uhst]
 class UhstHost with HostSubsriptions implements UhstHostSocket {
   final Map<String, UhstSocket> _clients = <String, UhstSocket>{};
 

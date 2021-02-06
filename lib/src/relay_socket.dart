@@ -14,6 +14,13 @@ import 'models/socket_params.dart';
 import 'socket_helper.dart';
 import 'socket_subsriptions.dart';
 
+/// [UhstSocket] used to:
+/// - subscribe to one [UhstHost]
+/// - listen [UhstHost] messages
+/// - send messages to [UhstHost]
+///
+/// Correct way to init this class is from [RelaySocketProvider]
+/// which integrated in [Uhst] as [Uhst().join()]
 class RelaySocket with SocketSubsriptions implements UhstSocket {
   RelaySocket._create({required UhstApiClient apiClient, required bool debug}) {
     h = SocketHelper(apiClient: apiClient, debug: debug);

@@ -23,7 +23,7 @@ class Uhst {
   /// receive events from [UhstSocket].
   late bool _debug;
 
-  /// TODO: describe _socketProvider
+  /// [UhstSocketProvider] is a provider for [UhstSocket]
   late UhstSocketProvider _socketProvider;
 
   /// [apiUrl] is a server url [String], implementing the uhst protocol.

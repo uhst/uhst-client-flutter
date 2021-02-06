@@ -2,13 +2,38 @@
 
 User Hosted Secure Transmission (uhst) for Flutter in Dart
 
-## Getting Started
+# Documentation
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+## Styling
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This project uses (Dart documentation style guidlines)[https://dart.dev/guides/language/effective-dart/documentation]
+
+## Generation
+
+The project uses (dartdoc)[https://github.com/dart-lang/dartdoc#dartdoc]
+
+If you don't have installed dartdoc, then to install the latest version of dartdoc compatible with your SDK run:
+
+- `pub global activate dartdoc`
+- for Flutter Snap version run `flutter pub global activate dartdoc`
+
+To generate documentation
+
+- run `dartdoc`
+- for Flutter Snap version run `flutter pub global run dartdoc:dartdoc`
+
+## View
+
+An easy way to run an HTTP server locally is to use the dhttpd package. For example:
+
+```shell
+$ pub global activate dhttpd
+$ dhttpd --path doc/api
+```
+
+for Flutter Snap
+
+```shell
+$ flutter pub global activate dhttpd
+$ flutter pub global run dhttpd:dhttpd --path doc/api
+```
