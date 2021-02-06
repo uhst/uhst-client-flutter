@@ -1,5 +1,9 @@
 library uhst;
 
+import 'dart:convert';
+import 'dart:html';
+import 'dart:typed_data';
+
 import 'package:uhst/src/host_helper.dart';
 import 'package:uhst/src/uhst_errors.dart';
 import 'package:uhst/src/uhst_host_event.dart';
@@ -95,5 +99,50 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
 
   void disconnect() {
     h.apiMessageStream?.close();
+  }
+
+  @override
+  void broadcastBlob({required Blob blob}) {
+    _send(message: blob);
+  }
+
+  @override
+  @Deprecated("Use sendByteBufer instead")
+  void broadcastArrayBuffer({required ByteBuffer arrayBuffer}) {
+    _send(message: arrayBuffer);
+  }
+
+  @override
+  void broadcastByteBufer({required ByteBuffer byteBuffer}) {
+    _send(message: byteBuffer);
+  }
+
+  @override
+  @Deprecated("Use sendTypedData instead")
+  void broadcastArrayBufferView({required TypedData arrayBufferView}) {
+    _send(message: arrayBufferView);
+  }
+
+  @override
+  void broadcastTypedData({required TypedData typedData}) {
+    _send(message: typedData);
+  }
+
+  @override
+  void broadcastString({required String message}) {
+    _send(message: message);
+  }
+
+  void _send({dynamic? message}) {
+    var envelope = jsonEncode({"type": "string", "payload": message});
+    try {
+      h.apiClient.sendMessage(
+          token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
+    } catch (e) {
+      if (h.debug) h.emitDiagnostic(body: "Failed sending message: $e");
+      h.emitError(body: e);
+    }
+
+    if (h.debug) h.emitDiagnostic(body: "Sent message $message");
   }
 }

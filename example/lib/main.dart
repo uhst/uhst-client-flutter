@@ -108,6 +108,8 @@ class _MyHomePageState extends State<MyHomePage> {
       uhstSocket.onMessage(handler: ({required Message? message}) {
         setState(() {
           hostMessages.add("Host received: ${message?.body} ${message?.type}");
+          var payload = message?.payload;
+          if (payload != null) host?.broadcastString(message: payload);
         });
       });
       uhstSocket.onOpen(handler: ({required String? data}) {
