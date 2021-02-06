@@ -1,8 +1,9 @@
 library uhst;
 
 import 'dart:convert';
-import 'dart:html';
 import 'dart:typed_data';
+
+import 'package:universal_html/html.dart';
 
 import '../contracts/uhst_host_event.dart';
 import '../contracts/uhst_host_socket.dart';
