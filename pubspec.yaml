@@ -1,6 +1,5 @@
 name: uhst
 version: 0.0.1-nullsafety.0
-author: Anton Malofeev, Stefan Dimitrov
 
 description: >-
   User Hosted Secure Transmission (uhst) 
