@@ -197,5 +197,5 @@ You can find UHST on GitHub; feel free to start an issue or create a pull reques
 
 ## License
 
-Copyright (c) 2020 Anton Malofeev, Stefan Dimitrov
+Copyright (c) 2020 Uhst
 Licensed under [MIT License](LICENSE).
