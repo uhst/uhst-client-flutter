@@ -43,9 +43,7 @@ class SocketHelper {
   }
 
   void emit({required UhstSocketEventType message, dynamic body}) {
-    eventStreamController.stream.listen((event) {
-      if (debug) print({'stream message': event});
-    });
+    eventStreamController.stream.listen((event) {});
     eventStreamController.add({message: body});
   }
 

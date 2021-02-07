@@ -23,8 +23,8 @@ class HostHelper {
   String? token;
   String get verifiedToken {
     var vtoken = token;
-    if (vtoken == null) throw NullThrownError();
-    if (vtoken.isEmpty) throw ArgumentError('Token is empty!');
+    if (vtoken == null || vtoken.isEmpty)
+      throw ArgumentError('Token is empty or null!');
     return vtoken;
   }
 

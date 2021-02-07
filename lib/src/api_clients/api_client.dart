@@ -4,13 +4,13 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:uhst/src/models/event_message.dart';
 import 'package:universal_html/html.dart';
 
 import '../contracts/type_definitions.dart';
 import '../contracts/uhst_api_client.dart';
 import '../models/client_configuration.dart';
 import '../models/host_configration.dart';
-import '../models/message.dart';
 import '../utils/uhst_errors.dart';
 import '../utils/uhst_exceptions.dart';
 
@@ -32,7 +32,7 @@ class ApiClient implements UhstApiClient {
       {required String url,
       String? hostId,
       required FromJson<T> fromJson}) async {
-    T handleResponse({required http.Response response}) {
+    T handleResponseForFetch({required http.Response response}) {
       switch (response.statusCode) {
         case 200:
           var responseText = response.body;
@@ -53,7 +53,7 @@ class ApiClient implements UhstApiClient {
       var response = await http.post(uri, headers: <String, String>{
         _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
       });
-      return handleResponse(response: response);
+      return handleResponseForFetch(response: response);
     } catch (error) {
       throw ApiUnreachable(Uri(userInfo: error.toString()));
     }
@@ -78,13 +78,12 @@ class ApiClient implements UhstApiClient {
   @override
   Future sendMessage(
       {required String token, required message, String? sendUrl}) async {
-    dynamic handleResponse({required http.Response response}) {
+    dynamic handleResponseForMessage({required http.Response response}) {
       switch (response.statusCode) {
         case 200:
           var responseText = response.body;
           if (responseText.isEmpty)
             throw ArgumentError('response text is empty');
-
           // In case if all is ok, then ok
           if (responseText.toLowerCase() == 'ok') return 'OK';
 
@@ -110,9 +109,8 @@ class ApiClient implements UhstApiClient {
             _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
           },
           body: message);
-      return handleResponse(response: response);
+      return handleResponseForMessage(response: response);
     } catch (error) {
-      print(error);
       throw ApiUnreachable(uri);
     }
   }
@@ -130,7 +128,9 @@ class ApiClient implements UhstApiClient {
       throw ApiError(uri);
     });
     var onMessageSubcription = source.onMessage.listen((event) {
-      Message message = Message.fromJson(jsonDecode(event.data));
+      var eventMessageMap = jsonDecode(event.data);
+      var eventMessage = EventMessage.fromJson(eventMessageMap);
+      handler(message: eventMessage.body);
     });
     return source;
   }

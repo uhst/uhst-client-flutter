@@ -18,6 +18,11 @@ It is able to:
 
 You can see [an implemented example](http://docs.uhst.io/uhst-client-flutter/) and source for it [on GitHub](https://github.com/uhst/uhst-client-flutter/tree/next/example)
 
+Please notice current version limitations:
+
+- it supports string typed messages only.
+- require server with Uhst implemented protocol. PLease see an example of ready to go server [on GitHub](https://github.com/uhst/uhst-server-node).
+
 ### Support and discussions
 
 Join us on [Gitter](https://gitter.im/uhst/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link) or StackOverflow .
@@ -38,34 +43,39 @@ Refer to the documentation to learn about the options you can pass
 Host in UHST is a peer which every other peer connects to.
 This concept is similar to listen-server in multiplayer games.
 
+Please be sure, before reconnecting to another host, to close previous connection.
+
 The simplest way to create a new host is:
 
 ```dart
 var host = uhst.host("testHost");
 
+host?.disconnect();
+
 host
-  ..onReady(handler: () {
+  ?..onReady(handler: ({required String hostId}) {
     setState(() {
-        hostMessages.add('Host Ready!');
-      });
+      hostMessages.add('Host Ready! Using $hostId');
       print('host is ready!');
-    })
+      _hostIdController.text = hostId;
+    });
+  })
   ..onError(handler: ({required Error error}) {
-      print('error received! $error');
-      if (error is HostIdAlreadyInUse) {
-        // this is expected if you refresh the page
-        // connection is still alive on the meeting point
-        // just need to wait
-        setState(() {
-          hostMessages
-              .add('HostId already in use, retrying in 15 seconds...!');
-        });
-      } else {
-        setState(() {
-          hostMessages.add(error.toString());
-        });
-      }
-    })
+    print('error received! $error');
+    if (error is HostIdAlreadyInUse) {
+      // this is expected if you refresh the page
+      // connection is still alive on the meeting point
+      // just need to wait
+      setState(() {
+        hostMessages
+            .add('HostId already in use, retrying in 15 seconds...!');
+      });
+    } else {
+      setState(() {
+        hostMessages.add(error.toString());
+      });
+    }
+  })
   ..onConnection(handler: ({required UhstSocket uhstSocket}) {
     uhstSocket.onDiagnostic(handler: ({required String message}) {
       setState(() {
@@ -78,12 +88,12 @@ host
         hostMessages
             .add("Host received: ${message?.body} ${message?.type}");
         var payload = message?.payload;
-        if (payload != null) host.broadcastString(message: payload);
+        if (payload != null) host?.broadcastString(message: payload);
       });
     });
 
     uhstSocket.onOpen(handler: ({required String? data}) {
-      uhstSocket.sendString(message: 'Host sent message!');
+      // uhstSocket.sendString(message: 'Host sent message!');
     });
   });
 }
@@ -96,13 +106,17 @@ event when connecting to the host.
 ### Client
 
 To connect to a host from another browser use the same `hostId`
-you received after `ready` event:
+you received during `onReady` event.
+
+Please be sure, before reconnecting to another host, to close previous connection.
 
 ```dart
 var client = uhst.join("testHost");
 
+client?.close();
+
 client
-  ..onOpen(handler: ({required String data}) {
+  ?..onOpen(handler: ({required String data}) {
     setState(() {
       client?.sendString(message: 'Hello host!');
     });

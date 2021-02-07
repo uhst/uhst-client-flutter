@@ -12,17 +12,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Uhst Example',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
+          // This is the theme of your application.
+          //
+          // Try running your application with "flutter run". You'll see the
+          // application has a blue toolbar. Then, without quitting the app, try
+          // changing the primarySwatch below to Colors.green and then invoke
+          // "hot reload" (press "r" in the console where you ran "flutter run",
+          // or simply save your changes to "hot reload" in a Flutter IDE).
+          // Notice that the counter didn't reset back to zero; the application
+          // is not restarted.
+          primarySwatch: Colors.blue,
+          brightness: Brightness.dark),
       home: MyHomePage(title: 'Flutter Uhst Example'),
     );
   }
@@ -67,13 +67,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void initHost() async {
     initUhst();
+    host?.disconnect();
     host = uhst?.host(hostId: _hostIdController.text);
     host
-      ?..onReady(handler: () {
+      ?..onReady(handler: ({required String hostId}) {
         setState(() {
-          hostMessages.add('Host Ready!');
+          hostMessages.add('Host Ready! Using $hostId');
+          print('host is ready!');
+          _hostIdController.text = hostId;
         });
-        print('host is ready!');
       })
       ..onError(handler: ({required Error error}) {
         print('error received! $error');
@@ -100,15 +102,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
         uhstSocket.onMessage(handler: ({required Message? message}) {
           setState(() {
-            hostMessages
-                .add("Host received: ${message?.body} ${message?.type}");
+            hostMessages.add("Host received: ${message?.toString()}");
             var payload = message?.payload;
             if (payload != null) host?.broadcastString(message: payload);
           });
         });
 
         uhstSocket.onOpen(handler: ({required String? data}) {
-          uhstSocket.sendString(message: 'Host sent message!');
+          // uhstSocket.sendString(message: 'Host sent message!');
         });
       });
   }
@@ -126,6 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> join() async {
     initUhst();
+    client?.close();
     client = uhst?.join(hostId: _hostIdController.text);
     client
       ?..onError(handler: ({required Error error}) {

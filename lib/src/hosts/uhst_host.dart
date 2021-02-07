@@ -1,10 +1,12 @@
 library uhst;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:universal_html/html.dart';
 
+import '../contracts/type_definitions.dart';
 import '../contracts/uhst_host_event.dart';
 import '../contracts/uhst_host_socket.dart';
 import '../contracts/uhst_socket.dart';
@@ -28,48 +30,52 @@ import 'host_subscriptions.dart';
 ///
 /// ```dart
 /// var host = uhst.host("testHost");
+///
+/// host?.disconnect();
+///
+/// host = uhst?.host(hostId: _hostIdController.text);
+///
 /// host
-///   ..onReady(handler: () {
-///     setState(() {
-///         hostMessages.add('Host Ready!');
-///       });
-///       print('host is ready!');
-///     })
-///   ..onError(handler: ({required Error error}) {
-///       print('error received! $error');
-///       if (error is HostIdAlreadyInUse) {
-///         // this is expected if you refresh the page
-///         // connection is still alive on the meeting point
-///         // just need to wait
+///       ?..onReady(handler: ({required String hostId}) {
 ///         setState(() {
-///           hostMessages
-///               .add('HostId already in use, retrying in 15 seconds...!');
+///           hostMessages.add('Host Ready! Using $hostId');
+///           print('host is ready!');
+///           _hostIdController.text = hostId;
 ///         });
-///       } else {
-///         setState(() {
-///           hostMessages.add(error.toString());
+///       })
+///       ..onError(handler: ({required Error error}) {
+///         print('error received! $error');
+///         if (error is HostIdAlreadyInUse) {
+///           // this is expected if you refresh the page
+///           // connection is still alive on the meeting point
+///           // just need to wait
+///           setState(() {
+///             hostMessages
+///                 .add('HostId already in use, retrying in 15 seconds...!');
+///           });
+///         } else {
+///           setState(() {
+///             hostMessages.add(error.toString());
+///           });
+///         }
+///       })
+///       ..onConnection(handler: ({required UhstSocket uhstSocket}) {
+///         uhstSocket.onDiagnostic(handler: ({required String message}) {
+///           setState(() {
+///             hostMessages.add(message);
+///           });
 ///         });
-///       }
-///     })
-///   ..onConnection(handler: ({required UhstSocket uhstSocket}) {
-///     uhstSocket.onDiagnostic(handler: ({required String message}) {
-///       setState(() {
-///         hostMessages.add(message);
+///         uhstSocket.onMessage(handler: ({required Message? message}) {
+///           setState(() {
+///             hostMessages.add("Host received: ${message?.toString()}");
+///             var payload = message?.payload;
+///             if (payload != null) host?.broadcastString(message: payload);
+///           });
+///         });
+///         uhstSocket.onOpen(handler: ({required String? data}) {
+///           // uhstSocket.sendString(message: 'Host sent message!');
+///         });
 ///       });
-///     });
-///     uhstSocket.onMessage(handler: ({required Message? message}) {
-///       setState(() {
-///         hostMessages
-///             .add("Host received: ${message?.body} ${message?.type}");
-///         var payload = message?.payload;
-///         if (payload != null) host.broadcastString(message: payload);
-///       });
-///     });
-///     uhstSocket.onOpen(handler: ({required String? data}) {
-///       uhstSocket.sendString(message: 'Host sent message!');
-///     });
-///   });
-/// }
 /// ```
 ///
 /// Note that your requested host id may not be accepted
@@ -95,6 +101,8 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   }
 
   /// Public factory
+  ///
+  /// [hostId] can be null and will be returned with `onReady` event
   static UhstHost create(
       {required apiClient,
       required socketProvider,
@@ -115,14 +123,17 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       _config = await h.apiClient.initHost(hostId: hostId);
       if (h.debug)
         h.emitDiagnostic(body: "Host configuration received from server.");
-      h.apiMessageStream = await h.apiClient.subscribeToMessages(
+
+      h.apiMessageStream = h.apiClient.subscribeToMessages(
           token: _config.hostToken,
           handler: _handleMessage,
           receiveUrl: _config.receiveUrl);
+      h.token = _config.hostToken;
+      h.sendUrl = _config.sendUrl;
 
       if (h.debug)
         h.emitDiagnostic(body: "Host subscribed to messages from server.");
-      h.emit(message: HostEventType.ready, body: 'is ready');
+      h.emit(message: HostEventType.ready, body: _config.hostId);
     } catch (error) {
       if (h.debug)
         h.emitDiagnostic(body: "Host failed subscribing to messages: $error");
@@ -132,15 +143,19 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
 
   void _handleMessage({required Message? message}) async {
     if (message == null) throw ArgumentError.notNull('message cannot be null');
+
+    // check is it broadcast message to do not listen yourself
+    if (message.isBroadcast == true) return;
+
     var token = message.responseToken;
 
-    if (token == null) throw InvalidToken(token);
+    if (token == null || token.isEmpty) throw InvalidToken(token);
     String clientId = Jwt.decodeSubject(token: token);
     var hostSocket = _clients[clientId];
 
     if (hostSocket == null) {
       var hostParams = HostSocketParams(token: token, sendUrl: _config.sendUrl);
-      var socket = await _socketProvider.createUhstSocket(
+      var socket = _socketProvider.createUhstSocket(
           apiClient: h.apiClient, hostParams: hostParams, debug: h.debug);
       if (h.debug)
         h.emitDiagnostic(
@@ -163,46 +178,50 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
 
   @override
   void broadcastBlob({required Blob blob}) {
-    _send(message: blob);
+    _send(message: blob, payloadType: PayloadType.blob);
   }
 
   @override
   @Deprecated("Use sendByteBufer instead")
   void broadcastArrayBuffer({required ByteBuffer arrayBuffer}) {
-    _send(message: arrayBuffer);
+    broadcastByteBufer(byteBuffer: arrayBuffer);
   }
 
   @override
   void broadcastByteBufer({required ByteBuffer byteBuffer}) {
-    _send(message: byteBuffer);
+    _send(message: byteBuffer, payloadType: PayloadType.byteBuffer);
   }
 
   @override
   @Deprecated("Use sendTypedData instead")
   void broadcastArrayBufferView({required TypedData arrayBufferView}) {
-    _send(message: arrayBufferView);
+    broadcastTypedData(typedData: arrayBufferView);
   }
 
   @override
   void broadcastTypedData({required TypedData typedData}) {
-    _send(message: typedData);
+    _send(message: typedData, payloadType: PayloadType.typedData);
   }
 
   @override
   void broadcastString({required String message}) {
-    _send(message: message);
+    _send(message: message, payloadType: PayloadType.string);
   }
 
-  void _send({dynamic? message}) {
-    var envelope = jsonEncode({"type": "string", "payload": message});
+  void _send({dynamic message, required PayloadType payloadType}) async {
+    var verifiedMessage = Message(
+      payload: message,
+      type: payloadType,
+      isBroadcast: true,
+    );
+    var envelope = jsonEncode(verifiedMessage.toJson());
     try {
-      h.apiClient.sendMessage(
+      await h.apiClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
     } catch (e) {
       if (h.debug) h.emitDiagnostic(body: "Failed sending message: $e");
       h.emitError(body: e);
     }
-
     if (h.debug) h.emitDiagnostic(body: "Sent message $message");
   }
 }

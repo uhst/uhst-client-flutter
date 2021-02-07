@@ -4,6 +4,7 @@ import 'package:universal_html/html.dart';
 
 import '../contracts/type_definitions.dart';
 
+@Deprecated('Use Message instead')
 class RelayMessage {
   String? _payload;
   PayloadType? _payloadType;

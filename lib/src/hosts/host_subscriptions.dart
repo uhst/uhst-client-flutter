@@ -72,7 +72,8 @@ mixin HostSubsriptions implements UhstHostSocket {
 
   StreamSubscription<Map<HostEventType, dynamic>> onReady({required handler}) {
     var subsription = h.eventStream.listen((event) {
-      if (event.containsKey(HostEventType.ready)) handler();
+      if (event.containsKey(HostEventType.ready))
+        handler(hostId: event.values.first);
     });
     h.readyListenerHandlers
         .update(handler, (value) => subsription, ifAbsent: () => subsription);
