@@ -1,8 +1,8 @@
 library uhst;
 
-import 'contracts/uhst_api_client.dart';
-import 'contracts/uhst_socket.dart';
-import 'contracts/uhst_socket_provider.dart';
+import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_socket.dart';
+import '../contracts/uhst_socket_provider.dart';
 import 'relay_socket.dart';
 
 class RelaySocketProvider implements UhstSocketProvider {

@@ -2,19 +2,77 @@ library uhst;
 
 import 'dart:async';
 import 'dart:convert';
-// import 'dart:html';
 import 'dart:typed_data';
 
-import 'package:uhst/src/contracts/uhst_api_client.dart';
-import 'package:uhst/src/contracts/uhst_socket_events.dart';
-import 'package:uhst/src/models/socket_params.dart';
 import 'package:universal_html/html.dart';
 
-import 'contracts/uhst_socket.dart';
-import 'models/message.dart';
+import '../contracts/type_definitions.dart';
+import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_socket.dart';
+import '../contracts/uhst_socket_events.dart';
+import '../models/message.dart';
+import '../models/socket_params.dart';
 import 'socket_helper.dart';
 import 'socket_subsriptions.dart';
 
+/// [UhstSocket] is similar to the HTML5 WebSocket interface,
+/// but instead of a dedicated server, one peer acts as a host for other
+/// peers to join.
+///
+/// Once a client and a host have connected they can
+/// exchange messages asynchronously.
+///
+/// [UhstSocket] used to:
+/// - subscribe to one [UhstHost]
+/// - listen [UhstHost] messages
+/// - send messages to [UhstHost]
+///
+/// To connect to a host from another browser use the same `hostId`
+/// you received after [UhstSocket().onReady()] event:
+///
+/// ```dart
+/// var client = uhst.join("testHost");
+///
+/// client?.close();
+///
+/// client
+///   ?..onOpen(handler: ({required String data}) {
+///     setState(() {
+///       client?.sendString(message: 'Hello host!');
+///     });
+///   })
+///   ..onMessage(handler: ({required Message? message}) {
+///     setState(() {
+///       clientMessages.add('Client received: $message');
+///     });
+///   })
+///   ..onError(handler: ({required Error error}) {
+///     if (error is InvalidHostId || error is InvalidClientOrHostId) {
+///       setState(() {
+///         clientMessages.add('Invalid hostId!');
+///       });
+///     } else {
+///       setState(() {
+///         clientMessages.add(error.toString());
+///       });
+///     }
+///   })
+///   ..onDiagnostic(handler: ({required String message}) {
+///     setState(() {
+///       clientMessages.add(message);
+///     });
+///   });
+/// ```
+///
+/// The UHST client interface is similar to the HTML5 WebSocket interface,
+/// but instead of a dedicated server, one peer acts as a host for other
+/// peers to join.
+///
+/// Once a client and a host have connected they can exchange messages
+/// asynchronously. Arbitrary number of clients can connect
+/// to the same host but clients cannot send messages to each other,
+/// they can only communicate with the host.
+///
 class RelaySocket with SocketSubsriptions implements UhstSocket {
   RelaySocket._create({required UhstApiClient apiClient, required bool debug}) {
     h = SocketHelper(apiClient: apiClient, debug: debug);
@@ -26,12 +84,6 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       required UhstApiClient apiClient,
       required bool debug}) {
     var socket = RelaySocket._create(apiClient: apiClient, debug: debug);
-
-    if (debug)
-      socket.h.emitDiagnostic(body: {
-        'create relay host': hostParams is HostSocketParams,
-        'create relay client': clientParams is ClientSocketParams
-      });
 
     if (hostParams is HostSocketParams) {
       // client connected
@@ -48,6 +100,11 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
     } else {
       throw ArgumentError("Unsupported Socket Parameters Type");
     }
+    if (debug)
+      socket.h.emitDiagnostic(body: {
+        'create relay host': hostParams is HostSocketParams,
+        'create relay client': clientParams is ClientSocketParams
+      });
     return socket;
   }
 
@@ -89,7 +146,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
   @override
   void sendByteBufer({required ByteBuffer byteBuffer}) {
-    _send(message: byteBuffer);
+    _send(message: byteBuffer, payloadType: PayloadType.byteBuffer);
   }
 
   @override
@@ -100,7 +157,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
   @override
   void sendTypedData({required TypedData typedData}) {
-    _send(message: typedData);
+    _send(message: typedData, payloadType: PayloadType.typedData);
   }
 
   @override
@@ -111,16 +168,21 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
   @override
   void sendBlob({required Blob blob}) {
-    _send(message: blob);
+    _send(message: blob, payloadType: PayloadType.blob);
   }
 
   @override
   void sendString({required String message}) {
-    _send(message: message);
+    _send(message: message, payloadType: PayloadType.string);
   }
 
-  void _send({dynamic? message}) {
-    var envelope = jsonEncode({"type": "string", "payload": message});
+  void _send({dynamic? message, required PayloadType payloadType}) {
+    var verifiedMessage = Message(
+      payload: message,
+      type: payloadType,
+      isBroadcast: false,
+    );
+    var envelope = jsonEncode(verifiedMessage.toJson());
     try {
       h.apiClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);

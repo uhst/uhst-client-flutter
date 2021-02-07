@@ -2,10 +2,10 @@ library uhst;
 
 import 'dart:async';
 
-import 'contracts/uhst_host_socket.dart';
-import 'contracts/uhst_socket.dart';
+import '../contracts/uhst_host_event.dart';
+import '../contracts/uhst_host_socket.dart';
+import '../contracts/uhst_socket.dart';
 import 'host_helper.dart';
-import 'uhst_host_event.dart';
 
 mixin HostSubsriptions implements UhstHostSocket {
   late final HostHelper h;
@@ -72,7 +72,8 @@ mixin HostSubsriptions implements UhstHostSocket {
 
   StreamSubscription<Map<HostEventType, dynamic>> onReady({required handler}) {
     var subsription = h.eventStream.listen((event) {
-      if (event.containsKey(HostEventType.ready)) handler();
+      if (event.containsKey(HostEventType.ready))
+        handler(hostId: event.values.first);
     });
     h.readyListenerHandlers
         .update(handler, (value) => subsription, ifAbsent: () => subsription);

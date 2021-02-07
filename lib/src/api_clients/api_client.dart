@@ -4,31 +4,35 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:uhst/src/models/event_message.dart';
 import 'package:universal_html/html.dart';
 
-import 'contracts/uhst_api_client.dart';
-import 'models/client_configuration.dart';
-import 'models/host_configration.dart';
-import 'models/message.dart';
-import 'uhst_errors.dart';
-import 'uhst_exceptions.dart';
+import '../contracts/type_definitions.dart';
+import '../contracts/uhst_api_client.dart';
+import '../models/client_configuration.dart';
+import '../models/host_configration.dart';
+import '../utils/uhst_errors.dart';
+import '../utils/uhst_exceptions.dart';
 
 class _Consts {
   static const requestHeaderContentName = 'Content-type';
   static const requestHeaderContentValue = 'application/json';
 }
 
-typedef T FromJson<T>(Map<String, dynamic> map);
-
+/// [ApiClient] is a standard host and client provider which used
+/// to subscribe to event source, send messages and init [UhstHost]
+/// and Client [UhstSocket]
 class ApiClient implements UhstApiClient {
   final String apiUrl;
   ApiClient({required this.apiUrl});
 
+  /// Returns generic [T] type from response
+  /// Handles error cases
   Future<T> _fetch<T>(
       {required String url,
       String? hostId,
       required FromJson<T> fromJson}) async {
-    T handleResponse({required http.Response response}) {
+    T handleResponseForFetch({required http.Response response}) {
       switch (response.statusCode) {
         case 200:
           var responseText = response.body;
@@ -44,13 +48,12 @@ class ApiClient implements UhstApiClient {
       }
     }
 
-    print({'url': url});
     var uri = Uri.parse(url);
     try {
       var response = await http.post(uri, headers: <String, String>{
         _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
       });
-      return handleResponse(response: response);
+      return handleResponseForFetch(response: response);
     } catch (error) {
       throw ApiUnreachable(Uri(userInfo: error.toString()));
     }
@@ -75,13 +78,12 @@ class ApiClient implements UhstApiClient {
   @override
   Future sendMessage(
       {required String token, required message, String? sendUrl}) async {
-    dynamic handleResponse({required http.Response response}) {
+    dynamic handleResponseForMessage({required http.Response response}) {
       switch (response.statusCode) {
         case 200:
           var responseText = response.body;
           if (responseText.isEmpty)
             throw ArgumentError('response text is empty');
-
           // In case if all is ok, then ok
           if (responseText.toLowerCase() == 'ok') return 'OK';
 
@@ -99,8 +101,6 @@ class ApiClient implements UhstApiClient {
     }
 
     var hostUrl = sendUrl ?? apiUrl;
-    // TODO: investigate actual url as it causing an error
-    print('$hostUrl?token=$token');
     var uri = Uri.parse('$hostUrl?token=$token');
 
     try {
@@ -109,9 +109,8 @@ class ApiClient implements UhstApiClient {
             _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
           },
           body: message);
-      return handleResponse(response: response);
+      return handleResponseForMessage(response: response);
     } catch (error) {
-      print(error);
       throw ApiUnreachable(uri);
     }
   }
@@ -121,7 +120,6 @@ class ApiClient implements UhstApiClient {
       {required String token, required handler, String? receiveUrl}) {
     var url = receiveUrl ?? this.apiUrl;
     var finalUrl = '$url?token=$token';
-    print(finalUrl);
     var uri = Uri.parse(finalUrl);
 
     EventSource source = EventSource(finalUrl);
@@ -130,9 +128,9 @@ class ApiClient implements UhstApiClient {
       throw ApiError(uri);
     });
     var onMessageSubcription = source.onMessage.listen((event) {
-      print({'subscribeToMessages event': event.data});
-      Message message = Message.fromJson(jsonDecode(event.data));
-      handler(message: message);
+      var eventMessageMap = jsonDecode(event.data);
+      var eventMessage = EventMessage.fromJson(eventMessageMap);
+      handler(message: eventMessage.body);
     });
     return source;
   }

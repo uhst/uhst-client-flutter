@@ -1,0 +1,35 @@
+name: flutter_uhst_example
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: Publishing flutter_uhst_example to GitHub pages
+    env:
+      my_secret: ${{secrets.COMMIT_SECRET}}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "dev"
+      - run: flutter config --enable-web
+      - run: |
+          cd example
+          flutter pub get
+          flutter build web --release --no-sound-null-safety
+          cd build/web
+          git init
+          # type configurations: your user.email and user.name followed lines 
+          # git config --global user.email your_email 
+          # git config --global user.name your_name
+          git config --global user.email ${{secrets.USER_EMAIL}}
+          git config --global user.name ${{secrets.USER_NAME}}
+          git status
+          # change this remote url for examle your remote url is then the following:
+          git remote add origin https://${{secrets.COMMIT_SECRET}}@github.com/uhst/uhst-client-flutter.git
+          git checkout -b gh-pages
+          git add --all
+          git commit -m "update"
+          git push origin gh-pages -f
