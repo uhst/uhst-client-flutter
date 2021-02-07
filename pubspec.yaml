@@ -1,0 +1,22 @@
+name: uhst
+version: 0.0.1-nullsafety.0
+
+description: >-
+  User Hosted Secure Transmission (uhst) 
+  for Flutter in Dart
+homepage: https://github.com/uhst/uhst-client-flutter
+environment:
+  sdk: ">=2.12.0-133.7.beta <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  universal_html: ^1.2.4
+  # universal_io: ^1.0.2
+  http: ^0.13.0-nullsafety.0
+
+dev_dependencies:
+  # https://pub.dev/packages/test
+  test: ^1.16.0-nullsafety.13
+  # https://github.com/dart-lang/mockito/blob/master/NULL_SAFETY_README.md
+  # mockito: ^5.0.0-nullsafety.2
