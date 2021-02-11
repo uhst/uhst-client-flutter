@@ -123,11 +123,11 @@ class ApiClient implements UhstApiClient {
     var uri = Uri.parse(finalUrl);
 
     EventSource source = EventSource(finalUrl);
-    var onOpenSubcription = source.onOpen.listen((event) {});
-    var onErrorSubcription = source.onError.listen((event) {
+    source.onOpen.listen((event) {});
+    source.onError.listen((event) {
       throw ApiError(uri);
     });
-    var onMessageSubcription = source.onMessage.listen((event) {
+    source.onMessage.listen((event) {
       var eventMessageMap = jsonDecode(event.data);
       var eventMessage = EventMessage.fromJson(eventMessageMap);
       handler(message: eventMessage.body);
