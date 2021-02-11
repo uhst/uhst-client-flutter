@@ -6,7 +6,7 @@ class EventMessage {
 
   EventMessage({required this.body, required this.responseToken});
 
-  static EventMessage fromJson(Map<dynamic, dynamic> map) {
+  factory EventMessage.fromJson(Map<dynamic, dynamic> map) {
     var message = Message.fromJson(map['body']);
     var responseToken = map['responseToken'] ?? '';
     message.responseToken = responseToken;

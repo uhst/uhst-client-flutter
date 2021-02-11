@@ -12,7 +12,7 @@ class Message {
       required this.payload,
       this.isBroadcast,
       this.responseToken});
-  static Message fromJson(Map<dynamic, dynamic> map) {
+  factory Message.fromJson(Map<dynamic, dynamic> map) {
     PayloadType verifiedPayloadType = (() {
       String? _payloadType = map['type'];
       if (_payloadType == null || _payloadType.isEmpty)

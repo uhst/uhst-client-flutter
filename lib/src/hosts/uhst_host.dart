@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:uhst/src/contracts/uhst_api_client.dart';
 import 'package:universal_html/html.dart';
 
 import '../contracts/type_definitions.dart';
@@ -104,8 +105,8 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   ///
   /// [hostId] can be null and will be returned with `onReady` event
   static UhstHost create(
-      {required apiClient,
-      required socketProvider,
+      {required UhstApiClient apiClient,
+      required UhstSocketProvider socketProvider,
       String? hostId,
       required debug}) {
     // Call the private constructor

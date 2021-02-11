@@ -1,12 +1,15 @@
 name: uhst
-version: 0.0.1-nullsafety.0
+version: 0.0.1-nullsafety.1
 
 description: >-
-  User Hosted Secure Transmission (uhst) 
-  for Flutter in Dart
+  User Hosted Secure Transmission (uhst) for to:
+  - send messages from client and listen messages broadcasted from host
+  - broadcast messages by host
+  - listen messages from multiple clients by host
+
 homepage: https://github.com/uhst/uhst-client-flutter
 environment:
-  sdk: ">=2.12.0-133.7.beta <3.0.0"
+  sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
   flutter:
