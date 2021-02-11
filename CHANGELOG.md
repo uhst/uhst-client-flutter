@@ -6,6 +6,7 @@
 - feat: test for jwt util
 - feat: type definitions test
 - fix: payload type conversion
+- fix: typing for uhst host create
 
 # 0.0.1-nullsafety.0
 
