@@ -35,9 +35,9 @@ extension PayloadTypeDescribe on PayloadType {
           case 'blob':
             return PayloadType.blob;
           case 'byteBuffer':
-            return PayloadType.blob;
+            return PayloadType.byteBuffer;
           case 'typedData':
-            return PayloadType.blob;
+            return PayloadType.typedData;
           default:
             throw RangeError("enum PayloadType contains no value '$name'");
         }
