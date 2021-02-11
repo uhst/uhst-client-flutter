@@ -116,7 +116,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
       h.token = config.clientToken;
       h.sendUrl = config.sendUrl;
-      h.apiMessageStream = await h.apiClient.subscribeToMessages(
+      h.apiMessageStream = h.apiClient.subscribeToMessages(
           token: config.clientToken,
           handler: handleMessage,
           receiveUrl: config.receiveUrl);

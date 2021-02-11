@@ -81,6 +81,7 @@ mixin HostSubsriptions implements UhstHostSocket {
   }
 
   void onceConnection({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onConnection(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(HostEventType.connection))
@@ -89,6 +90,7 @@ mixin HostSubsriptions implements UhstHostSocket {
   }
 
   void onceDiagnostic({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onDiagnostic(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(HostEventType.diagnostic))
@@ -97,6 +99,7 @@ mixin HostSubsriptions implements UhstHostSocket {
   }
 
   void onceError({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onError(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(HostEventType.error)) offError(handler: handler);
@@ -104,6 +107,7 @@ mixin HostSubsriptions implements UhstHostSocket {
   }
 
   void onceReady({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onReady(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(HostEventType.ready)) offReady(handler: handler);
