@@ -97,6 +97,7 @@ mixin SocketSubsriptions implements UhstSocket {
   }
 
   void onceClose({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onClose(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(UhstSocketEventType.close))
@@ -105,6 +106,7 @@ mixin SocketSubsriptions implements UhstSocket {
   }
 
   void onceDiagnostic({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onDiagnostic(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(UhstSocketEventType.diagnostic))
@@ -113,6 +115,7 @@ mixin SocketSubsriptions implements UhstSocket {
   }
 
   void onceError({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onError(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(UhstSocketEventType.error))
@@ -121,6 +124,7 @@ mixin SocketSubsriptions implements UhstSocket {
   }
 
   void onceMessage({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onMessage(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(UhstSocketEventType.message))
@@ -129,6 +133,7 @@ mixin SocketSubsriptions implements UhstSocket {
   }
 
   void onceOpen({required handler}) {
+    // ignore: cancel_subscriptions
     var subscription = onOpen(handler: handler);
     subscription.onData((data) {
       if (data.containsKey(UhstSocketEventType.open)) offOpen(handler: handler);
