@@ -1,7 +1,7 @@
 library uhst;
 
-import 'api_clients/api_client.dart';
-import 'contracts/uhst_api_client.dart';
+import 'relay_clients/relay_client.dart';
+import 'contracts/uhst_relay_client.dart';
 import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_provider.dart';
 import 'hosts/uhst_host.dart';
@@ -13,14 +13,14 @@ import 'sockets/relay_socket_provider.dart';
 /// For server you can use ready to go
 /// [Uhst Node Server](https://github.com/uhst/uhst-server-node)
 class Uhst {
-  /// Deafult Fallback URL to a uhst API (server)
-  /// if [apiUrl] is not defined
-  static final String _uhstApiUrl = "https://demo.uhst.io/";
+  /// Deafult Fallback URL to a UHST Relay (server)
+  /// if [relayUrl] is not defined
+  static final String _uhstRelayUrl = "https://demo.uhst.io/";
 
-  /// An API client for communication with the server,
+  /// An Relay client for communication with the server,
   /// normally used for testing or if implementing
-  /// [UhstApiClient | custom protocol].
-  late UhstApiClient _apiClient;
+  /// [UhstRelayClient | custom protocol].
+  late UhstRelayClient _relayClient;
 
   /// Set to true and subscribe to "diagnostic" to
   /// receive events from [UhstSocket].
@@ -29,32 +29,32 @@ class Uhst {
   /// [UhstSocketProvider] is a provider for [UhstSocket]
   late UhstSocketProvider _socketProvider;
 
-  /// [apiUrl] is a server url [String], implementing the uhst protocol.
+  /// [relayUrl] is a server url [String], implementing the uhst protocol.
   ///
   /// For server you can use ready to go
   /// [Uhst Node Server](https://github.com/uhst/uhst-server-node)
   ///
-  /// [apiClient] is a standard host and client provider which used
+  /// [relayClient] is a standard host and client provider which used
   /// to subscribe to event source, send messages and init [UhstHost]
   /// and Client [UhstSocket]
   ///
-  /// If no [apiClient] is provided or [apiUrl] is not defined in [apiClient]
-  /// then [uhst_API_URL] will be used.
+  /// If no [relayClient] is provided or [relayUrl] is not defined in [relayClient]
+  /// then [uhst_Relay_URL] will be used.
   ///
-  /// If both [apiClient] and [apiUrl] are defined,
-  /// then [apiClient] will be used.
+  /// If both [relayClient] and [relayUrl] are defined,
+  /// then [relayClient] will be used.
   ///
   /// Use [debug] = true to turn on debug messages
   /// on stream events
   Uhst(
-      {String? apiUrl,
+      {String? relayUrl,
       bool? debug,
-      UhstApiClient? apiClient,
+      UhstRelayClient? relayClient,
       RelaySocketProvider? socketProvider}) {
     _debug = debug ?? false;
 
-    var definedApiUrl = apiUrl ?? _uhstApiUrl;
-    _apiClient = apiClient ?? ApiClient(apiUrl: definedApiUrl);
+    var definedRelayUrl = relayUrl ?? _uhstRelayUrl;
+    _relayClient = relayClient ?? RelayClient(relayUrl: definedRelayUrl);
     _socketProvider = socketProvider ?? RelaySocketProvider();
   }
 
@@ -65,7 +65,7 @@ class Uhst {
   UhstSocket join({required String hostId}) {
     var clientParams = ClientSocketParams(hostId: hostId);
     return _socketProvider.createUhstSocket(
-        apiClient: _apiClient, clientParams: clientParams, debug: _debug);
+        relayClient: _relayClient, clientParams: clientParams, debug: _debug);
   }
 
   /// Returns [UhstHost] which able to:
@@ -73,7 +73,7 @@ class Uhst {
   /// - broadcast messages to all subscsribed Client [UhstSocket]
   UhstHost host({String? hostId}) {
     var host = UhstHost.create(
-        apiClient: _apiClient,
+        relayClient: _relayClient,
         socketProvider: _socketProvider,
         hostId: hostId,
         debug: _debug);

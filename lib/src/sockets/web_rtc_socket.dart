@@ -1,7 +1,7 @@
 // library uhst;
 
 // import 'dart:async';
-// 
+//
 // import 'dart:typed_data';
 
 // import 'package:uhst/src/contracts/uhst_socket_events.dart';
@@ -9,7 +9,7 @@
 // import 'package:uhst/src/socket_subsriptions.dart';
 // import 'package:universal_html/html.dart';
 
-// import 'contracts/uhst_api_client.dart';
+// import 'contracts/uhst_relay_client.dart';
 // import 'contracts/uhst_socket.dart';
 // import 'models/message.dart';
 // import 'models/rtc_configuration.dart';
@@ -37,26 +37,26 @@
 //   final RtcConfiguration _configuration;
 
 //   WebRtcSocket._create(
-//       {required UhstApiClient apiClient,
+//       {required UhstRelayClient relayClient,
 //       required RtcConfiguration configuration,
 //       required bool debug})
 //       : _configuration = configuration {
 //     h = SocketHelper(
 //       debug: debug,
-//       apiClient: apiClient,
+//       relayClient: relayClient,
 //     );
 
 //     _connection = _createConnection();
 //   }
 
 //   static WebRtcSocket create(
-//       {required UhstApiClient apiClient,
+//       {required UhstRelayClient relayClient,
 //       required RtcConfiguration configuration,
 //       HostSocketParams? hostSocketParams,
 //       ClientSocketParams? clientSocketParams,
 //       required bool debug}) {
 //     var socket = WebRtcSocket._create(
-//         apiClient: apiClient, configuration: configuration, debug: debug);
+//         relayClient: relayClient, configuration: configuration, debug: debug);
 //     if (hostSocketParams is HostSocketParams) {
 //       // will connect to client
 //       socket.h.token = hostSocketParams.token;
@@ -109,8 +109,8 @@
 //   void _configureDataChannel() {
 //     _verifiedDataChannel.onOpen.listen((event) {
 //       if (h.debug) h.emitDiagnostic(body: "Data channel opened.");
-//       if (h.apiMessageStream != null) {
-//         if (h.debug) h.emitDiagnostic(body: "Closing API message stream.");
+//       if (h.relayMessageStream != null) {
+//         if (h.debug) h.emitDiagnostic(body: "Closing Relay message stream.");
 //       }
 //       h.emit(message: UhstSocketEventType.diagnostic, body: "open.");
 //     });
@@ -151,7 +151,7 @@
 //       if (h.debug)
 //         h.emitDiagnostic(body: "Sending ICE candidate: ${event.candidate}");
 //       try {
-//         await h.apiClient.sendMessage(
+//         await h.relayClient.sendMessage(
 //             token: h.verifiedToken,
 //             message: event.candidate,
 //             sendUrl: h.sendUrl);
@@ -177,7 +177,7 @@
 //       h.emitDiagnostic(body: "Set remote description on host: $description");
 //     var answer = await _verifiedConnection.createAnswer();
 //     try {
-//       await h.apiClient.sendMessage(
+//       await h.relayClient.sendMessage(
 //           token: h.verifiedToken, message: answer, sendUrl: h.sendUrl);
 //       if (h.debug) h.emitDiagnostic(body: "Host sent offer answer: $answer");
 //     } catch (e) {
@@ -199,13 +199,13 @@
 //       _dataChannel = _verifiedConnection.createDataChannel("uhst");
 //       if (h.debug) h.emitDiagnostic(body: "Data channel created on client.");
 //       _configureDataChannel();
-//       var config = await h.apiClient.initClient(hostId: hostId);
+//       var config = await h.relayClient.initClient(hostId: hostId);
 //       if (h.debug)
 //         h.emitDiagnostic(body: "Client configuration received from server.");
 //       var token = config.clientToken;
 //       h.token = token;
 //       h.sendUrl = config.sendUrl;
-//       h.apiMessageStream = await h.apiClient.subscribeToMessages(
+//       h.relayMessageStream = await h.relayClient.subscribeToMessages(
 //           token: h.verifiedToken,
 //           handler: handleMessage,
 //           receiveUrl: config.receiveUrl);
@@ -214,7 +214,7 @@
 //       var offer = await _verifiedConnection.createOffer();
 
 //       try {
-//         await h.apiClient
+//         await h.relayClient
 //             .sendMessage(token: token, message: offer, sendUrl: h.sendUrl);
 //         if (h.debug)
 //           h.emitDiagnostic(body: "Client offer sent to host: $offer");

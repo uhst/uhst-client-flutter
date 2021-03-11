@@ -9,15 +9,16 @@ class HostIdAlreadyInUse extends _ExceptionMessage {
       : super(exceptionName: 'HostIdAlreadyInUse', message: portId);
 }
 
-/// TODO: implement doc ApiUnreachable
-class ApiUnreachable extends _ExceptionMessage {
-  ApiUnreachable([Uri? message])
-      : super(exceptionName: 'ApiUnreachable', message: message);
+/// TODO: implement doc RelayUnreachable
+class RelayUnreachable extends _ExceptionMessage {
+  RelayUnreachable([Uri? message])
+      : super(exceptionName: 'RelayUnreachable', message: message);
 }
 
-/// TODO: implement doc ApiError
-class ApiError extends _ExceptionMessage {
-  ApiError([Uri? message]) : super(exceptionName: 'ApiError', message: message);
+/// TODO: implement doc RelayError
+class RelayError extends _ExceptionMessage {
+  RelayError([Uri? message])
+      : super(exceptionName: 'RelayError', message: message);
 }
 
 class _ExceptionMessage implements Exception {

@@ -1,6 +1,6 @@
 library uhst;
 
-import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_relay_client.dart';
 import '../contracts/uhst_socket.dart';
 import '../contracts/uhst_socket_provider.dart';
 import 'relay_socket.dart';
@@ -8,12 +8,12 @@ import 'relay_socket.dart';
 class RelaySocketProvider implements UhstSocketProvider {
   @override
   UhstSocket createUhstSocket(
-      {required UhstApiClient apiClient,
+      {required UhstRelayClient relayClient,
       clientParams,
       hostParams,
       required bool debug}) {
     return RelaySocket.create(
-        apiClient: apiClient,
+        relayClient: relayClient,
         clientParams: clientParams,
         hostParams: hostParams,
         debug: debug);

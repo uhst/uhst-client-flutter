@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 void main() {
   group('# UhstHost', () {
     test('can host', () {
-      // const mockApi = <UhstApiClient>{};
+      // const mockRelay = <UhstRelayClient>{};
       // const mockSocketProvider = <UhstSocketProvider>{};
       // const mockSocket = <UhstSocket>{};
       // const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicmVzcG9uc2VUb2tlbiIsImhvc3RJZCI6InRlc3RIb3N0IiwiY2xpZW50SWQiOiI4ODk2OGUzYi03YTQ1LTQwMTMtYjY2OC1iNWIwMDIwMTQ2M2EiLCJpYXQiOjE1OTk4ODI1NjB9.Ck583aKIeEcEsvCVlNgpMgLrVM1JQQC4vB8PCaTU-pA";
@@ -13,14 +13,14 @@ void main() {
       //   yield UhstSocketEventType.close;
       // })();
 
-      // mockApi.initHost = stub().returns(<HostConfiguration>{
+      // mockRelay.initHost = stub().returns(<HostConfiguration>{
       //     hostId: "testHostId",
       //     hostToken: "testHostToken",
       //     receiveUrl: "testReceiveUrl",
       //     sendUrl: "testSendUrl",
       // });
 
-      // mockApi.subscribeToMessages = (token, handler, receiveUrl) => {
+      // mockRelay.subscribeToMessages = (token, handler, receiveUrl) => {
       //     expect(token,equals("testHostToken"));
       //     expect(receiveUrl,equals("testReceiveUrl"));
       //     messageHandler = handler;
@@ -34,15 +34,15 @@ void main() {
       //     expect(message.body).to.equal("testClientMessage");
       // }
 
-      // mockSocketProvider.createUhstSocket = (apiClient, params: HostSocketParams, debug) => {
-      //     expect(apiClient).to.equal(mockApi);
+      // mockSocketProvider.createUhstSocket = (relayClient, params: HostSocketParams, debug) => {
+      //     expect(relayClient).to.equal(mockRelay);
       //     expect(params.type).to.equal("host");
       //     expect(params.token).to.equal(mockToken);
       //     expect(params.sendUrl).to.equal("testSendUrl");
       //     return mockSocket;
       // }
 
-      // const uhstHost: UhstHost = new UhstHost(mockApi, mockSocketProvider, "testHostId", false);
+      // const uhstHost: UhstHost = new UhstHost(mockRelay, mockSocketProvider, "testHostId", false);
       // uhstHost.on("ready", () => {
       //     expect(uhstHost.hostId).to.equal("testHostId");
       //     messageHandler(<HostMessage>{
@@ -56,7 +56,7 @@ void main() {
       //     done();
       // });
 
-      // expect(mockApi.initHost).to.have.been.calledWith("testHostId");
+      // expect(mockRelay.initHost).to.have.been.calledWith("testHostId");
     });
   });
 }

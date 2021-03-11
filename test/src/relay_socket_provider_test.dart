@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:uhst/src/api_clients/api_client.dart';
+import 'package:uhst/src/relay_clients/relay_client.dart';
 import 'package:uhst/src/models/socket_params.dart';
 import 'package:uhst/uhst.dart';
 
@@ -14,7 +14,7 @@ void main() {
       var mockClientSocketParams = ClientSocketParams(hostId: "testHostId");
       expect(
           provider.createUhstSocket(
-              apiClient: ApiClient(apiUrl: ''),
+              relayClient: RelayClient(relayUrl: ''),
               debug: false,
               clientParams: mockClientSocketParams),
           isNotNull);
@@ -22,11 +22,11 @@ void main() {
     test('.createUhstSocket should create RelaySocket for host', () {
       var provider = RelaySocketProvider();
       var mockHostSocketParams = HostSocketParams(token: "responseToken");
-      var apiUrl = "test";
+      var relayUrl = "test";
       expect(
           provider.createUhstSocket(
-              apiClient: ApiClient(
-                apiUrl: apiUrl,
+              relayClient: RelayClient(
+                relayUrl: relayUrl,
               ),
               hostParams: mockHostSocketParams,
               debug: false),

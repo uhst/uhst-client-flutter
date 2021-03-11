@@ -118,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (uhst == null) {
       uhst = Uhst(
           debug: true,
-          apiUrl: _textController.text.isEmpty
+          relayUrl: _textController.text.isEmpty
               ? defaultHostUrl
               : _textController.text,
           socketProvider: RelaySocketProvider());

@@ -9,7 +9,7 @@ pubspec.lock
 
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
-doc/api/
+doc/relay/
 
 # Avoid committing generated Javascript files:
 *.dart.js
@@ -43,7 +43,7 @@ doc/api/
 #.vscode/
 
 # Flutter/Dart/Pub related
-**/doc/api/
+**/doc/relay/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies

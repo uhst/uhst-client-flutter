@@ -12,8 +12,8 @@ void main() {
       expect('', equals(''));
     });
     test('should accept meetingPointUrl', () {
-      var apiUrl = "test";
-      expect(Uhst(apiUrl: apiUrl), isNotNull);
+      var relayUrl = "test";
+      expect(Uhst(relayUrl: relayUrl), isNotNull);
     });
   });
 }
