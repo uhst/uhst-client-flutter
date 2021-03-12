@@ -5,19 +5,32 @@ library uhst;
 
 /// TODO: implement doc HostIdAlreadyInUse
 class HostIdAlreadyInUse extends _ExceptionMessage {
-  HostIdAlreadyInUse([int? portId])
-      : super(exceptionName: 'HostIdAlreadyInUse', message: portId);
+  HostIdAlreadyInUse([int? hostId])
+      : super(exceptionName: 'HostIdAlreadyInUse', message: hostId);
 }
 
-/// TODO: implement doc ApiUnreachable
-class ApiUnreachable extends _ExceptionMessage {
-  ApiUnreachable([Uri? message])
-      : super(exceptionName: 'ApiUnreachable', message: message);
+/// TODO: implement doc RelayUnreachable
+class NetworkUnreachable extends _ExceptionMessage {
+  NetworkUnreachable([Uri? message])
+      : super(exceptionName: 'NetworkUnreachable', message: message);
 }
 
-/// TODO: implement doc ApiError
-class ApiError extends _ExceptionMessage {
-  ApiError([Uri? message]) : super(exceptionName: 'ApiError', message: message);
+/// TODO: implement doc RelayError
+class NetworkError extends _ExceptionMessage {
+  NetworkError([String? message])
+      : super(exceptionName: 'NetworkError', message: message);
+}
+
+/// TODO: implement doc RelayUnreachable
+class RelayUnreachable extends _ExceptionMessage {
+  RelayUnreachable([Uri? message])
+      : super(exceptionName: 'RelayUnreachable', message: message);
+}
+
+/// TODO: implement doc RelayError
+class RelayError extends _ExceptionMessage {
+  RelayError([Uri? message])
+      : super(exceptionName: 'RelayError', message: message);
 }
 
 class _ExceptionMessage implements Exception {

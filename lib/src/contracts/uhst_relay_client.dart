@@ -6,7 +6,7 @@ import '../models/client_configuration.dart';
 import '../models/host_configration.dart';
 import 'uhst_event_handlers.dart';
 
-abstract class UhstApiClient {
+abstract class UhstRelayClient {
   Future<HostConfiguration> initHost({String? hostId});
   Future<ClientConfiguration> initClient({required String hostId});
   Future<dynamic> sendMessage(

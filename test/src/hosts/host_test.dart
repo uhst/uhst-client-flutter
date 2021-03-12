@@ -1,11 +1,11 @@
 // import 'package:test/test.dart';
-// import 'package:uhst/src/contracts/uhst_api_client.dart';
+// import 'package:uhst/src/contracts/uhst_relay_client.dart';
 // import 'package:uhst/src/contracts/uhst_host_event.dart';
 // import 'package:uhst/src/contracts/uhst_socket_provider.dart';
 // import 'package:uhst/uhst.dart';
 
 // var host = UhstHost.create(
-//     apiClient: {} as UhstApiClient,
+//     relayClient: {} as UhstRelayClient,
 //     socketProvider: {} as UhstSocketProvider,
 //     debug: false);
 
@@ -20,7 +20,7 @@
 //       // expect(host.h.eventStream, isNotNull);
 //       // expect(host.h.eventStreamController, isNotNull);
 //       // expect(host.h.debug, equals(false));
-//       // expect(host.h.apiClient, isNotNull);
+//       // expect(host.h.relayClient, isNotNull);
 //     });
 //     test('send and catch message inside event stream', () {
 //       // var message = 'testMessage';
@@ -32,3 +32,4 @@
 //     });
 //   });
 // }
+void main() {}

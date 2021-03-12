@@ -8,23 +8,25 @@ import 'package:uhst/src/models/event_message.dart';
 import 'package:universal_html/html.dart';
 
 import '../contracts/type_definitions.dart';
-import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_relay_client.dart';
 import '../models/client_configuration.dart';
 import '../models/host_configration.dart';
 import '../utils/uhst_errors.dart';
 import '../utils/uhst_exceptions.dart';
+import './network_client.dart';
 
 class _Consts {
   static const requestHeaderContentName = 'Content-type';
   static const requestHeaderContentValue = 'application/json';
 }
 
-/// [ApiClient] is a standard host and client provider which used
+/// [RelayClient] is a standard host and client provider which used
 /// to subscribe to event source, send messages and init [UhstHost]
 /// and Client [UhstSocket]
-class ApiClient implements UhstApiClient {
-  final String apiUrl;
-  ApiClient({required this.apiUrl});
+class RelayClient implements UhstRelayClient {
+  NetworkClient networkClient;
+  final String relayUrl;
+  RelayClient({required this.relayUrl}) : networkClient = new NetworkClient();
 
   /// Returns generic [T] type from response
   /// Handles error cases
@@ -44,7 +46,7 @@ class ApiClient implements UhstApiClient {
         case 400:
           throw InvalidHostId((hostId), argName: response.reasonPhrase);
         default:
-          throw ApiError(response.request?.url);
+          throw RelayError(response.request?.url);
       }
     }
 
@@ -55,13 +57,13 @@ class ApiClient implements UhstApiClient {
       });
       return handleResponseForFetch(response: response);
     } catch (error) {
-      throw ApiUnreachable(Uri(userInfo: error.toString()));
+      throw RelayUnreachable(Uri(userInfo: error.toString()));
     }
   }
 
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    var url = '$apiUrl?action=join&hostId=$hostId';
+    var url = '$relayUrl?action=join&hostId=$hostId';
     var response = await _fetch(
         fromJson: ClientConfiguration.fromJson, hostId: (hostId), url: url);
     return response;
@@ -69,9 +71,16 @@ class ApiClient implements UhstApiClient {
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    var url = '$apiUrl?action=host&hostId=$hostId';
-    var response = await _fetch(
-        fromJson: HostConfiguration.fromJson, hostId: hostId, url: url);
+    var uri = Uri.parse(this.relayUrl);
+    var qParams = Map<String, String>();
+    qParams['action'] = 'host';
+    if (hostId != null) {
+      qParams['hostId'] = hostId;
+    }
+    uri = uri.replace(queryParameters: qParams);
+    var response = await this
+        .networkClient
+        .post(uri: uri, fromJson: HostConfiguration.fromJson);
     return response;
   }
 
@@ -96,11 +105,11 @@ class ApiClient implements UhstApiClient {
         case 401:
           throw new InvalidToken(response.reasonPhrase);
         default:
-          throw ApiError(response.request?.url);
+          throw RelayError(response.request?.url);
       }
     }
 
-    var hostUrl = sendUrl ?? apiUrl;
+    var hostUrl = sendUrl ?? relayUrl;
     var uri = Uri.parse('$hostUrl?token=$token');
 
     try {
@@ -111,21 +120,21 @@ class ApiClient implements UhstApiClient {
           body: message);
       return handleResponseForMessage(response: response);
     } catch (error) {
-      throw ApiUnreachable(uri);
+      throw RelayUnreachable(uri);
     }
   }
 
   @override
   EventSource subscribeToMessages(
       {required String token, required handler, String? receiveUrl}) {
-    var url = receiveUrl ?? this.apiUrl;
+    var url = receiveUrl ?? this.relayUrl;
     var finalUrl = '$url?token=$token';
     var uri = Uri.parse(finalUrl);
 
     EventSource source = EventSource(finalUrl);
     source.onOpen.listen((event) {});
     source.onError.listen((event) {
-      throw ApiError(uri);
+      throw RelayError(uri);
     });
     source.onMessage.listen((event) {
       var eventMessageMap = jsonDecode(event.data);

@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:uhst/src/contracts/uhst_api_client.dart';
+import 'package:uhst/src/contracts/uhst_relay_client.dart';
 import 'package:universal_html/html.dart';
 
 import '../contracts/type_definitions.dart';
@@ -96,22 +96,22 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   /// Private factory.
   /// Call it only from static create factory function
   UhstHost._create(
-      {required apiClient, required socketProvider, required debug})
+      {required relayClient, required socketProvider, required debug})
       : this._socketProvider = socketProvider {
-    h = HostHelper(apiClient: apiClient, debug: debug);
+    h = HostHelper(relayClient: relayClient, debug: debug);
   }
 
   /// Public factory
   ///
   /// [hostId] can be null and will be returned with `onReady` event
   static UhstHost create(
-      {required UhstApiClient apiClient,
+      {required UhstRelayClient relayClient,
       required UhstSocketProvider socketProvider,
       String? hostId,
       required debug}) {
     // Call the private constructor
     var uhstHost = UhstHost._create(
-        apiClient: apiClient, debug: debug, socketProvider: socketProvider);
+        relayClient: relayClient, debug: debug, socketProvider: socketProvider);
     uhstHost._init(hostId: hostId);
 
     return uhstHost;
@@ -121,11 +121,11 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   /// static create factory function
   Future<void> _init({String? hostId}) async {
     try {
-      _config = await h.apiClient.initHost(hostId: hostId);
+      _config = await h.relayClient.initHost(hostId: hostId);
       if (h.debug)
         h.emitDiagnostic(body: "Host configuration received from server.");
 
-      h.apiMessageStream = h.apiClient.subscribeToMessages(
+      h.relayMessageStream = h.relayClient.subscribeToMessages(
           token: _config.hostToken,
           handler: _handleMessage,
           receiveUrl: _config.receiveUrl);
@@ -157,7 +157,7 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     if (hostSocket == null) {
       var hostParams = HostSocketParams(token: token, sendUrl: _config.sendUrl);
       var socket = _socketProvider.createUhstSocket(
-          apiClient: h.apiClient, hostParams: hostParams, debug: h.debug);
+          relayClient: h.relayClient, hostParams: hostParams, debug: h.debug);
       if (h.debug)
         h.emitDiagnostic(
             body: "Host received client connection from clientId: $clientId");
@@ -174,7 +174,7 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   }
 
   void disconnect() {
-    h.apiMessageStream?.close();
+    h.relayMessageStream?.close();
   }
 
   @override
@@ -217,7 +217,7 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     );
     var envelope = jsonEncode(verifiedMessage.toJson());
     try {
-      await h.apiClient.sendMessage(
+      await h.relayClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
     } catch (e) {
       if (h.debug) h.emitDiagnostic(body: "Failed sending message: $e");

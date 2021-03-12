@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:universal_html/html.dart';
 
-import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_relay_client.dart';
 import '../contracts/uhst_event_handlers.dart';
 import '../contracts/uhst_host_event.dart';
 
@@ -28,13 +28,13 @@ class HostHelper {
     return vtoken;
   }
 
-  final UhstApiClient apiClient;
+  final UhstRelayClient relayClient;
   final bool debug;
 
   String? sendUrl;
-  EventSource? apiMessageStream;
+  EventSource? relayMessageStream;
   HostHelper({
-    required this.apiClient,
+    required this.relayClient,
     required this.debug,
   }) {
     eventStreamController =

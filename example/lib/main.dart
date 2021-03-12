@@ -46,19 +46,13 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-final defaultHostUrl = 'http://localhost:3000';
-final defaultHostId = 'testHost';
-
 class _MyHomePageState extends State<MyHomePage> {
   final List<String> hostMessages = [];
   final List<String> clientMessages = [];
   Uhst? uhst;
   UhstHost? host;
   UhstSocket? client;
-  final TextEditingController _textController =
-      TextEditingController(text: defaultHostUrl);
-  final TextEditingController _hostIdController =
-      TextEditingController(text: defaultHostId);
+  final TextEditingController _hostIdController = TextEditingController();
 
   @override
   void initState() {
@@ -68,7 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initHost() async {
     initUhst();
     host?.disconnect();
-    host = uhst?.host(hostId: _hostIdController.text);
+    host = uhst?.host();
     host
       ?..onReady(handler: ({required String hostId}) {
         setState(() {
@@ -116,12 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   initUhst() {
     if (uhst == null) {
-      uhst = Uhst(
-          debug: true,
-          apiUrl: _textController.text.isEmpty
-              ? defaultHostUrl
-              : _textController.text,
-          socketProvider: RelaySocketProvider());
+      uhst = Uhst(debug: true);
     }
   }
 
@@ -191,11 +180,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       Divider(
                         height: 22,
-                      ),
-                      TextField(
-                        decoration: InputDecoration(
-                            labelText: 'Uhst host server address'),
-                        controller: _textController,
                       ),
                       TextField(
                         decoration: InputDecoration(labelText: 'Host id'),

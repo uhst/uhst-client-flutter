@@ -1,6 +1,6 @@
 // library uhst;
 
-// import 'package:uhst/src/contracts/uhst_api_client.dart';
+// import 'package:uhst/src/contracts/uhst_relay_client.dart';
 // import 'package:uhst/src/contracts/uhst_socket.dart';
 
 // import 'contracts/uhst_socket_provider.dart';
@@ -32,12 +32,12 @@
 
 //   @override
 //   UhstSocket createUhstSocket(
-//       {required UhstApiClient apiClient,
+//       {required UhstRelayClient relayClient,
 //       ClientSocketParams? clientParams,
 //       HostSocketParams? hostParams,
 //       required bool debug}) {
 //     return WebRtcSocket.create(
-//         apiClient: apiClient,
+//         relayClient: relayClient,
 //         debug: debug,
 //         configuration: this.rtcConfiguration,
 //         hostSocketParams: hostParams,

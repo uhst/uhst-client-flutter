@@ -7,7 +7,7 @@ import 'dart:typed_data';
 import 'package:universal_html/html.dart';
 
 import '../contracts/type_definitions.dart';
-import '../contracts/uhst_api_client.dart';
+import '../contracts/uhst_relay_client.dart';
 import '../contracts/uhst_socket.dart';
 import '../contracts/uhst_socket_events.dart';
 import '../models/message.dart';
@@ -74,16 +74,17 @@ import 'socket_subsriptions.dart';
 /// they can only communicate with the host.
 ///
 class RelaySocket with SocketSubsriptions implements UhstSocket {
-  RelaySocket._create({required UhstApiClient apiClient, required bool debug}) {
-    h = SocketHelper(apiClient: apiClient, debug: debug);
+  RelaySocket._create(
+      {required UhstRelayClient relayClient, required bool debug}) {
+    h = SocketHelper(relayClient: relayClient, debug: debug);
   }
 
   static RelaySocket create(
       {ClientSocketParams? clientParams,
       HostSocketParams? hostParams,
-      required UhstApiClient apiClient,
+      required UhstRelayClient relayClient,
       required bool debug}) {
-    var socket = RelaySocket._create(apiClient: apiClient, debug: debug);
+    var socket = RelaySocket._create(relayClient: relayClient, debug: debug);
 
     if (hostParams is HostSocketParams) {
       // client connected
@@ -110,13 +111,13 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
   Future<void> _initClient({required String hostId}) async {
     try {
-      var config = await h.apiClient.initClient(hostId: hostId);
+      var config = await h.relayClient.initClient(hostId: hostId);
       if (h.debug)
         h.emitDiagnostic(body: "Client configuration received from server.");
 
       h.token = config.clientToken;
       h.sendUrl = config.sendUrl;
-      h.apiMessageStream = h.apiClient.subscribeToMessages(
+      h.relayMessageStream = h.relayClient.subscribeToMessages(
           token: config.clientToken,
           handler: handleMessage,
           receiveUrl: config.receiveUrl);
@@ -133,7 +134,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
   @override
   void close() {
-    h.apiMessageStream?.close();
+    h.relayMessageStream?.close();
   }
 
   @override
@@ -184,7 +185,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
     );
     var envelope = jsonEncode(verifiedMessage.toJson());
     try {
-      h.apiClient.sendMessage(
+      h.relayClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
     } catch (e) {
       if (h.debug) h.emitDiagnostic(body: "Failed sending message: $e");

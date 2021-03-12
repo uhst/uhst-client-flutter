@@ -36,7 +36,7 @@ var uhst = Uhst();
 ```
 
 Refer to the documentation to learn about the options you can pass
-(including your own API / signalling server URL, WebRTC configuration, etc.) .
+(including your own Relay server URL, WebRTC configuration, etc.) .
 
 ### Host
 
