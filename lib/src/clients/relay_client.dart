@@ -13,6 +13,7 @@ import '../models/client_configuration.dart';
 import '../models/host_configration.dart';
 import '../utils/uhst_errors.dart';
 import '../utils/uhst_exceptions.dart';
+import './network_client.dart';
 
 class _Consts {
   static const requestHeaderContentName = 'Content-type';
@@ -23,8 +24,9 @@ class _Consts {
 /// to subscribe to event source, send messages and init [UhstHost]
 /// and Client [UhstSocket]
 class RelayClient implements UhstRelayClient {
+  NetworkClient networkClient;
   final String relayUrl;
-  RelayClient({required this.relayUrl});
+  RelayClient({required this.relayUrl}) : networkClient = new NetworkClient();
 
   /// Returns generic [T] type from response
   /// Handles error cases
@@ -69,9 +71,16 @@ class RelayClient implements UhstRelayClient {
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    var url = '$relayUrl?action=host&hostId=$hostId';
-    var response = await _fetch(
-        fromJson: HostConfiguration.fromJson, hostId: hostId, url: url);
+    var uri = Uri.parse(this.relayUrl);
+    var qParams = Map<String, String>();
+    qParams['action'] = 'host';
+    if (hostId != null) {
+      qParams['hostId'] = hostId;
+    }
+    uri = uri.replace(queryParameters: qParams);
+    var response = await this
+        .networkClient
+        .post(uri: uri, fromJson: HostConfiguration.fromJson);
     return response;
   }
 

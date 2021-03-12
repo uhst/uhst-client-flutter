@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:uhst/src/relay_clients/relay_client.dart';
+import 'package:uhst/src/clients/relay_client.dart';
 import 'package:uhst/src/models/socket_params.dart';
 import 'package:uhst/uhst.dart';
 

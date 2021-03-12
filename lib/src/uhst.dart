@@ -1,6 +1,7 @@
 library uhst;
 
-import 'relay_clients/relay_client.dart';
+import 'clients/api_client.dart';
+import 'clients/relay_client.dart';
 import 'contracts/uhst_relay_client.dart';
 import 'contracts/uhst_socket.dart';
 import 'contracts/uhst_socket_provider.dart';
@@ -10,14 +11,10 @@ import 'sockets/relay_socket_provider.dart';
 
 /// Provides a way to init Client [UhstSocket] and [UhstHost]
 ///
-/// For server you can use ready to go
+/// For relay server you can use ready to go
 /// [Uhst Node Server](https://github.com/uhst/uhst-server-node)
 class Uhst {
-  /// Deafult Fallback URL to a UHST Relay (server)
-  /// if [relayUrl] is not defined
-  static final String _uhstRelayUrl = "https://demo.uhst.io/";
-
-  /// An Relay client for communication with the server,
+  /// Relay client for communication with the server,
   /// normally used for testing or if implementing
   /// [UhstRelayClient | custom protocol].
   late UhstRelayClient _relayClient;
@@ -29,7 +26,7 @@ class Uhst {
   /// [UhstSocketProvider] is a provider for [UhstSocket]
   late UhstSocketProvider _socketProvider;
 
-  /// [relayUrl] is a server url [String], implementing the uhst protocol.
+  /// [relayUrl] is a relay url [String], implementing the uhst protocol.
   ///
   /// For server you can use ready to go
   /// [Uhst Node Server](https://github.com/uhst/uhst-server-node)
@@ -38,8 +35,8 @@ class Uhst {
   /// to subscribe to event source, send messages and init [UhstHost]
   /// and Client [UhstSocket]
   ///
-  /// If no [relayClient] is provided or [relayUrl] is not defined in [relayClient]
-  /// then [uhst_Relay_URL] will be used.
+  /// If no [relayClient] is provided and [relayUrl] is not defined
+  /// then a public relay will be chosen by the API.
   ///
   /// If both [relayClient] and [relayUrl] are defined,
   /// then [relayClient] will be used.
@@ -53,8 +50,13 @@ class Uhst {
       RelaySocketProvider? socketProvider}) {
     _debug = debug ?? false;
 
-    var definedRelayUrl = relayUrl ?? _uhstRelayUrl;
-    _relayClient = relayClient ?? RelayClient(relayUrl: definedRelayUrl);
+    if (relayClient != null) {
+      _relayClient = relayClient;
+    } else if (relayUrl != null) {
+      _relayClient = RelayClient(relayUrl: relayUrl);
+    } else {
+      _relayClient = ApiClient();
+    }
     _socketProvider = socketProvider ?? RelaySocketProvider();
   }
 

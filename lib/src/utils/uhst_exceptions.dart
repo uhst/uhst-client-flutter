@@ -5,8 +5,20 @@ library uhst;
 
 /// TODO: implement doc HostIdAlreadyInUse
 class HostIdAlreadyInUse extends _ExceptionMessage {
-  HostIdAlreadyInUse([int? portId])
-      : super(exceptionName: 'HostIdAlreadyInUse', message: portId);
+  HostIdAlreadyInUse([int? hostId])
+      : super(exceptionName: 'HostIdAlreadyInUse', message: hostId);
+}
+
+/// TODO: implement doc RelayUnreachable
+class NetworkUnreachable extends _ExceptionMessage {
+  NetworkUnreachable([Uri? message])
+      : super(exceptionName: 'NetworkUnreachable', message: message);
+}
+
+/// TODO: implement doc RelayError
+class NetworkError extends _ExceptionMessage {
+  NetworkError([String? message])
+      : super(exceptionName: 'NetworkError', message: message);
 }
 
 /// TODO: implement doc RelayUnreachable
