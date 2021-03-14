@@ -6,12 +6,7 @@ class Message {
   final PayloadType type;
   final String? payload;
   String? responseToken;
-  final bool? isBroadcast;
-  Message(
-      {required this.type,
-      required this.payload,
-      this.isBroadcast,
-      this.responseToken});
+  Message({required this.type, required this.payload, this.responseToken});
   factory Message.fromJson(Map<dynamic, dynamic> map) {
     PayloadType verifiedPayloadType = (() {
       String? _payloadType = map['type'];
@@ -21,7 +16,6 @@ class Message {
     })();
 
     return Message(
-        isBroadcast: map['isBroadcast'],
         payload: map['payload'],
         type: verifiedPayloadType,
         responseToken: map['responseToken'] ?? '');
@@ -32,7 +26,6 @@ class Message {
       'type': type.toStringValue(),
       'payload': payload,
       'responseToken': responseToken,
-      'isBroadcast': isBroadcast,
     };
   }
 

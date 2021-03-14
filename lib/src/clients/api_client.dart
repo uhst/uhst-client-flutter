@@ -42,7 +42,7 @@ class ApiClient implements UhstRelayClient {
   }
 
   @override
-  EventSource subscribeToMessages(
+  Future<EventSource> subscribeToMessages(
       {required String token, required handler, String? receiveUrl}) {
     return this.relayClient.subscribeToMessages(
         token: token, handler: handler, receiveUrl: receiveUrl);

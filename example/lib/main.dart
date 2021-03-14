@@ -102,8 +102,10 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         });
 
-        uhstSocket.onOpen(handler: ({required String? data}) {
-          // uhstSocket.sendString(message: 'Host sent message!');
+        uhstSocket.onOpen(handler: () {
+          setState(() {
+            hostMessages.add('Client Connected');
+          });
         });
       });
   }
@@ -135,9 +137,9 @@ class _MyHomePageState extends State<MyHomePage> {
           clientMessages.add(message);
         });
       })
-      ..onOpen(handler: ({required String data}) {
+      ..onOpen(handler: () {
         setState(() {
-          client?.sendString(message: 'Hello host!');
+          clientMessages.add('Client connected.');
         });
       })
       ..onMessage(handler: ({required Message? message}) {

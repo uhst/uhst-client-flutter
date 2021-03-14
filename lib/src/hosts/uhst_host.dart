@@ -73,7 +73,7 @@ import 'host_subscriptions.dart';
 ///             if (payload != null) host?.broadcastString(message: payload);
 ///           });
 ///         });
-///         uhstSocket.onOpen(handler: ({required String? data}) {
+///         uhstSocket.onOpen(handler: () {
 ///           // uhstSocket.sendString(message: 'Host sent message!');
 ///         });
 ///       });
@@ -113,7 +113,6 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     var uhstHost = UhstHost._create(
         relayClient: relayClient, debug: debug, socketProvider: socketProvider);
     uhstHost._init(hostId: hostId);
-
     return uhstHost;
   }
 
@@ -125,7 +124,7 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       if (h.debug)
         h.emitDiagnostic(body: "Host configuration received from server.");
 
-      h.relayMessageStream = h.relayClient.subscribeToMessages(
+      h.relayMessageStream = await h.relayClient.subscribeToMessages(
           token: _config.hostToken,
           handler: _handleMessage,
           receiveUrl: _config.receiveUrl);
@@ -145,9 +144,6 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   void _handleMessage({required Message? message}) async {
     if (message == null) throw ArgumentError.notNull('message cannot be null');
 
-    // check is it broadcast message to do not listen yourself
-    if (message.isBroadcast == true) return;
-
     var token = message.responseToken;
 
     if (token == null || token.isEmpty) throw InvalidToken(token);
@@ -165,8 +161,11 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       _clients.update(clientId, (value) => value = socket,
           ifAbsent: () => socket);
       hostSocket = socket;
+      // give the connection handler a chance to subscribe
+      Timer.run(() => socket.handleMessage(message: message));
+    } else {
+      hostSocket.handleMessage(message: message);
     }
-    hostSocket.handleMessage(message: message);
   }
 
   String get hostId {
@@ -213,7 +212,6 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     var verifiedMessage = Message(
       payload: message,
       type: payloadType,
-      isBroadcast: true,
     );
     var envelope = jsonEncode(verifiedMessage.toJson());
     try {

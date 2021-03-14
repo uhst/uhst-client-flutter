@@ -64,7 +64,7 @@ host
     print('error received! $error');
     if (error is HostIdAlreadyInUse) {
       // this is expected if you refresh the page
-      // connection is still alive on the meeting point
+      // connection is still alive on the relay
       // just need to wait
       setState(() {
         hostMessages
@@ -92,7 +92,7 @@ host
       });
     });
 
-    uhstSocket.onOpen(handler: ({required String? data}) {
+    uhstSocket.onOpen(handler: () {
       // uhstSocket.sendString(message: 'Host sent message!');
     });
   });
@@ -116,7 +116,7 @@ var client = uhst.join("testHost");
 client?.close();
 
 client
-  ?..onOpen(handler: ({required String data}) {
+  ?..onOpen(handler: () {
     setState(() {
       client?.sendString(message: 'Hello host!');
     });

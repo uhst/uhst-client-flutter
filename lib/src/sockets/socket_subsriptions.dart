@@ -88,8 +88,7 @@ mixin SocketSubsriptions implements UhstSocket {
   StreamSubscription<Map<UhstSocketEventType, dynamic>> onOpen(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {
-      if (event.containsKey(UhstSocketEventType.open))
-        handler(data: event.values.first);
+      if (event.containsKey(UhstSocketEventType.open)) handler();
     });
     h.openListenerHandlers
         .update(handler, (value) => subsription, ifAbsent: () => subsription);

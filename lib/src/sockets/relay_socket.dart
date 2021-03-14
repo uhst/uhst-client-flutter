@@ -36,7 +36,7 @@ import 'socket_subsriptions.dart';
 /// client?.close();
 ///
 /// client
-///   ?..onOpen(handler: ({required String data}) {
+///   ?..onOpen(handler: () {
 ///     setState(() {
 ///       client?.sendString(message: 'Hello host!');
 ///     });
@@ -90,11 +90,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       // client connected
       socket.h.token = hostParams.token;
       socket.h.sendUrl = hostParams.sendUrl;
-      // give consumer a chance to subscribe to open event
-      var timer = Timer(Duration(milliseconds: 1), () {
-        socket.h.emit(message: UhstSocketEventType.open, body: 'opened');
-      });
-      timer.cancel();
+      socket.h.emit(message: UhstSocketEventType.open, body: 'opened');
     } else if (clientParams is ClientSocketParams) {
       // will connect to host
       socket._initClient(hostId: clientParams.hostId);
@@ -117,7 +113,7 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
       h.token = config.clientToken;
       h.sendUrl = config.sendUrl;
-      h.relayMessageStream = h.relayClient.subscribeToMessages(
+      h.relayMessageStream = await h.relayClient.subscribeToMessages(
           token: config.clientToken,
           handler: handleMessage,
           receiveUrl: config.receiveUrl);
@@ -181,7 +177,6 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
     var verifiedMessage = Message(
       payload: message,
       type: payloadType,
-      isBroadcast: false,
     );
     var envelope = jsonEncode(verifiedMessage.toJson());
     try {

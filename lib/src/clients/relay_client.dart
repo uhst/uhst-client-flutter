@@ -125,22 +125,25 @@ class RelayClient implements UhstRelayClient {
   }
 
   @override
-  EventSource subscribeToMessages(
+  Future<EventSource> subscribeToMessages(
       {required String token, required handler, String? receiveUrl}) {
     var url = receiveUrl ?? this.relayUrl;
     var finalUrl = '$url?token=$token';
     var uri = Uri.parse(finalUrl);
+    var completer = Completer<EventSource>();
 
     EventSource source = EventSource(finalUrl);
-    source.onOpen.listen((event) {});
+    source.onOpen.listen((event) {
+      completer.complete(source);
+    });
     source.onError.listen((event) {
-      throw RelayError(uri);
+      completer.completeError(RelayError(uri));
     });
     source.onMessage.listen((event) {
       var eventMessageMap = jsonDecode(event.data);
       var eventMessage = EventMessage.fromJson(eventMessageMap);
       handler(message: eventMessage.body);
     });
-    return source;
+    return completer.future;
   }
 }
