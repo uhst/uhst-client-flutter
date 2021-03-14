@@ -41,7 +41,7 @@ import 'socket_subsriptions.dart';
 ///       client?.sendString(message: 'Hello host!');
 ///     });
 ///   })
-///   ..onMessage(handler: ({required Message? message}) {
+///   ..onMessage(handler: ({required message}) {
 ///     setState(() {
 ///       clientMessages.add('Client received: $message');
 ///     });
@@ -134,11 +134,12 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
   }
 
   @override
-  void handleMessage({Message? message}) {
-    if (h.debug)
-      h.emitDiagnostic(body: "Message received: ${message?.payload}");
+  void handleMessage({required Message message}) {
+    String payload = message.payload;
 
-    h.emit(message: UhstSocketEventType.message, body: message);
+    if (h.debug) h.emitDiagnostic(body: "Message received: $payload");
+
+    h.emit(message: UhstSocketEventType.message, body: payload);
   }
 
   @override

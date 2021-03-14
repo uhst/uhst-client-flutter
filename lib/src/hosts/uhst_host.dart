@@ -66,11 +66,10 @@ import 'host_subscriptions.dart';
 ///             hostMessages.add(message);
 ///           });
 ///         });
-///         uhstSocket.onMessage(handler: ({required Message? message}) {
+///         uhstSocket.onMessage(handler: ({required message}) {
 ///           setState(() {
-///             hostMessages.add("Host received: ${message?.toString()}");
-///             var payload = message?.payload;
-///             if (payload != null) host?.broadcastString(message: payload);
+///             hostMessages.add("Host received: ${message.toString()}");
+///             host?.broadcastString(message: message);
 ///           });
 ///         });
 ///         uhstSocket.onOpen(handler: () {
@@ -141,9 +140,7 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     }
   }
 
-  void _handleMessage({required Message? message}) async {
-    if (message == null) throw ArgumentError.notNull('message cannot be null');
-
+  void _handleMessage({required Message message}) async {
     var token = message.responseToken;
 
     if (token == null || token.isEmpty) throw InvalidToken(token);

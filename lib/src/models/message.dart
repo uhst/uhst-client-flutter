@@ -4,7 +4,7 @@ import '../contracts/type_definitions.dart';
 
 class Message {
   final PayloadType type;
-  final String? payload;
+  final String payload;
   String? responseToken;
   Message({required this.type, required this.payload, this.responseToken});
   factory Message.fromJson(Map<dynamic, dynamic> map) {

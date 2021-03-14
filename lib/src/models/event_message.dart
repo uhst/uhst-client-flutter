@@ -1,7 +1,7 @@
 import 'message.dart';
 
 class EventMessage {
-  final Message? body;
+  final Message body;
   final String responseToken;
 
   EventMessage({required this.body, required this.responseToken});
@@ -15,7 +15,7 @@ class EventMessage {
 
   toJson() {
     return {
-      'body': body?.toJson(),
+      'body': body.toJson(),
       'responseToken': responseToken,
     };
   }
