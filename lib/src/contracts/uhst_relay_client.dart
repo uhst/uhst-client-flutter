@@ -2,9 +2,11 @@ library uhst;
 
 import 'package:universal_html/html.dart';
 
+import '../models/message.dart';
 import '../models/client_configuration.dart';
 import '../models/host_configration.dart';
-import 'uhst_event_handlers.dart';
+
+typedef void RelayMessageHandler({required Message message});
 
 abstract class UhstRelayClient {
   Future<HostConfiguration> initHost({String? hostId});
@@ -13,6 +15,6 @@ abstract class UhstRelayClient {
       {required String token, required dynamic message, String? sendUrl});
   Future<EventSource> subscribeToMessages(
       {required String token,
-      required MessageHandler handler,
+      required RelayMessageHandler handler,
       String? receiveUrl});
 }

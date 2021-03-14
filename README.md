@@ -83,12 +83,11 @@ host
       });
     });
 
-    uhstSocket.onMessage(handler: ({required Message? message}) {
+    uhstSocket.onMessage(handler: ({required message}) {
       setState(() {
         hostMessages
-            .add("Host received: ${message?.body} ${message?.type}");
-        var payload = message?.payload;
-        if (payload != null) host?.broadcastString(message: payload);
+            .add("Host received: $message");
+        host?.broadcastString(message: message);
       });
     });
 
@@ -121,7 +120,7 @@ client
       client?.sendString(message: 'Hello host!');
     });
   })
-  ..onMessage(handler: ({required Message? message}) {
+  ..onMessage(handler: ({required message}) {
     setState(() {
       clientMessages.add('Client received: $message');
     });

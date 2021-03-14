@@ -1,10 +1,9 @@
 library uhst;
 
-import '../models/message.dart';
 import 'uhst_socket.dart';
 
 typedef void OpenHandler();
-typedef void MessageHandler({required Message? message});
+typedef void MessageHandler({required dynamic message});
 typedef void ErrorHandler({required Error error});
 typedef void CloseHandler();
 typedef void DiagnosticHandler({required String message});

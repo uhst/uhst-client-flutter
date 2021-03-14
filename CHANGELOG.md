@@ -1,3 +1,7 @@
+# 1.0.2-nullsafety.0
+
+- fix: uhstSocket.onMessage exposes the internal UHST message to the client #10
+
 # 1.0.1-nullsafety.0
 
 - fix: Host received client connection from clientId after message sent #9
