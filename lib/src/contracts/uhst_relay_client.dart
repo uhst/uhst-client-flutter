@@ -11,7 +11,7 @@ abstract class UhstRelayClient {
   Future<ClientConfiguration> initClient({required String hostId});
   Future<dynamic> sendMessage(
       {required String token, required dynamic message, String? sendUrl});
-  EventSource subscribeToMessages(
+  Future<EventSource> subscribeToMessages(
       {required String token,
       required MessageHandler handler,
       String? receiveUrl});

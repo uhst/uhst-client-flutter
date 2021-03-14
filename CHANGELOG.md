@@ -1,3 +1,7 @@
+# 1.0.1-nullsafety.0
+
+- fix: Host received client connection from clientId after message sent #9
+
 # 1.0.0-nullsafety.0
 
 - BREAKING CHNAGE: Rename apiUrl to relayUrl in preparation for adding UHST API support.
