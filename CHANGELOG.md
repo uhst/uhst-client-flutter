@@ -1,3 +1,7 @@
+# 2.0.0
+
+- BREAKING CHANAGE: null safety support fully enabled
+
 # 1.0.2-nullsafety.0
 
 - fix: uhstSocket.onMessage exposes the internal UHST message to the client #10
@@ -8,7 +12,7 @@
 
 # 1.0.0-nullsafety.0
 
-- BREAKING CHNAGE: Rename apiUrl to relayUrl in preparation for adding UHST API support.
+- BREAKING CHANAGE: Rename apiUrl to relayUrl in preparation for adding UHST API support.
 
 # 0.0.1-nullsafety.1
 
