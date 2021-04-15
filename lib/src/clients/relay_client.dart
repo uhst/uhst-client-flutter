@@ -4,16 +4,16 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:uhst/src/models/event_message.dart';
 import 'package:universal_html/html.dart';
 
+import './network_client.dart';
 import '../contracts/type_definitions.dart';
 import '../contracts/uhst_relay_client.dart';
 import '../models/client_configuration.dart';
+import '../models/event_message.dart';
 import '../models/host_configration.dart';
 import '../utils/uhst_errors.dart';
 import '../utils/uhst_exceptions.dart';
-import './network_client.dart';
 
 class _Consts {
   static const requestHeaderContentName = 'Content-type';

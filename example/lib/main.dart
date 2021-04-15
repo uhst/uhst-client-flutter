@@ -94,10 +94,10 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         });
 
-        uhstSocket.onMessage(handler: ({required message}) {
+        uhstSocket.onMessage<String>(handler: ({required message}) {
           setState(() {
             hostMessages.add("Host received: $message");
-            host?.broadcastString(message: message);
+            host?.broadcastString(message: message ?? '');
           });
         });
 

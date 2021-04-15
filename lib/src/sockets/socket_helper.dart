@@ -4,8 +4,8 @@ import 'dart:async';
 
 import 'package:universal_html/html.dart';
 
-import '../contracts/uhst_relay_client.dart';
 import '../contracts/uhst_event_handlers.dart';
+import '../contracts/uhst_relay_client.dart';
 import '../contracts/uhst_socket_events.dart';
 
 class SocketHelper {
@@ -14,7 +14,8 @@ class SocketHelper {
   late final Stream<Map<UhstSocketEventType, dynamic>> eventStream;
   final diagntosticListenerHandlers =
       <DiagnosticHandler?, StreamSubscription>{};
-  final messageListenerHandlers = <MessageHandler?, StreamSubscription>{};
+  final messageListenerHandlers =
+      <MessageHandler<dynamic>?, StreamSubscription>{};
   final errorListenerHandlers = <ErrorHandler?, StreamSubscription>{};
   final closeListenerHandlers = <CloseHandler?, StreamSubscription>{};
   final openListenerHandlers = <OpenHandler?, StreamSubscription>{};
