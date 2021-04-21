@@ -2,6 +2,8 @@ library uhst;
 
 import 'dart:async';
 
+import 'package:uhst/src/contracts/uhst_event_handlers.dart';
+
 import '../contracts/uhst_socket.dart';
 import '../contracts/uhst_socket_events.dart';
 import 'socket_helper.dart';
@@ -24,7 +26,7 @@ mixin SocketSubsriptions implements UhstSocket {
     subsription?.cancel();
   }
 
-  void offMessage({required handler}) {
+  void offMessage<TMessage>({required handler}) {
     var subsription = h.messageListenerHandlers.remove(handler);
     subsription?.cancel();
   }
@@ -73,15 +75,16 @@ mixin SocketSubsriptions implements UhstSocket {
     return subsription;
   }
 
-  StreamSubscription<Map<UhstSocketEventType, dynamic>> onMessage(
+  StreamSubscription<Map<UhstSocketEventType, dynamic>> onMessage<TMessage>(
       {required handler}) {
     var subsription = h.eventStream.listen((event) {
       if (event.containsKey(UhstSocketEventType.message)) {
         handler(message: event.values.first);
       }
     });
-    h.messageListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.messageListenerHandlers.update(
+        handler as MessageHandler, (value) => subsription,
+        ifAbsent: () => subsription);
     return subsription;
   }
 
@@ -122,7 +125,7 @@ mixin SocketSubsriptions implements UhstSocket {
     });
   }
 
-  void onceMessage({required handler}) {
+  void onceMessage<TMessage>({required handler}) {
     // ignore: cancel_subscriptions
     var subscription = onMessage(handler: handler);
     subscription.onData((data) {
