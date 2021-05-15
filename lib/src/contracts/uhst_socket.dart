@@ -9,19 +9,19 @@ import 'uhst_event_handlers.dart';
 
 abstract class UhstSocket {
   void onOpen({required OpenHandler handler});
-  void onMessage<TMessage>({required MessageHandler<TMessage> handler});
+  void onMessage({required MessageHandler handler});
   void onError({required ErrorHandler handler});
   void onClose({required CloseHandler handler});
   void onDiagnostic({required DiagnosticHandler handler});
 
   void onceOpen({required OpenHandler handler});
-  void onceMessage<TMessage>({required MessageHandler<TMessage> handler});
+  void onceMessage({required MessageHandler handler});
   void onceError({required ErrorHandler handler});
   void onceClose({required CloseHandler handler});
   void onceDiagnostic({required DiagnosticHandler handler});
 
   void offOpen({required OpenHandler handler});
-  void offMessage<TMessage>({required MessageHandler<TMessage> handler});
+  void offMessage({required MessageHandler handler});
   void offError({required ErrorHandler handler});
   void offClose({required CloseHandler handler});
   void offDiagnostic({required DiagnosticHandler handler});

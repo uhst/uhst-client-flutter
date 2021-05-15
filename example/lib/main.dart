@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Uhst Example',
+      title: 'Flutter UHST Example',
       theme: ThemeData(
           // This is the theme of your application.
           //
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
           // is not restarted.
           primarySwatch: Colors.blue,
           brightness: Brightness.dark),
-      home: MyHomePage(title: 'Flutter Uhst Example'),
+      home: MyHomePage(title: 'Flutter UHST Example'),
     );
   }
 }
@@ -49,7 +49,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final List<String> hostMessages = [];
   final List<String> clientMessages = [];
-  Uhst? uhst;
+  UHST? uhst;
   UhstHost? host;
   UhstSocket? client;
   final TextEditingController _hostIdController = TextEditingController();
@@ -60,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void initHost() async {
-    initUhst();
+    initUHST();
     host?.disconnect();
     host = uhst?.host();
     host
@@ -94,10 +94,10 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         });
 
-        uhstSocket.onMessage<String>(handler: ({required message}) {
+        uhstSocket.onMessage(handler: ({required message}) {
           setState(() {
             hostMessages.add("Host received: $message");
-            host?.broadcastString(message: message ?? '');
+            host?.broadcastString(message: message);
           });
         });
 
@@ -109,14 +109,14 @@ class _MyHomePageState extends State<MyHomePage> {
       });
   }
 
-  initUhst() {
+  initUHST() {
     if (uhst == null) {
-      uhst = Uhst(debug: true);
+      uhst = UHST(debug: true);
     }
   }
 
   Future<void> join() async {
-    initUhst();
+    initUHST();
     client?.close();
     client = uhst?.join(hostId: _hostIdController.text);
     client

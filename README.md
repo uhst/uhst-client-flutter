@@ -1,6 +1,6 @@
-# Uhst
+# UHST
 
-> User Hosted Secure Transmission (uhst) for Flutter in Dart
+> User Hosted Secure Transmission (UHST) for Flutter in Dart
 
 [![Pub](https://img.shields.io/pub/v/uhst.svg)](https://pub.dartlang.org/packages/uhst)
 [![Gitter](https://badges.gitter.im/uhst/community.svg)](https://gitter.im/uhst/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -8,20 +8,20 @@
 
 ## About
 
-Uhst is client library for the User Hosted Secure Transmission framework.
+UHST is client library for the User Hosted Secure Transmission framework.
 
 It is able to:
 
-- send messages from client and listen messages broadcasted from host
+- send messages from client and listen for messages broadcasted from host
 - broadcast messages by host
 - listen messages from multiple clients by host
 
-You can see [an implemented example](http://docs.uhst.io/uhst-client-flutter/) and source for it [on GitHub](https://github.com/uhst/uhst-client-flutter/tree/next/example)
+You can see [an implemented example](https://docs.uhst.io/uhst-client-flutter/) and source for it [on GitHub](https://github.com/uhst/uhst-client-flutter/tree/next/example)
 
 Please notice current version limitations:
 
 - it supports string typed messages only.
-- require server with Uhst implemented protocol. PLease see an example of ready to go server [on GitHub](https://github.com/uhst/uhst-server-node).
+- require server with UHST implemented protocol. PLease see an example of ready to go server [on GitHub](https://github.com/uhst/uhst-server-node).
 
 ### Support and discussions
 
@@ -32,7 +32,7 @@ Join us on [Gitter](https://gitter.im/uhst/community?utm_source=share-link&utm_m
 Assuming you have loaded the library, first create a new instance:
 
 ```dart
-var uhst = Uhst();
+var uhst = UHST();
 ```
 
 Refer to the documentation to learn about the options you can pass
@@ -196,5 +196,5 @@ You can find UHST on GitHub; feel free to start an issue or create a pull reques
 
 ## License
 
-Copyright (c) 2020 Uhst
+Copyright (c) 2020 UHST
 Licensed under [MIT License](LICENSE).

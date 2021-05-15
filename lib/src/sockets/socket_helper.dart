@@ -14,8 +14,7 @@ class SocketHelper {
   late final Stream<Map<UhstSocketEventType, dynamic>> eventStream;
   final diagntosticListenerHandlers =
       <DiagnosticHandler?, StreamSubscription>{};
-  final messageListenerHandlers =
-      <MessageHandler<dynamic>?, StreamSubscription>{};
+  final messageListenerHandlers = <MessageHandler?, StreamSubscription>{};
   final errorListenerHandlers = <ErrorHandler?, StreamSubscription>{};
   final closeListenerHandlers = <CloseHandler?, StreamSubscription>{};
   final openListenerHandlers = <OpenHandler?, StreamSubscription>{};

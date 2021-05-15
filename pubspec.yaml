@@ -1,11 +1,7 @@
 name: uhst
 version: 2.0.0
 
-description: >-
-  User Hosted Secure Transmission (uhst) for to:
-  - send messages from client and listen messages broadcasted from host
-  - broadcast messages by host
-  - listen messages from multiple clients by host
+description: UHST client for Flutter
 
 homepage: https://github.com/uhst/uhst-client-flutter
 environment:
