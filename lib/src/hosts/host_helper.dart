@@ -2,8 +2,7 @@ library uhst;
 
 import 'dart:async';
 
-import 'package:universal_html/html.dart';
-
+import '../models/relay_stream.dart';
 import '../contracts/uhst_relay_client.dart';
 import '../contracts/uhst_event_handlers.dart';
 import '../contracts/uhst_host_event.dart';
@@ -32,7 +31,7 @@ class HostHelper {
   final bool debug;
 
   String? sendUrl;
-  EventSource? relayMessageStream;
+  RelayStream? relayMessageStream;
   HostHelper({
     required this.relayClient,
     required this.debug,

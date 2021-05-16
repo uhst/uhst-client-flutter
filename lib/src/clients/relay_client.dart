@@ -9,6 +9,7 @@ import 'package:universal_html/html.dart';
 import './network_client.dart';
 import '../contracts/type_definitions.dart';
 import '../contracts/uhst_relay_client.dart';
+import '../models/relay_stream.dart';
 import '../models/client_configuration.dart';
 import '../models/event_message.dart';
 import '../models/host_configration.dart';
@@ -125,25 +126,27 @@ class RelayClient implements UhstRelayClient {
   }
 
   @override
-  Future<EventSource> subscribeToMessages(
-      {required String token, required handler, String? receiveUrl}) {
+  subscribeToMessages(
+      {required String token,
+      required RelayReadyHandler onReady,
+      required RelayErrorHandler onError,
+      required RelayMessageHandler onMessage,
+      String? receiveUrl}) {
     var url = receiveUrl ?? this.relayUrl;
     var finalUrl = '$url?token=$token';
     var uri = Uri.parse(finalUrl);
-    var completer = Completer<EventSource>();
 
     EventSource source = EventSource(finalUrl);
     source.onOpen.listen((event) {
-      completer.complete(source);
+      onReady(stream: new RelayStream(eventSource: source));
     });
     source.onError.listen((event) {
-      completer.completeError(RelayError(uri));
+      onError(error: RelayError(uri));
     });
     source.onMessage.listen((event) {
       var eventMessageMap = jsonDecode(event.data);
       var eventMessage = EventMessage.fromJson(eventMessageMap);
-      handler(message: eventMessage.body);
+      onMessage(message: eventMessage.body);
     });
-    return completer.future;
   }
 }

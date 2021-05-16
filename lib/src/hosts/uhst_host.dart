@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:uhst/src/contracts/uhst_relay_client.dart';
 import 'package:universal_html/html.dart';
 
 import '../contracts/type_definitions.dart';
@@ -12,11 +11,14 @@ import '../contracts/uhst_host_event.dart';
 import '../contracts/uhst_host_socket.dart';
 import '../contracts/uhst_socket.dart';
 import '../contracts/uhst_socket_provider.dart';
+import '../contracts/uhst_relay_client.dart';
+import '../models/relay_stream.dart';
 import '../models/host_configration.dart';
 import '../models/message.dart';
 import '../models/socket_params.dart';
 import '../utils/jwt.dart';
 import '../utils/uhst_errors.dart';
+import '../utils/uhst_exceptions.dart';
 import 'host_helper.dart';
 import 'host_subscriptions.dart';
 
@@ -123,21 +125,32 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       if (h.debug)
         h.emitDiagnostic(body: "Host configuration received from server.");
 
-      h.relayMessageStream = await h.relayClient.subscribeToMessages(
+      h.relayClient.subscribeToMessages(
           token: _config.hostToken,
-          handler: _handleMessage,
+          onReady: _handleReady,
+          onError: _handleError,
+          onMessage: _handleMessage,
           receiveUrl: _config.receiveUrl);
       h.token = _config.hostToken;
       h.sendUrl = _config.sendUrl;
-
-      if (h.debug)
-        h.emitDiagnostic(body: "Host subscribed to messages from server.");
-      h.emit(message: HostEventType.ready, body: _config.hostId);
     } catch (error) {
       if (h.debug)
         h.emitDiagnostic(body: "Host failed subscribing to messages: $error");
       h.emitError(body: error);
     }
+  }
+
+  void _handleReady({required RelayStream stream}) {
+    h.relayMessageStream = stream;
+    if (h.debug)
+      h.emitDiagnostic(body: "Host subscribed to messages from server.");
+    h.emit(message: HostEventType.ready, body: _config.hostId);
+  }
+
+  void _handleError({required RelayError error}) {
+    if (h.debug)
+      h.emitDiagnostic(body: "Host received error from relay: $error");
+    h.emitError(body: error);
   }
 
   void _handleMessage({required Message message}) async {
