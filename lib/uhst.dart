@@ -10,5 +10,4 @@ export 'src/hosts/uhst_host.dart';
 export 'src/models/message.dart';
 export 'src/sockets/relay_socket_provider.dart';
 export 'src/uhst.dart';
-export 'src/utils/uhst_errors.dart';
 export 'src/utils/uhst_exceptions.dart';

@@ -57,7 +57,9 @@ class ApiClient implements UhstRelayClient {
   Future<String> getRelayUrl({String? hostId}) async {
     var uri = Uri.parse(_Consts.apiUrl);
     if (hostId != null) {
-      uri = uri.replace(queryParameters: <String, String>{'hostId': hostId});
+      var qParams = Map<String, String>();
+      qParams['hostId'] = hostId;
+      uri = uri.replace(queryParameters: qParams);
     }
 
     var apiResponse =

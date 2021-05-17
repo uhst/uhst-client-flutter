@@ -60,7 +60,7 @@ host
       _hostIdController.text = hostId;
     });
   })
-  ..onError(handler: ({required Error error}) {
+  ..onError(handler: ({required dynamic error}) {
     print('error received! $error');
     if (error is HostIdAlreadyInUse) {
       // this is expected if you refresh the page
@@ -125,7 +125,7 @@ client
       clientMessages.add('Client received: $message');
     });
   })
-  ..onError(handler: ({required Error error}) {
+  ..onError(handler: ({required dynamic error}) {
     if (error is InvalidHostId || error is InvalidClientOrHostId) {
       setState(() {
         clientMessages.add('Invalid hostId!');

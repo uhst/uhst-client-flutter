@@ -7,13 +7,11 @@ import 'package:http/http.dart' as http;
 import 'package:universal_html/html.dart';
 
 import './network_client.dart';
-import '../contracts/type_definitions.dart';
 import '../contracts/uhst_relay_client.dart';
 import '../models/relay_stream.dart';
 import '../models/client_configuration.dart';
 import '../models/event_message.dart';
 import '../models/host_configration.dart';
-import '../utils/uhst_errors.dart';
 import '../utils/uhst_exceptions.dart';
 
 class _Consts {
@@ -29,45 +27,30 @@ class RelayClient implements UhstRelayClient {
   final String relayUrl;
   RelayClient({required this.relayUrl}) : networkClient = new NetworkClient();
 
-  /// Returns generic [T] type from response
-  /// Handles error cases
-  Future<T> _fetch<T>(
-      {required String url,
-      String? hostId,
-      required FromJson<T> fromJson}) async {
-    T handleResponseForFetch({required http.Response response}) {
-      switch (response.statusCode) {
-        case 200:
-          var responseText = response.body;
-          if (responseText.isEmpty)
-            throw ArgumentError('response text is empty');
-          var decodedBody = jsonDecode(responseText);
-          var configuration = fromJson(decodedBody);
-          return configuration;
-        case 400:
-          throw InvalidHostId((hostId), argName: response.reasonPhrase);
-        default:
-          throw RelayError(response.request?.url);
-      }
-    }
-
-    var uri = Uri.parse(url);
-    try {
-      var response = await http.post(uri, headers: <String, String>{
-        _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
-      });
-      return handleResponseForFetch(response: response);
-    } catch (error) {
-      throw RelayUnreachable(Uri(userInfo: error.toString()));
-    }
-  }
-
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    var url = '$relayUrl?action=join&hostId=$hostId';
-    var response = await _fetch(
-        fromJson: ClientConfiguration.fromJson, hostId: (hostId), url: url);
-    return response;
+    var uri = Uri.parse(this.relayUrl);
+    var qParams = Map<String, String>();
+    qParams['action'] = 'join';
+    qParams['hostId'] = hostId;
+    uri = uri.replace(queryParameters: qParams);
+    try {
+      var response = await this
+          .networkClient
+          .post(uri: uri, fromJson: ClientConfiguration.fromJson);
+      return response;
+    } catch (e) {
+      if (e is NetworkError) {
+        if (e.responseCode == 400) {
+          throw new InvalidHostId(e.message);
+        } else {
+          throw new RelayError(e.message);
+        }
+      } else {
+        print(e);
+        throw new RelayUnreachable(e);
+      }
+    }
   }
 
   @override
@@ -79,49 +62,49 @@ class RelayClient implements UhstRelayClient {
       qParams['hostId'] = hostId;
     }
     uri = uri.replace(queryParameters: qParams);
-    var response = await this
-        .networkClient
-        .post(uri: uri, fromJson: HostConfiguration.fromJson);
-    return response;
+    try {
+      var response = await this
+          .networkClient
+          .post(uri: uri, fromJson: HostConfiguration.fromJson);
+      return response;
+    } catch (e) {
+      if (e is NetworkError) {
+        if (e.responseCode == 400) {
+          throw new HostIdAlreadyInUse(e.message);
+        } else {
+          throw new RelayError(e.message);
+        }
+      } else {
+        print(e);
+        throw new RelayUnreachable(e);
+      }
+    }
   }
 
   @override
   Future sendMessage(
       {required String token, required message, String? sendUrl}) async {
-    dynamic handleResponseForMessage({required http.Response response}) {
-      switch (response.statusCode) {
-        case 200:
-          var responseText = response.body;
-          if (responseText.isEmpty)
-            throw ArgumentError('response text is empty');
-          // In case if all is ok, then ok
-          if (responseText.toLowerCase() == 'ok') return 'OK';
-
-          var responseData = jsonDecode(responseText);
-          return responseData;
-        case 400:
-          throw InvalidClientOrHostId(
-            response.request?.url,
-          );
-        case 401:
-          throw new InvalidToken(response.reasonPhrase);
-        default:
-          throw RelayError(response.request?.url);
-      }
-    }
-
     var hostUrl = sendUrl ?? relayUrl;
     var uri = Uri.parse('$hostUrl?token=$token');
-
+    var response;
     try {
-      var response = await http.post(uri,
+      response = await http.post(uri,
           headers: <String, String>{
             _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
           },
           body: message);
-      return handleResponseForMessage(response: response);
     } catch (error) {
-      throw RelayUnreachable(uri);
+      throw RelayUnreachable(error);
+    }
+    switch (response.statusCode) {
+      case 200:
+        return;
+      case 400:
+        throw InvalidClientOrHostId(response.body);
+      case 401:
+        throw new InvalidToken(token);
+      default:
+        throw RelayError(response.body);
     }
   }
 
@@ -141,7 +124,7 @@ class RelayClient implements UhstRelayClient {
       onReady(stream: new RelayStream(eventSource: source));
     });
     source.onError.listen((event) {
-      onError(error: RelayError(uri));
+      onError(error: RelayError(event));
     });
     source.onMessage.listen((event) {
       var eventMessageMap = jsonDecode(event.data);

@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:universal_html/html.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../contracts/type_definitions.dart';
 import '../contracts/uhst_host_event.dart';
@@ -16,8 +17,6 @@ import '../models/relay_stream.dart';
 import '../models/host_configration.dart';
 import '../models/message.dart';
 import '../models/socket_params.dart';
-import '../utils/jwt.dart';
-import '../utils/uhst_errors.dart';
 import '../utils/uhst_exceptions.dart';
 import 'host_helper.dart';
 import 'host_subscriptions.dart';
@@ -46,7 +45,7 @@ import 'host_subscriptions.dart';
 ///           _hostIdController.text = hostId;
 ///         });
 ///       })
-///       ..onError(handler: ({required Error error}) {
+///       ..onError(handler: ({required dynamic error}) {
 ///         print('error received! $error');
 ///         if (error is HostIdAlreadyInUse) {
 ///           // this is expected if you refresh the page
@@ -157,24 +156,33 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     var token = message.responseToken;
 
     if (token == null || token.isEmpty) throw InvalidToken(token);
-    String clientId = Jwt.decodeSubject(token: token);
-    var hostSocket = _clients[clientId];
+    try {
+      Map<String, dynamic> tokenPayload = JwtDecoder.decode(token);
+      String? clientId = tokenPayload['clientId'];
+      if (clientId == null) {
+        throw InvalidToken(token);
+      }
+      var hostSocket = _clients[clientId];
 
-    if (hostSocket == null) {
-      var hostParams = HostSocketParams(token: token, sendUrl: _config.sendUrl);
-      var socket = _socketProvider.createUhstSocket(
-          relayClient: h.relayClient, hostParams: hostParams, debug: h.debug);
-      if (h.debug)
-        h.emitDiagnostic(
-            body: "Host received client connection from clientId: $clientId");
-      h.emit(message: HostEventType.connection, body: socket);
-      _clients.update(clientId, (value) => value = socket,
-          ifAbsent: () => socket);
-      hostSocket = socket;
-      // give the connection handler a chance to subscribe
-      Timer.run(() => socket.handleMessage(message: message));
-    } else {
-      hostSocket.handleMessage(message: message);
+      if (hostSocket == null) {
+        var hostParams =
+            HostSocketParams(token: token, sendUrl: _config.sendUrl);
+        var socket = _socketProvider.createUhstSocket(
+            relayClient: h.relayClient, hostParams: hostParams, debug: h.debug);
+        if (h.debug)
+          h.emitDiagnostic(
+              body: "Host received client connection from clientId: $clientId");
+        h.emit(message: HostEventType.connection, body: socket);
+        _clients.update(clientId, (value) => value = socket,
+            ifAbsent: () => socket);
+        hostSocket = socket;
+        // give the connection handler a chance to subscribe
+        Timer.run(() => socket.handleMessage(message: message));
+      } else {
+        hostSocket.handleMessage(message: message);
+      }
+    } catch (error) {
+      throw InvalidToken(token);
     }
   }
 

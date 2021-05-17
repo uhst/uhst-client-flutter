@@ -48,7 +48,7 @@ import 'socket_subsriptions.dart';
 ///       clientMessages.add('Client received: $message');
 ///     });
 ///   })
-///   ..onError(handler: ({required Error error}) {
+///   ..onError(handler: ({required dynamic error}) {
 ///     if (error is InvalidHostId || error is InvalidClientOrHostId) {
 ///       setState(() {
 ///         clientMessages.add('Invalid hostId!');
@@ -123,7 +123,6 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
           receiveUrl: config.receiveUrl);
     } catch (error) {
       if (h.debug) h.emitDiagnostic(body: "Client failed: $error");
-
       h.emitError(body: error);
     }
   }

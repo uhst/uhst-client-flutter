@@ -1,3 +1,9 @@
+# 3.0.0
+
+- BREAKING CHANAGE: rename Uhst to UHST
+- fix: "Bad state: Future already completed" #15
+- fix: error handling, prior to this version error handling is unusable
+
 # 2.0.0
 
 - BREAKING CHANAGE: null safety support fully enabled

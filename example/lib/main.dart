@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _hostIdController.text = hostId;
         });
       })
-      ..onError(handler: ({required Error error}) {
+      ..onError(handler: ({required dynamic error}) {
         print('error received! $error');
         if (error is HostIdAlreadyInUse) {
           // this is expected if you refresh the page
@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
     client?.close();
     client = uhst?.join(hostId: _hostIdController.text);
     client
-      ?..onError(handler: ({required Error error}) {
+      ?..onError(handler: ({required dynamic error}) {
         if (error is InvalidHostId || error is InvalidClientOrHostId) {
           setState(() {
             clientMessages.add('Invalid hostId!');
