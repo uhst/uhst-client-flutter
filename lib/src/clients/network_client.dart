@@ -9,24 +9,17 @@ class NetworkClient {
   /// Returns generic [T] type from response
   /// Handles error cases
   Future<T> post<T>({required Uri uri, required FromJson<T> fromJson}) async {
-    T handleResponseForFetch({required http.Response response}) {
-      switch (response.statusCode) {
-        case 200:
-          var responseText = response.body;
-          if (responseText.isEmpty)
-            throw ArgumentError('response text is empty');
-          var decodedBody = jsonDecode(responseText);
-          return fromJson(decodedBody);
-        default:
-          throw NetworkError("${response.statusCode} ${response.reasonPhrase}");
-      }
-    }
-
+    var response;
     try {
-      var response = await http.post(uri);
-      return handleResponseForFetch(response: response);
+      response = await http.post(uri);
     } catch (error) {
-      throw NetworkUnreachable(Uri(userInfo: error.toString()));
+      throw NetworkUnreachable(error);
+    }
+    if (response.statusCode == 200) {
+      return fromJson(jsonDecode(response.body));
+    } else {
+      throw NetworkError(
+          responseCode: response.statusCode, message: response.body);
     }
   }
 }

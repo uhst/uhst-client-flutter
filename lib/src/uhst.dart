@@ -12,8 +12,8 @@ import 'sockets/relay_socket_provider.dart';
 /// Provides a way to init Client [UhstSocket] and [UhstHost]
 ///
 /// For relay server you can use ready to go
-/// [Uhst Node Server](https://github.com/uhst/uhst-server-node)
-class Uhst {
+/// [UHST Node Server](https://github.com/uhst/uhst-server-node)
+class UHST {
   /// Relay client for communication with the server,
   /// normally used for testing or if implementing
   /// [UhstRelayClient | custom protocol].
@@ -29,7 +29,7 @@ class Uhst {
   /// [relayUrl] is a relay url [String], implementing the uhst protocol.
   ///
   /// For server you can use ready to go
-  /// [Uhst Node Server](https://github.com/uhst/uhst-server-node)
+  /// [UHST Node Server](https://github.com/uhst/uhst-server-node)
   ///
   /// [relayClient] is a standard host and client provider which used
   /// to subscribe to event source, send messages and init [UhstHost]
@@ -43,7 +43,7 @@ class Uhst {
   ///
   /// Use [debug] = true to turn on debug messages
   /// on stream events
-  Uhst(
+  UHST(
       {String? relayUrl,
       bool? debug,
       UhstRelayClient? relayClient,

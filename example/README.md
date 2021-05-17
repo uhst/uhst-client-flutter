@@ -18,5 +18,5 @@ samples, guidance on mobile development, and a full API reference.
 To get started run
 
 ```bash
-flutter run --no-sound-null-safety
+flutter run
 ```

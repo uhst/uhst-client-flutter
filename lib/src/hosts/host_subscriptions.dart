@@ -62,7 +62,7 @@ mixin HostSubsriptions implements UhstHostSocket {
     var subsription = h.eventStream.listen((event) {});
     subsription.onData((data) {
       if (data.containsKey(HostEventType.error)) {
-        handler(error: ArgumentError(data.values.first));
+        handler(error: data.values.first);
       }
     });
     h.errorListenerHandlers

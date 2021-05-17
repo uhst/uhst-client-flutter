@@ -2,10 +2,9 @@ library uhst;
 
 import 'dart:async';
 
-import 'package:universal_html/html.dart';
-
-import '../contracts/uhst_relay_client.dart';
+import '../models/relay_stream.dart';
 import '../contracts/uhst_event_handlers.dart';
+import '../contracts/uhst_relay_client.dart';
 import '../contracts/uhst_socket_events.dart';
 
 class SocketHelper {
@@ -31,7 +30,7 @@ class SocketHelper {
   final bool debug;
 
   String? sendUrl;
-  EventSource? relayMessageStream;
+  RelayStream? relayMessageStream;
   SocketHelper({
     required this.relayClient,
     required this.debug,

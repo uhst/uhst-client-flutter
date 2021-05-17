@@ -8,10 +8,12 @@ import 'package:universal_html/html.dart';
 
 import '../contracts/type_definitions.dart';
 import '../contracts/uhst_relay_client.dart';
+import '../models/relay_stream.dart';
 import '../contracts/uhst_socket.dart';
 import '../contracts/uhst_socket_events.dart';
 import '../models/message.dart';
 import '../models/socket_params.dart';
+import '../utils/uhst_exceptions.dart';
 import 'socket_helper.dart';
 import 'socket_subsriptions.dart';
 
@@ -46,7 +48,7 @@ import 'socket_subsriptions.dart';
 ///       clientMessages.add('Client received: $message');
 ///     });
 ///   })
-///   ..onError(handler: ({required Error error}) {
+///   ..onError(handler: ({required dynamic error}) {
 ///     if (error is InvalidHostId || error is InvalidClientOrHostId) {
 ///       setState(() {
 ///         clientMessages.add('Invalid hostId!');
@@ -113,17 +115,14 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
       h.token = config.clientToken;
       h.sendUrl = config.sendUrl;
-      h.relayMessageStream = await h.relayClient.subscribeToMessages(
+      h.relayClient.subscribeToMessages(
           token: config.clientToken,
-          handler: handleMessage,
+          onReady: _handleReady,
+          onError: _handleError,
+          onMessage: handleMessage,
           receiveUrl: config.receiveUrl);
-      if (h.debug)
-        h.emitDiagnostic(body: "Client subscribed to messages from server.");
-
-      h.emit(message: UhstSocketEventType.open, body: 'opened');
     } catch (error) {
       if (h.debug) h.emitDiagnostic(body: "Client failed: $error");
-
       h.emitError(body: error);
     }
   }
@@ -173,6 +172,16 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
   void sendString({required String message}) {
     _send(message: message, payloadType: PayloadType.string);
   }
+
+  void _handleReady({required RelayStream stream}) {
+    h.relayMessageStream = stream;
+    if (h.debug)
+      h.emitDiagnostic(body: "Client subscribed to messages from server.");
+
+    h.emit(message: UhstSocketEventType.open, body: 'opened');
+  }
+
+  void _handleError({required RelayError error}) {}
 
   void _send({dynamic? message, required PayloadType payloadType}) {
     var verifiedMessage = Message(

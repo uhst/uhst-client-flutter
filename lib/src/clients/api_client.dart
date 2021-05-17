@@ -1,5 +1,3 @@
-import 'package:universal_html/html.dart';
-
 import '../contracts/uhst_relay_client.dart';
 import '../models/api_response.dart';
 import '../models/host_configration.dart';
@@ -42,16 +40,26 @@ class ApiClient implements UhstRelayClient {
   }
 
   @override
-  Future<EventSource> subscribeToMessages(
-      {required String token, required handler, String? receiveUrl}) {
+  subscribeToMessages(
+      {required String token,
+      required RelayReadyHandler onReady,
+      required RelayErrorHandler onError,
+      required RelayMessageHandler onMessage,
+      String? receiveUrl}) {
     return this.relayClient.subscribeToMessages(
-        token: token, handler: handler, receiveUrl: receiveUrl);
+        token: token,
+        onReady: onReady,
+        onError: onError,
+        onMessage: onMessage,
+        receiveUrl: receiveUrl);
   }
 
   Future<String> getRelayUrl({String? hostId}) async {
     var uri = Uri.parse(_Consts.apiUrl);
     if (hostId != null) {
-      uri = uri.replace(queryParameters: <String, String>{'hostId': hostId});
+      var qParams = Map<String, String>();
+      qParams['hostId'] = hostId;
+      uri = uri.replace(queryParameters: qParams);
     }
 
     var apiResponse =

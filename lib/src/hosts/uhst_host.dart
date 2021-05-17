@@ -4,19 +4,20 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:uhst/src/contracts/uhst_relay_client.dart';
 import 'package:universal_html/html.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../contracts/type_definitions.dart';
 import '../contracts/uhst_host_event.dart';
 import '../contracts/uhst_host_socket.dart';
 import '../contracts/uhst_socket.dart';
 import '../contracts/uhst_socket_provider.dart';
+import '../contracts/uhst_relay_client.dart';
+import '../models/relay_stream.dart';
 import '../models/host_configration.dart';
 import '../models/message.dart';
 import '../models/socket_params.dart';
-import '../utils/jwt.dart';
-import '../utils/uhst_errors.dart';
+import '../utils/uhst_exceptions.dart';
 import 'host_helper.dart';
 import 'host_subscriptions.dart';
 
@@ -44,7 +45,7 @@ import 'host_subscriptions.dart';
 ///           _hostIdController.text = hostId;
 ///         });
 ///       })
-///       ..onError(handler: ({required Error error}) {
+///       ..onError(handler: ({required dynamic error}) {
 ///         print('error received! $error');
 ///         if (error is HostIdAlreadyInUse) {
 ///           // this is expected if you refresh the page
@@ -123,16 +124,14 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       if (h.debug)
         h.emitDiagnostic(body: "Host configuration received from server.");
 
-      h.relayMessageStream = await h.relayClient.subscribeToMessages(
+      h.relayClient.subscribeToMessages(
           token: _config.hostToken,
-          handler: _handleMessage,
+          onReady: _handleReady,
+          onError: _handleError,
+          onMessage: _handleMessage,
           receiveUrl: _config.receiveUrl);
       h.token = _config.hostToken;
       h.sendUrl = _config.sendUrl;
-
-      if (h.debug)
-        h.emitDiagnostic(body: "Host subscribed to messages from server.");
-      h.emit(message: HostEventType.ready, body: _config.hostId);
     } catch (error) {
       if (h.debug)
         h.emitDiagnostic(body: "Host failed subscribing to messages: $error");
@@ -140,28 +139,50 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     }
   }
 
+  void _handleReady({required RelayStream stream}) {
+    h.relayMessageStream = stream;
+    if (h.debug)
+      h.emitDiagnostic(body: "Host subscribed to messages from server.");
+    h.emit(message: HostEventType.ready, body: _config.hostId);
+  }
+
+  void _handleError({required RelayError error}) {
+    if (h.debug)
+      h.emitDiagnostic(body: "Host received error from relay: $error");
+    h.emitError(body: error);
+  }
+
   void _handleMessage({required Message message}) async {
     var token = message.responseToken;
 
     if (token == null || token.isEmpty) throw InvalidToken(token);
-    String clientId = Jwt.decodeSubject(token: token);
-    var hostSocket = _clients[clientId];
+    try {
+      Map<String, dynamic> tokenPayload = JwtDecoder.decode(token);
+      String? clientId = tokenPayload['clientId'];
+      if (clientId == null) {
+        throw InvalidToken(token);
+      }
+      var hostSocket = _clients[clientId];
 
-    if (hostSocket == null) {
-      var hostParams = HostSocketParams(token: token, sendUrl: _config.sendUrl);
-      var socket = _socketProvider.createUhstSocket(
-          relayClient: h.relayClient, hostParams: hostParams, debug: h.debug);
-      if (h.debug)
-        h.emitDiagnostic(
-            body: "Host received client connection from clientId: $clientId");
-      h.emit(message: HostEventType.connection, body: socket);
-      _clients.update(clientId, (value) => value = socket,
-          ifAbsent: () => socket);
-      hostSocket = socket;
-      // give the connection handler a chance to subscribe
-      Timer.run(() => socket.handleMessage(message: message));
-    } else {
-      hostSocket.handleMessage(message: message);
+      if (hostSocket == null) {
+        var hostParams =
+            HostSocketParams(token: token, sendUrl: _config.sendUrl);
+        var socket = _socketProvider.createUhstSocket(
+            relayClient: h.relayClient, hostParams: hostParams, debug: h.debug);
+        if (h.debug)
+          h.emitDiagnostic(
+              body: "Host received client connection from clientId: $clientId");
+        h.emit(message: HostEventType.connection, body: socket);
+        _clients.update(clientId, (value) => value = socket,
+            ifAbsent: () => socket);
+        hostSocket = socket;
+        // give the connection handler a chance to subscribe
+        Timer.run(() => socket.handleMessage(message: message));
+      } else {
+        hostSocket.handleMessage(message: message);
+      }
+    } catch (error) {
+      throw InvalidToken(token);
     }
   }
 

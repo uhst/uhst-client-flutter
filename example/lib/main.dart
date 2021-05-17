@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Uhst Example',
+      title: 'Flutter UHST Example',
       theme: ThemeData(
           // This is the theme of your application.
           //
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
           // is not restarted.
           primarySwatch: Colors.blue,
           brightness: Brightness.dark),
-      home: MyHomePage(title: 'Flutter Uhst Example'),
+      home: MyHomePage(title: 'Flutter UHST Example'),
     );
   }
 }
@@ -49,7 +49,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final List<String> hostMessages = [];
   final List<String> clientMessages = [];
-  Uhst? uhst;
+  UHST? uhst;
   UhstHost? host;
   UhstSocket? client;
   final TextEditingController _hostIdController = TextEditingController();
@@ -60,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void initHost() async {
-    initUhst();
+    initUHST();
     host?.disconnect();
     host = uhst?.host();
     host
@@ -71,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _hostIdController.text = hostId;
         });
       })
-      ..onError(handler: ({required Error error}) {
+      ..onError(handler: ({required dynamic error}) {
         print('error received! $error');
         if (error is HostIdAlreadyInUse) {
           // this is expected if you refresh the page
@@ -109,18 +109,18 @@ class _MyHomePageState extends State<MyHomePage> {
       });
   }
 
-  initUhst() {
+  initUHST() {
     if (uhst == null) {
-      uhst = Uhst(debug: true);
+      uhst = UHST(debug: true);
     }
   }
 
   Future<void> join() async {
-    initUhst();
+    initUHST();
     client?.close();
     client = uhst?.join(hostId: _hostIdController.text);
     client
-      ?..onError(handler: ({required Error error}) {
+      ?..onError(handler: ({required dynamic error}) {
         if (error is InvalidHostId || error is InvalidClientOrHostId) {
           setState(() {
             clientMessages.add('Invalid hostId!');
