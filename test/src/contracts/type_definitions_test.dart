@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:uhst/src/contracts/type_definitions.dart';
+import 'package:uhst/src/contracts/contracts.dart';
 
 const stringTypes = ['string', 'blob', 'typedData', 'byteBuffer'];
 const payloadTypes = [
@@ -12,18 +12,18 @@ const payloadTypes = [
 void main() {
   group('# type definitions', () {
     test('get string from payload type', () {
-      var result = <String>[];
-      payloadTypes.forEach((type) {
+      final result = <String>[];
+      for (final type in payloadTypes) {
         result.add(type.toStringValue());
-      });
+      }
 
       expect(result, equals(stringTypes));
     });
     test('get payload type from string', () {
-      var result = <PayloadType>[];
-      stringTypes.forEach((type) {
+      final result = <PayloadType>[];
+      for (final type in stringTypes) {
         result.add(PayloadType.fromString[type]);
-      });
+      }
       expect(result, equals(payloadTypes));
     });
   });

@@ -1,4 +1,4 @@
-library uhst;
+part of uhst_contracts;
 
 /// Defines message types for event streams
 /// inside client sockets
@@ -10,10 +10,12 @@ library uhst;
 /// final Stream<Map<UhstSocketEventType, dynamic>> eventStream;
 ///
 /// /// Event stream controller
-/// final StreamController<Map<UhstSocketEventType, dynamic>> eventStreamController;
+/// final StreamController<Map<UhstSocketEventType, dynamic>>
+/// eventStreamController;
 ///
 /// /// Stream and controller initialization
-/// eventStreamController = StreamController<Map<UhstSocketEventType, dynamic>>.broadcast();
+/// eventStreamController = StreamController<Map<UhstSocketEventType,
+/// dynamic>>.broadcast();
 /// eventStream = eventStreamController.stream;
 ///
 /// /// Send event and message to stream

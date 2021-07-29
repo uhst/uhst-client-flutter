@@ -1,12 +1,15 @@
-library uhst;
+part of uhst_models;
 
 class HostSocketParams {
+  HostSocketParams({
+    required this.token,
+    this.sendUrl,
+  });
   final String token;
   final String? sendUrl;
-  HostSocketParams({required this.token, this.sendUrl});
 }
 
 class ClientSocketParams {
-  final String hostId;
   ClientSocketParams({required this.hostId});
+  final String hostId;
 }

@@ -1,10 +1,10 @@
-import 'package:universal_html/html.dart';
+part of uhst_models;
 
 class RelayStream {
+  RelayStream({required this.eventSource});
   final EventSource eventSource;
 
-  RelayStream({required this.eventSource});
   void close() {
-    this.eventSource.close();
+    eventSource.close();
   }
 }

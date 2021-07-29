@@ -1,12 +1,10 @@
-library uhst;
+part of uhst_contracts;
 
-import 'uhst_socket.dart';
+typedef OpenHandler = void Function();
+typedef MessageHandler = void Function({required String message});
+typedef ExceptionHandler = void Function({required dynamic exception});
+typedef CloseHandler = void Function();
+typedef DiagnosticHandler = void Function({required String message});
 
-typedef void OpenHandler();
-typedef void MessageHandler({required String message});
-typedef void ErrorHandler({required dynamic error});
-typedef void CloseHandler();
-typedef void DiagnosticHandler({required String message});
-
-typedef void HostReadyHandler({required String hostId});
-typedef void HostConnectionHandler({required UhstSocket uhstSocket});
+typedef HostReadyHandler = void Function({required String hostId});
+typedef HostConnectionHandler = void Function({required UhstSocket uhstSocket});

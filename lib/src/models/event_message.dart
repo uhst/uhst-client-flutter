@@ -1,24 +1,23 @@
-import 'message.dart';
+part of uhst_models;
 
 class EventMessage {
-  final Message body;
-  final String responseToken;
-
-  EventMessage({required this.body, required this.responseToken});
-
+  EventMessage({
+    required this.body,
+    required this.responseToken,
+  });
   factory EventMessage.fromJson(Map<dynamic, dynamic> map) {
-    var message = Message.fromJson(map['body']);
-    var responseToken = map['responseToken'] ?? '';
+    final message = Message.fromJson(map['body']);
+    final responseToken = map['responseToken'] ?? '';
     message.responseToken = responseToken;
     return EventMessage(body: message, responseToken: responseToken);
   }
+  final Message body;
+  final String responseToken;
 
-  toJson() {
-    return {
-      'body': body.toJson(),
-      'responseToken': responseToken,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'body': body.toJson(),
+        'responseToken': responseToken,
+      };
 
   @override
   String toString() => '${toJson()}';

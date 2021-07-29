@@ -1,45 +1,44 @@
-library uhst;
-
-import 'package:universal_html/html.dart';
-
-import '../contracts/type_definitions.dart';
+part of uhst_models;
 
 @Deprecated('Use Message instead')
 class RelayMessage {
   String? _payload;
   PayloadType? _payloadType;
 
-  Future<void> setPayload({dynamic? message}) async {
+  Future<void> setPayload({dynamic message}) async {
     if (message is String) {
       _payload = message;
       _payloadType = PayloadType.string;
     } else if (message is Blob) {
       _payloadType = PayloadType.blob;
-      _payload = await this.blobToBase64(blob: message);
+      _payload = await blobToBase64(blob: message);
     } else {
-      throw Exception("Unsupported message type.");
+      throw ArgumentError.value(
+        message,
+        'message',
+        'unsupported',
+      );
     }
   }
 
   Future getPayload() async {
-    var payloadType = _payloadType;
-    if (payloadType == null)
-      throw Exception('.getPayload Payload type is not defined!');
+    final payloadType = _payloadType;
+    if (payloadType == null) {
+      throw ArgumentError.notNull('payloadType');
+    }
     switch (payloadType) {
       case PayloadType.string:
         return _payload;
       case PayloadType.blob:
       default:
-        throw Exception("Unsupported message type.");
-      // TODO: implement method
+        throw UnimplementedError('payloadType $payloadType');
       // const result = await fetch(_payload).then(res => res.blob());
       // return result;
     }
   }
 
   Future<String> blobToBase64({Blob? blob}) async {
-    // TODO: implement method
-    return throw Exception("Unimplemented blobToBase64 method.");
+    throw UnimplementedError('blobToBase64');
     // return new Promise((resolve) => {
     //   const reader = new FileReader();
     //   reader.readAsDataURL(blob);

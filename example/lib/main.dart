@@ -8,24 +8,22 @@ void main() {
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter UHST Example',
-      theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
-          primarySwatch: Colors.blue,
-          brightness: Brightness.dark),
-      home: MyHomePage(title: 'Flutter UHST Example'),
-    );
-  }
+  Widget build(BuildContext context) => MaterialApp(
+        title: 'Flutter UHST Example',
+        theme: ThemeData(
+            // This is the theme of your application.
+            //
+            // Try running your application with "flutter run". You'll see the
+            // application has a blue toolbar. Then, without quitting the app, try
+            // changing the primarySwatch below to Colors.green and then invoke
+            // "hot reload" (press "r" in the console where you ran "flutter run",
+            // or simply save your changes to "hot reload" in a Flutter IDE).
+            // Notice that the counter didn't reset back to zero; the application
+            // is not restarted.
+            primarySwatch: Colors.blue,
+            brightness: Brightness.dark),
+        home: MyHomePage(title: 'Flutter UHST Example'),
+      );
 }
 
 class MyHomePage extends StatefulWidget {
@@ -59,21 +57,21 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  void initHost() async {
+  Future<void> initHost() async {
     initUHST();
     host?.disconnect();
     host = uhst?.host();
     host
-      ?..onReady(handler: ({required String hostId}) {
+      ?..onReady(handler: ({required hostId}) {
         setState(() {
           hostMessages.add('Host Ready! Using $hostId');
           print('host is ready!');
           _hostIdController.text = hostId;
         });
       })
-      ..onError(handler: ({required dynamic error}) {
-        print('error received! $error');
-        if (error is HostIdAlreadyInUse) {
+      ..onException(handler: ({required dynamic exception}) {
+        print('exception received! $exception');
+        if (exception is HostIdAlreadyInUse) {
           // this is expected if you refresh the page
           // connection is still alive on the meeting point
           // just need to wait
@@ -83,29 +81,28 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         } else {
           setState(() {
-            hostMessages.add(error.toString());
+            hostMessages.add(exception.toString());
           });
         }
       })
       ..onConnection(handler: ({required UhstSocket uhstSocket}) {
-        uhstSocket.onDiagnostic(handler: ({required String message}) {
-          setState(() {
-            hostMessages.add(message);
+        uhstSocket
+          ..onDiagnostic(handler: ({required String message}) {
+            setState(() {
+              hostMessages.add(message);
+            });
+          })
+          ..onMessage(handler: ({required message}) {
+            setState(() {
+              hostMessages.add("Host received: $message");
+              host?.broadcastString(message: message);
+            });
+          })
+          ..onOpen(handler: () {
+            setState(() {
+              hostMessages.add('Client Connected');
+            });
           });
-        });
-
-        uhstSocket.onMessage(handler: ({required message}) {
-          setState(() {
-            hostMessages.add("Host received: $message");
-            host?.broadcastString(message: message);
-          });
-        });
-
-        uhstSocket.onOpen(handler: () {
-          setState(() {
-            hostMessages.add('Client Connected');
-          });
-        });
       });
   }
 
@@ -120,14 +117,14 @@ class _MyHomePageState extends State<MyHomePage> {
     client?.close();
     client = uhst?.join(hostId: _hostIdController.text);
     client
-      ?..onError(handler: ({required dynamic error}) {
-        if (error is InvalidHostId || error is InvalidClientOrHostId) {
+      ?..onException(handler: ({required dynamic exception}) {
+        if (exception is InvalidHostId || exception is InvalidClientOrHostId) {
           setState(() {
             clientMessages.add('Invalid hostId!');
           });
         } else {
           setState(() {
-            clientMessages.add(error.toString());
+            clientMessages.add(exception.toString());
           });
         }
       })
@@ -150,109 +147,102 @@ class _MyHomePageState extends State<MyHomePage> {
 
   TextEditingController hostTextFieldController = TextEditingController();
   @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Row(
-        children: [
-          Flexible(
-            flex: 2,
-            child: Material(
-                elevation: 4,
-                child: Container(
-                  padding: EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Text(
-                          'Setup & checks',
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was
+          // created by the App.build method, and use it to
+          // set our appbar title.
+          title: Text(widget.title),
+        ),
+        body: Row(
+          children: [
+            Flexible(
+              flex: 2,
+              child: Material(
+                  elevation: 4,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Center(
+                          child: Text(
+                            'Setup & checks',
+                          ),
                         ),
-                      ),
-                      Divider(
+                        const Divider(
+                          height: 22,
+                        ),
+                        TextField(
+                          decoration:
+                              const InputDecoration(labelText: 'Host id'),
+                          controller: _hostIdController,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        TextButton(
+                            onPressed: initHost,
+                            child: const Text('Start hosting')),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextButton(
+                          onPressed: () async => join(),
+                          child: const Text('Click to join a host'),
+                        ),
+                        const Divider(
+                          height: 22,
+                          thickness: 1,
+                        ),
+                        const Center(
+                          child: Text('Host chat'),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            itemBuilder: (context, index) =>
+                                Text(hostMessages[index]),
+                            itemCount: hostMessages.length,
+                          ),
+                        )
+                      ],
+                    ),
+                  )),
+            ),
+            Flexible(
+                flex: 2,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      const Text('Client chat'),
+                      const Divider(
                         height: 22,
                       ),
                       TextField(
-                        decoration: InputDecoration(labelText: 'Host id'),
-                        controller: _hostIdController,
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      TextButton(
-                          onPressed: () => initHost(),
-                          child: Text('Start hosting')),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      TextButton(
-                          onPressed: () async => await join(),
-                          child: Text('Click to join a host')),
-                      Divider(
-                        height: 22,
-                        thickness: 1,
-                      ),
-                      Center(
-                        child: Text('Host chat'),
-                      ),
-                      SizedBox(
-                        height: 20,
+                        controller: hostTextFieldController,
+                        decoration: InputDecoration(
+                            suffix: IconButton(
+                                icon: const Icon(Icons.send),
+                                onPressed: () {
+                                  client?.sendString(
+                                      message: hostTextFieldController.text);
+                                })),
                       ),
                       Expanded(
                         child: ListView.builder(
-                          itemBuilder: (context, index) {
-                            return Text(hostMessages[index]);
-                          },
-                          itemCount: hostMessages.length,
+                          itemBuilder: (context, index) =>
+                              Text(clientMessages[index]),
+                          itemCount: clientMessages.length,
                         ),
                       )
                     ],
                   ),
-                )),
-          ),
-          Flexible(
-              flex: 2,
-              child: Container(
-                padding: EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    Text('Client chat'),
-                    Divider(
-                      height: 22,
-                    ),
-                    TextField(
-                      controller: hostTextFieldController,
-                      decoration: InputDecoration(
-                          suffix: IconButton(
-                              icon: Icon(Icons.send),
-                              onPressed: () {
-                                client?.sendString(
-                                    message: hostTextFieldController.text);
-                              })),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemBuilder: (context, index) {
-                          return Text(clientMessages[index]);
-                        },
-                        itemCount: clientMessages.length,
-                      ),
-                    )
-                  ],
-                ),
-              ))
-        ],
-      ),
-    );
-  }
+                ))
+          ],
+        ),
+      );
 }

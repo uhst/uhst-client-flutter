@@ -1,21 +1,4 @@
-library uhst;
-
-import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:universal_html/html.dart';
-
-import '../contracts/type_definitions.dart';
-import '../contracts/uhst_relay_client.dart';
-import '../models/relay_stream.dart';
-import '../contracts/uhst_socket.dart';
-import '../contracts/uhst_socket_events.dart';
-import '../models/message.dart';
-import '../models/socket_params.dart';
-import '../utils/uhst_exceptions.dart';
-import 'socket_helper.dart';
-import 'socket_subsriptions.dart';
+part of uhst_sockets;
 
 /// [UhstSocket] is similar to the HTML5 WebSocket interface,
 /// but instead of a dedicated server, one peer acts as a host for other
@@ -48,14 +31,14 @@ import 'socket_subsriptions.dart';
 ///       clientMessages.add('Client received: $message');
 ///     });
 ///   })
-///   ..onError(handler: ({required dynamic error}) {
-///     if (error is InvalidHostId || error is InvalidClientOrHostId) {
+///   ..onException(handler: ({required dynamic exception}) {
+///     if (exception is InvalidHostId || exception is InvalidClientOrHostId) {
 ///       setState(() {
 ///         clientMessages.add('Invalid hostId!');
 ///       });
 ///     } else {
 ///       setState(() {
-///         clientMessages.add(error.toString());
+///         clientMessages.add(exception.toString());
 ///       });
 ///     }
 ///   })
@@ -75,18 +58,21 @@ import 'socket_subsriptions.dart';
 /// to the same host but clients cannot send messages to each other,
 /// they can only communicate with the host.
 ///
-class RelaySocket with SocketSubsriptions implements UhstSocket {
-  RelaySocket._create(
-      {required UhstRelayClient relayClient, required bool debug}) {
+class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
+  RelaySocket._create({
+    required UhstRelayClient relayClient,
+    required bool debug,
+  }) {
     h = SocketHelper(relayClient: relayClient, debug: debug);
   }
 
-  static RelaySocket create(
-      {ClientSocketParams? clientParams,
-      HostSocketParams? hostParams,
-      required UhstRelayClient relayClient,
-      required bool debug}) {
-    var socket = RelaySocket._create(relayClient: relayClient, debug: debug);
+  factory RelaySocket.create({
+    required UhstRelayClient relayClient,
+    required bool debug,
+    ClientSocketParams? clientParams,
+    HostSocketParams? hostParams,
+  }) {
+    final socket = RelaySocket._create(relayClient: relayClient, debug: debug);
 
     if (hostParams is HostSocketParams) {
       // client connected
@@ -97,33 +83,37 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
       // will connect to host
       socket._initClient(hostId: clientParams.hostId);
     } else {
-      throw ArgumentError("Unsupported Socket Parameters Type");
+      throw ArgumentError.value(hostParams, 'hostParams', 'unsupported');
     }
-    if (debug)
+    if (debug) {
       socket.h.emitDiagnostic(body: {
         'create relay host': hostParams is HostSocketParams,
         'create relay client': clientParams is ClientSocketParams
       });
+    }
     return socket;
   }
 
   Future<void> _initClient({required String hostId}) async {
     try {
-      var config = await h.relayClient.initClient(hostId: hostId);
-      if (h.debug)
-        h.emitDiagnostic(body: "Client configuration received from server.");
+      final config = await h.relayClient.initClient(hostId: hostId);
+      if (h.debug) {
+        h.emitDiagnostic(body: 'Client configuration received from server.');
+      }
 
-      h.token = config.clientToken;
-      h.sendUrl = config.sendUrl;
-      h.relayClient.subscribeToMessages(
+      h
+        ..token = config.clientToken
+        ..sendUrl = config.sendUrl
+        ..relayClient.subscribeToMessages(
           token: config.clientToken,
           onReady: _handleReady,
-          onError: _handleError,
+          onException: _handleException,
           onMessage: handleMessage,
-          receiveUrl: config.receiveUrl);
-    } catch (error) {
-      if (h.debug) h.emitDiagnostic(body: "Client failed: $error");
-      h.emitError(body: error);
+          receiveUrl: config.receiveUrl,
+        );
+    } on Exception catch (exception) {
+      if (h.debug) h.emitDiagnostic(body: 'Client failed: $exception');
+      h.emitException(body: exception);
     }
   }
 
@@ -134,9 +124,9 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
   @override
   void handleMessage({required Message message}) {
-    String payload = message.payload;
+    final String payload = message.payload;
 
-    if (h.debug) h.emitDiagnostic(body: "Message received: $payload");
+    if (h.debug) h.emitDiagnostic(body: 'Message received: $payload');
 
     h.emit(message: UhstSocketEventType.message, body: payload);
   }
@@ -147,8 +137,8 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
   }
 
   @override
-  @Deprecated("Use sendByteBufer instead")
-  void sendArrayBuffer({required arrayBuffer}) {
+  @Deprecated('Use sendByteBufer instead')
+  void sendArrayBuffer({required ByteBuffer arrayBuffer}) {
     sendByteBufer(byteBuffer: arrayBuffer);
   }
 
@@ -158,8 +148,8 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
   }
 
   @override
-  @Deprecated("Use sendTypedData instead")
-  void sendArrayBufferView({required arrayBufferView}) {
+  @Deprecated('Use sendTypedData instead')
+  void sendArrayBufferView({required TypedData arrayBufferView}) {
     sendTypedData(typedData: arrayBufferView);
   }
 
@@ -175,30 +165,34 @@ class RelaySocket with SocketSubsriptions implements UhstSocket {
 
   void _handleReady({required RelayStream stream}) {
     h.relayMessageStream = stream;
-    if (h.debug)
-      h.emitDiagnostic(body: "Client subscribed to messages from server.");
+    if (h.debug) {
+      h.emitDiagnostic(body: 'Client subscribed to messages from server.');
+    }
 
     h.emit(message: UhstSocketEventType.open, body: 'opened');
   }
 
-  void _handleError({required RelayError error}) {}
+  void _handleException({required RelayException exception}) {}
 
-  void _send({dynamic? message, required PayloadType payloadType}) {
-    var verifiedMessage = Message(
+  void _send({
+    required PayloadType payloadType,
+    dynamic message,
+  }) {
+    final verifiedMessage = Message(
       payload: message,
       type: payloadType,
     );
-    var envelope = jsonEncode(verifiedMessage.toJson());
+    final envelope = jsonEncode(verifiedMessage.toJson());
     try {
       h.relayClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
-    } catch (e) {
-      if (h.debug) h.emitDiagnostic(body: "Failed sending message: $e");
-      h.emitError(body: e);
+    } on Exception catch (e) {
+      if (h.debug) h.emitDiagnostic(body: 'Failed sending message: $e');
+      h.emitException(body: e);
     }
 
     if (h.debug) {
-      h.emitDiagnostic(body: "Sent message $message");
+      h.emitDiagnostic(body: 'Sent message $message');
     }
   }
 }

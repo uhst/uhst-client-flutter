@@ -1,64 +1,72 @@
 /// How to determine and use Exception or Error
 /// https://stackoverflow.com/questions/17315945/error-vs-exception-in-dart
+///
+/// `Exceptions` should be used when there is a problem that is expected.
+/// A common one is any type of I/O operation (like network traffic),
+/// where the socket closes early, and trying to write data to
+/// that socket fails.
+/// `Errors` occur when there is a problem that was not expected.
+/// Things like null pointers (you expected this variable to not be null),
+/// running our of memory, etc... When you try to use the API in
+/// a wrong way or stuffs like that.
+/// `For the most part` you, as an app developer, will always `use exceptions`.
+/// Errors tend to be reserved for unexpected and fatal problems.
+part of uhst_utils;
 
-library uhst;
-
-/// TODO: implement doc InvalidHostId
 class InvalidHostId extends _ExceptionMessage {
   InvalidHostId([message])
       : super(exceptionName: 'InvalidHostId', message: message);
 }
 
-/// TODO: implement doc HostIdAlreadyInUse
 class HostIdAlreadyInUse extends _ExceptionMessage {
   HostIdAlreadyInUse([message])
       : super(exceptionName: 'HostIdAlreadyInUse', message: message);
 }
 
-/// TODO: implement doc InvalidClientOrHostId
 class InvalidClientOrHostId extends _ExceptionMessage {
   InvalidClientOrHostId([message])
       : super(exceptionName: 'InvalidClientOrHostId', message: message);
 }
 
-/// TODO: implement doc RelayUnreachable
 class NetworkUnreachable extends _ExceptionMessage {
   NetworkUnreachable([message])
       : super(exceptionName: 'NetworkUnreachable', message: message);
 }
 
-/// TODO: implement doc RelayError
-class NetworkError extends _ExceptionMessage {
+class NetworkException extends _ExceptionMessage {
+  NetworkException({
+    required this.responseCode,
+    message,
+  }) : super(exceptionName: 'NetworkException', message: message);
   final int responseCode;
-
-  NetworkError({required this.responseCode, message})
-      : super(exceptionName: 'NetworkError', message: message);
 }
 
-/// TODO: implement doc RelayUnreachable
 class RelayUnreachable extends _ExceptionMessage {
   RelayUnreachable([message])
       : super(exceptionName: 'RelayUnreachable', message: message);
 }
 
-/// TODO: implement doc RelayError
-class RelayError extends _ExceptionMessage {
-  RelayError([message]) : super(exceptionName: 'RelayError', message: message);
+class RelayException extends _ExceptionMessage {
+  RelayException([message])
+      : super(exceptionName: 'RelayException', message: message);
 }
 
-/// TODO: implement doc InvalidToken
 class InvalidToken extends _ExceptionMessage {
   InvalidToken(String? token)
       : super(exceptionName: 'InvalidToken', message: token);
 }
 
 class _ExceptionMessage implements Exception {
+  _ExceptionMessage({
+    required this.exceptionName,
+    this.message,
+  });
   final dynamic message;
   final String exceptionName;
-  _ExceptionMessage({this.message, required this.exceptionName});
+  @override
   String toString() {
-    Object? message = this.message;
+    final Object? message = this.message;
     if (message == null) return exceptionName;
-    return "$exceptionName exception: $message";
+    return '$exceptionName exception: $message';
   }
 }

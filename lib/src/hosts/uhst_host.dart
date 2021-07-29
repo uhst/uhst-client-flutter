@@ -1,25 +1,4 @@
-library uhst;
-
-import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:universal_html/html.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
-
-import '../contracts/type_definitions.dart';
-import '../contracts/uhst_host_event.dart';
-import '../contracts/uhst_host_socket.dart';
-import '../contracts/uhst_socket.dart';
-import '../contracts/uhst_socket_provider.dart';
-import '../contracts/uhst_relay_client.dart';
-import '../models/relay_stream.dart';
-import '../models/host_configration.dart';
-import '../models/message.dart';
-import '../models/socket_params.dart';
-import '../utils/uhst_exceptions.dart';
-import 'host_helper.dart';
-import 'host_subscriptions.dart';
+part of uhst_hosts;
 
 /// [UhstHost] in UHST is a peer which every other peer ([UhstSocket])
 /// connects to. This concept is similar to listen-server in multiplayer games.
@@ -45,9 +24,9 @@ import 'host_subscriptions.dart';
 ///           _hostIdController.text = hostId;
 ///         });
 ///       })
-///       ..onError(handler: ({required dynamic error}) {
-///         print('error received! $error');
-///         if (error is HostIdAlreadyInUse) {
+///       ..onException(handler: ({required dynamic exception}) {
+///         print('exception received! $exception');
+///         if (exception is HostIdAlreadyInUse) {
 ///           // this is expected if you refresh the page
 ///           // connection is still alive on the meeting point
 ///           // just need to wait
@@ -84,7 +63,35 @@ import 'host_subscriptions.dart';
 /// you get after receiving a [UhstHost().onReady()] event
 /// when connecting to the host.
 ///
-class UhstHost with HostSubsriptions implements UhstHostSocket {
+class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
+  /// Private factory.
+  /// Call it only from static create factory function
+  UhstHost._create({
+    required relayClient,
+    required socketProvider,
+    required debug,
+  }) : _socketProvider = socketProvider {
+    h = HostHelper(relayClient: relayClient, debug: debug);
+  }
+
+  /// Public factory
+  ///
+  /// [hostId] can be null and will be returned with `onReady` event
+  factory UhstHost.create({
+    required UhstRelayClient relayClient,
+    required UhstSocketProvider socketProvider,
+    required bool debug,
+    String? hostId,
+  }) {
+    // Call the private constructor
+    final uhstHost = UhstHost._create(
+      relayClient: relayClient,
+      debug: debug,
+      socketProvider: socketProvider,
+    ).._init(hostId: hostId);
+    return uhstHost;
+  }
+
   final Map<String, UhstSocket> _clients = <String, UhstSocket>{};
 
   /// Initilizing during init method
@@ -93,85 +100,71 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   /// Initilizing during init method
   final UhstSocketProvider _socketProvider;
 
-  /// Private factory.
-  /// Call it only from static create factory function
-  UhstHost._create(
-      {required relayClient, required socketProvider, required debug})
-      : this._socketProvider = socketProvider {
-    h = HostHelper(relayClient: relayClient, debug: debug);
-  }
-
-  /// Public factory
-  ///
-  /// [hostId] can be null and will be returned with `onReady` event
-  static UhstHost create(
-      {required UhstRelayClient relayClient,
-      required UhstSocketProvider socketProvider,
-      String? hostId,
-      required debug}) {
-    // Call the private constructor
-    var uhstHost = UhstHost._create(
-        relayClient: relayClient, debug: debug, socketProvider: socketProvider);
-    uhstHost._init(hostId: hostId);
-    return uhstHost;
-  }
-
   /// Initialize function must be called from within
   /// static create factory function
   Future<void> _init({String? hostId}) async {
     try {
       _config = await h.relayClient.initHost(hostId: hostId);
-      if (h.debug)
-        h.emitDiagnostic(body: "Host configuration received from server.");
+      if (h.debug) {
+        h.emitDiagnostic(body: 'Host configuration received from server.');
+      }
 
-      h.relayClient.subscribeToMessages(
+      h
+        ..relayClient.subscribeToMessages(
           token: _config.hostToken,
           onReady: _handleReady,
-          onError: _handleError,
+          onException: _handleException,
           onMessage: _handleMessage,
-          receiveUrl: _config.receiveUrl);
-      h.token = _config.hostToken;
-      h.sendUrl = _config.sendUrl;
-    } catch (error) {
-      if (h.debug)
-        h.emitDiagnostic(body: "Host failed subscribing to messages: $error");
-      h.emitError(body: error);
+          receiveUrl: _config.receiveUrl,
+        )
+        ..token = _config.hostToken
+        ..sendUrl = _config.sendUrl;
+    } on Exception catch (exception) {
+      if (h.debug) {
+        h.emitDiagnostic(
+          body: 'Host failed subscribing to messages: $exception',
+        );
+      }
+      h.emitException(body: exception);
     }
   }
 
   void _handleReady({required RelayStream stream}) {
     h.relayMessageStream = stream;
-    if (h.debug)
-      h.emitDiagnostic(body: "Host subscribed to messages from server.");
+    if (h.debug) {
+      h.emitDiagnostic(body: 'Host subscribed to messages from server.');
+    }
     h.emit(message: HostEventType.ready, body: _config.hostId);
   }
 
-  void _handleError({required RelayError error}) {
-    if (h.debug)
-      h.emitDiagnostic(body: "Host received error from relay: $error");
-    h.emitError(body: error);
+  void _handleException({required RelayException exception}) {
+    if (h.debug) {
+      h.emitDiagnostic(body: 'Host received exception from relay: $exception');
+    }
+    h.emitException(body: exception);
   }
 
-  void _handleMessage({required Message message}) async {
-    var token = message.responseToken;
+  Future<void> _handleMessage({required Message message}) async {
+    final token = message.responseToken;
 
     if (token == null || token.isEmpty) throw InvalidToken(token);
     try {
-      Map<String, dynamic> tokenPayload = JwtDecoder.decode(token);
-      String? clientId = tokenPayload['clientId'];
+      final Map<String, dynamic> tokenPayload = JwtDecoder.decode(token);
+      final String? clientId = tokenPayload['clientId'];
       if (clientId == null) {
         throw InvalidToken(token);
       }
       var hostSocket = _clients[clientId];
 
       if (hostSocket == null) {
-        var hostParams =
+        final hostParams =
             HostSocketParams(token: token, sendUrl: _config.sendUrl);
-        var socket = _socketProvider.createUhstSocket(
+        final socket = _socketProvider.createUhstSocket(
             relayClient: h.relayClient, hostParams: hostParams, debug: h.debug);
-        if (h.debug)
+        if (h.debug) {
           h.emitDiagnostic(
-              body: "Host received client connection from clientId: $clientId");
+              body: 'Host received client connection from clientId: $clientId');
+        }
         h.emit(message: HostEventType.connection, body: socket);
         _clients.update(clientId, (value) => value = socket,
             ifAbsent: () => socket);
@@ -181,15 +174,14 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
       } else {
         hostSocket.handleMessage(message: message);
       }
-    } catch (error) {
+    } on Exception catch (_) {
       throw InvalidToken(token);
     }
   }
 
-  String get hostId {
-    return _config.hostId;
-  }
+  String get hostId => _config.hostId;
 
+  @override
   void disconnect() {
     h.relayMessageStream?.close();
   }
@@ -200,7 +192,7 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   }
 
   @override
-  @Deprecated("Use sendByteBufer instead")
+  @Deprecated('Use sendByteBufer instead')
   void broadcastArrayBuffer({required ByteBuffer arrayBuffer}) {
     broadcastByteBufer(byteBuffer: arrayBuffer);
   }
@@ -211,7 +203,7 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
   }
 
   @override
-  @Deprecated("Use sendTypedData instead")
+  @Deprecated('Use sendTypedData instead')
   void broadcastArrayBufferView({required TypedData arrayBufferView}) {
     broadcastTypedData(typedData: arrayBufferView);
   }
@@ -226,19 +218,22 @@ class UhstHost with HostSubsriptions implements UhstHostSocket {
     _send(message: message, payloadType: PayloadType.string);
   }
 
-  void _send({dynamic message, required PayloadType payloadType}) async {
-    var verifiedMessage = Message(
+  Future<void> _send({
+    required PayloadType payloadType,
+    dynamic message,
+  }) async {
+    final verifiedMessage = Message(
       payload: message,
       type: payloadType,
     );
-    var envelope = jsonEncode(verifiedMessage.toJson());
+    final envelope = jsonEncode(verifiedMessage.toJson());
     try {
       await h.relayClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
-    } catch (e) {
-      if (h.debug) h.emitDiagnostic(body: "Failed sending message: $e");
-      h.emitError(body: e);
+    } on Exception catch (e) {
+      if (h.debug) h.emitDiagnostic(body: 'Failed sending message: $e');
+      h.emitException(body: e);
     }
-    if (h.debug) h.emitDiagnostic(body: "Sent message $message");
+    if (h.debug) h.emitDiagnostic(body: 'Sent message $message');
   }
 }

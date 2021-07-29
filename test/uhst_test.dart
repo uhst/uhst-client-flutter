@@ -7,12 +7,11 @@ void main() {
       expect(UHST(), isNotNull);
     });
 
-    test('should accept socketProvider', () {
-      // TODO: should accept socketProvider test
-      expect('', equals(''));
-    });
+    // test('should accept socketProvider', () {
+    //   expect('', equals(''));
+    // });
     test('should accept meetingPointUrl', () {
-      var relayUrl = "test";
+      const relayUrl = 'test';
       expect(UHST(relayUrl: relayUrl), isNotNull);
     });
   });

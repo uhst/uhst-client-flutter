@@ -1,3 +1,20 @@
+# 3.1.0
+
+- BREAKING CHANGE: all `Error` methods and functions renamed to `Exception`.
+  The reason of it is a nature between Exception and Error in dart.
+  In short:
+  `Exceptions` should be used when there is a problem that is expected.
+  A common one is any type of I/O operation (like network traffic), where the socket closes early, and trying to write data to that socket fails.
+  `Errors` occur when there is a problem that was not expected. Things like null pointers (you expected this variable to not be null), running our of memory, etc... When you try to use the API in a wrong way or stuffs like that.
+  `For the most part` you, as an app developer, will always `use exceptions`.
+  Errors tend to be reserved for unexpected and fatal problems.
+  source:
+  https://stackoverflow.com/questions/17315945/error-vs-exception-in-dart
+- BREAKING CHANGE: Dart API >= 2.13.0
+- feat: flutter_lints and analysis_options to get most better way style the code
+- fix: linter errors and code style improvements
+- fix: some Errors were replaced by Exceptions, some Exceptions became Errors to make more correct way of using Exceptions and Errors
+
 # 3.0.0
 
 - BREAKING CHANAGE: rename Uhst to UHST

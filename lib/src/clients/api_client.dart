@@ -1,9 +1,4 @@
-import '../contracts/uhst_relay_client.dart';
-import '../models/api_response.dart';
-import '../models/host_configration.dart';
-import '../models/client_configuration.dart';
-import './network_client.dart';
-import './relay_client.dart';
+part of uhst_clients;
 
 class _Consts {
   static const apiUrl = 'https://api.uhst.io/v1/get-relay';
@@ -12,58 +7,64 @@ class _Consts {
 /// [ApiClient] Wraps [RelayClient] and is responsible for getting a
 /// relayUrl from the UHST public relays directory.
 class ApiClient implements UhstRelayClient {
+  ApiClient() : networkClient = NetworkClient();
   NetworkClient networkClient;
   late RelayClient relayClient;
 
-  ApiClient() : networkClient = new NetworkClient();
-
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    var relayUrl = await this.getRelayUrl(hostId: hostId);
-    this.relayClient = RelayClient(relayUrl: relayUrl);
-    return this.relayClient.initClient(hostId: hostId);
+    final relayUrl = await getRelayUrl(hostId: hostId);
+    relayClient = RelayClient(relayUrl: relayUrl);
+    return relayClient.initClient(hostId: hostId);
   }
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    var relayUrl = await this.getRelayUrl(hostId: hostId);
-    this.relayClient = RelayClient(relayUrl: relayUrl);
-    return this.relayClient.initHost(hostId: hostId);
+    final relayUrl = await getRelayUrl(hostId: hostId);
+    relayClient = RelayClient(relayUrl: relayUrl);
+    return relayClient.initHost(hostId: hostId);
   }
 
   @override
-  Future sendMessage(
-      {required String token, required message, String? sendUrl}) {
-    return this
-        .relayClient
-        .sendMessage(token: token, message: message, sendUrl: sendUrl);
-  }
+  Future sendMessage({
+    required String token,
+    required dynamic message,
+    String? sendUrl,
+  }) =>
+      relayClient.sendMessage(
+        token: token,
+        message: message,
+        sendUrl: sendUrl,
+      );
 
   @override
-  subscribeToMessages(
-      {required String token,
-      required RelayReadyHandler onReady,
-      required RelayErrorHandler onError,
-      required RelayMessageHandler onMessage,
-      String? receiveUrl}) {
-    return this.relayClient.subscribeToMessages(
+  void subscribeToMessages({
+    required String token,
+    required RelayReadyHandler onReady,
+    required RelayExceptionHandler onException,
+    required RelayMessageHandler onMessage,
+    String? receiveUrl,
+  }) =>
+      relayClient.subscribeToMessages(
         token: token,
         onReady: onReady,
-        onError: onError,
+        onException: onException,
         onMessage: onMessage,
-        receiveUrl: receiveUrl);
-  }
+        receiveUrl: receiveUrl,
+      );
 
   Future<String> getRelayUrl({String? hostId}) async {
     var uri = Uri.parse(_Consts.apiUrl);
     if (hostId != null) {
-      var qParams = Map<String, String>();
+      final qParams = <String, String>{};
       qParams['hostId'] = hostId;
       uri = uri.replace(queryParameters: qParams);
     }
 
-    var apiResponse =
-        await this.networkClient.post(uri: uri, fromJson: ApiResponse.fromJson);
+    final apiResponse = await networkClient.post(
+      uri: uri,
+      fromJson: ApiResponse.fromJson,
+    );
     return apiResponse.url;
   }
 }

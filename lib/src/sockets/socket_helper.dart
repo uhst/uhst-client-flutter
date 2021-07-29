@@ -1,36 +1,6 @@
-library uhst;
-
-import 'dart:async';
-
-import '../models/relay_stream.dart';
-import '../contracts/uhst_event_handlers.dart';
-import '../contracts/uhst_relay_client.dart';
-import '../contracts/uhst_socket_events.dart';
+part of uhst_sockets;
 
 class SocketHelper {
-  late final StreamController<Map<UhstSocketEventType, dynamic>>
-      eventStreamController;
-  late final Stream<Map<UhstSocketEventType, dynamic>> eventStream;
-  final diagntosticListenerHandlers =
-      <DiagnosticHandler?, StreamSubscription>{};
-  final messageListenerHandlers = <MessageHandler?, StreamSubscription>{};
-  final errorListenerHandlers = <ErrorHandler?, StreamSubscription>{};
-  final closeListenerHandlers = <CloseHandler?, StreamSubscription>{};
-  final openListenerHandlers = <OpenHandler?, StreamSubscription>{};
-
-  String? token;
-  String get verifiedToken {
-    var vtoken = token;
-    if (vtoken == null) throw NullThrownError();
-    if (vtoken.isEmpty) throw ArgumentError('Token is empty!');
-    return vtoken;
-  }
-
-  final UhstRelayClient relayClient;
-  final bool debug;
-
-  String? sendUrl;
-  RelayStream? relayMessageStream;
   SocketHelper({
     required this.relayClient,
     required this.debug,
@@ -41,6 +11,29 @@ class SocketHelper {
     eventStream = eventStreamController.stream;
   }
 
+  late final StreamController<Map<UhstSocketEventType, dynamic>>
+      eventStreamController;
+  late final Stream<Map<UhstSocketEventType, dynamic>> eventStream;
+  final diagntosticListenerHandlers =
+      <DiagnosticHandler?, StreamSubscription>{};
+  final messageListenerHandlers = <MessageHandler?, StreamSubscription>{};
+  final exceptionListenerHandlers = <ExceptionHandler?, StreamSubscription>{};
+  final closeListenerHandlers = <CloseHandler?, StreamSubscription>{};
+  final openListenerHandlers = <OpenHandler?, StreamSubscription>{};
+
+  String? token;
+  String get verifiedToken {
+    final vtoken = token;
+    if (vtoken == null || vtoken.isEmpty) throw ArgumentError.notNull('token');
+    return vtoken;
+  }
+
+  final UhstRelayClient relayClient;
+  final bool debug;
+
+  String? sendUrl;
+  RelayStream? relayMessageStream;
+
   void emit({required UhstSocketEventType message, dynamic body}) {
     eventStreamController.stream.listen((event) {});
     eventStreamController.add({message: body});
@@ -50,7 +43,7 @@ class SocketHelper {
     eventStreamController.add({UhstSocketEventType.diagnostic: body});
   }
 
-  void emitError({dynamic body}) {
+  void emitException({dynamic body}) {
     eventStreamController.add({UhstSocketEventType.error: body});
   }
 }
