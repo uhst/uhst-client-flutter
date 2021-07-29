@@ -5,18 +5,19 @@ description: UHST client for Flutter
 
 homepage: https://github.com/uhst/uhst-client-flutter
 environment:
-  sdk: ">=2.12.1 <3.0.0"
+  sdk: ">=2.13.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  universal_html: ^2.0.4
+  universal_html: ^2.0.8
   # universal_io: ^1.0.2
-  http: ^0.13.0
+  http: ^0.13.3
   jwt_decoder: ^2.0.1
 
 dev_dependencies:
   # https://pub.dev/packages/test
-  test: ^1.16.8
+  test: ^1.17.10
+  flutter_lints: ^1.0.4
   # https://github.com/dart-lang/mockito/blob/master/NULL_SAFETY_README.md
   # mockito: ^5.0.0-nullsafety.2

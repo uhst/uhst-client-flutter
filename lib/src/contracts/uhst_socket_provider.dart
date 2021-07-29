@@ -1,8 +1,4 @@
-library uhst;
-
-import '../models/socket_params.dart';
-import 'uhst_relay_client.dart';
-import 'uhst_socket.dart';
+part of uhst_contracts;
 
 /// Provides Client or Host socket depending
 /// from received configuration
@@ -12,9 +8,10 @@ abstract class UhstSocketProvider {
   ///
   /// Only one - [clientParams] or [hostParams]
   /// can be provided in same time
-  UhstSocket createUhstSocket(
-      {required UhstRelayClient relayClient,
-      ClientSocketParams? clientParams,
-      HostSocketParams? hostParams,
-      required bool debug});
+  UhstSocket createUhstSocket({
+    required bool debug,
+    required UhstRelayClient relayClient,
+    ClientSocketParams? clientParams,
+    HostSocketParams? hostParams,
+  });
 }

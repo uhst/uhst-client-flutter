@@ -1,25 +1,19 @@
-library uhst;
-
-import 'dart:typed_data';
-
-import 'package:universal_html/html.dart';
-
-import 'uhst_event_handlers.dart';
+part of uhst_contracts;
 
 abstract class UhstHostSocket {
   void onReady({required HostReadyHandler handler});
   void onConnection({required HostConnectionHandler handler});
-  void onError({required ErrorHandler handler});
+  void onException({required ExceptionHandler handler});
   void onDiagnostic({required DiagnosticHandler handler});
 
   void onceReady({required HostReadyHandler handler});
   void onceConnection({required HostConnectionHandler handler});
-  void onceError({required ErrorHandler handler});
+  void onceException({required ExceptionHandler handler});
   void onceDiagnostic({required DiagnosticHandler handler});
 
   void offReady({required HostReadyHandler handler});
   void offConnection({required HostConnectionHandler handler});
-  void offError({required ErrorHandler handler});
+  void offException({required ExceptionHandler handler});
   void offDiagnostic({required DiagnosticHandler handler});
 
   void disconnect();
@@ -35,7 +29,7 @@ abstract class UhstHostSocket {
   ///
   /// FIXME: does it needs to exists?
   /// see https://github.com/dart-lang/sdk/issues/12688
-  @Deprecated("Use broadcastByteBufer instead")
+  @Deprecated('Use broadcastByteBufer instead')
   void broadcastArrayBuffer({required ByteBuffer arrayBuffer});
 
   /// TypedData == ArrayBufferView
@@ -47,6 +41,6 @@ abstract class UhstHostSocket {
   ///
   /// FIXME: does it needs to exists?
   /// see https://api.dart.dev/stable/2.10.4/dart-html/PushMessageData/arrayBuffer.html
-  @Deprecated("Use broadcastTypedData instead")
+  @Deprecated('Use broadcastTypedData instead')
   void broadcastArrayBufferView({required TypedData arrayBufferView});
 }

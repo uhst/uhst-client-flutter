@@ -1,21 +1,17 @@
-library uhst;
-
-import '../contracts/uhst_relay_client.dart';
-import '../contracts/uhst_socket.dart';
-import '../contracts/uhst_socket_provider.dart';
-import 'relay_socket.dart';
+part of uhst_sockets;
 
 class RelaySocketProvider implements UhstSocketProvider {
   @override
-  UhstSocket createUhstSocket(
-      {required UhstRelayClient relayClient,
-      clientParams,
-      hostParams,
-      required bool debug}) {
-    return RelaySocket.create(
+  UhstSocket createUhstSocket({
+    required UhstRelayClient relayClient,
+    required bool debug,
+    ClientSocketParams? clientParams,
+    HostSocketParams? hostParams,
+  }) =>
+      RelaySocket.create(
         relayClient: relayClient,
         clientParams: clientParams,
         hostParams: hostParams,
-        debug: debug);
-  }
+        debug: debug,
+      );
 }

@@ -4,10 +4,9 @@
 
 library uhst;
 
-export 'src/contracts/uhst_host_socket.dart';
-export 'src/contracts/uhst_socket.dart';
-export 'src/hosts/uhst_host.dart';
-export 'src/models/message.dart';
-export 'src/sockets/relay_socket_provider.dart';
+export 'src/contracts/contracts.dart';
+export 'src/hosts/hosts.dart' show UhstHost;
+export 'src/models/models.dart' show Message, EventMessage;
+export 'src/sockets/sockets.dart' show RelaySocketProvider, RelaySocket;
 export 'src/uhst.dart';
-export 'src/utils/uhst_exceptions.dart';
+export 'src/utils/utils.dart';

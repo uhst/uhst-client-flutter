@@ -1,24 +1,24 @@
-library uhst;
+part of uhst_contracts;
 
-import '../models/message.dart';
-import '../models/client_configuration.dart';
-import '../models/host_configration.dart';
-import '../models/relay_stream.dart';
-import '../utils/uhst_exceptions.dart';
-
-typedef void RelayReadyHandler({required RelayStream stream});
-typedef void RelayMessageHandler({required Message message});
-typedef void RelayErrorHandler({required RelayError error});
+typedef RelayReadyHandler = void Function({required RelayStream stream});
+typedef RelayMessageHandler = void Function({required Message message});
+typedef RelayExceptionHandler = void Function({
+  required RelayException exception,
+});
 
 abstract class UhstRelayClient {
   Future<HostConfiguration> initHost({String? hostId});
   Future<ClientConfiguration> initClient({required String hostId});
-  Future<dynamic> sendMessage(
-      {required String token, required dynamic message, String? sendUrl});
-  subscribeToMessages(
-      {required String token,
-      required RelayReadyHandler onReady,
-      required RelayErrorHandler onError,
-      required RelayMessageHandler onMessage,
-      String? receiveUrl});
+  Future<dynamic> sendMessage({
+    required String token,
+    required dynamic message,
+    String? sendUrl,
+  });
+  void subscribeToMessages({
+    required String token,
+    required RelayReadyHandler onReady,
+    required RelayExceptionHandler onException,
+    required RelayMessageHandler onMessage,
+    String? receiveUrl,
+  });
 }

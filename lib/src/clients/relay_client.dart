@@ -1,20 +1,6 @@
-library uhst;
+part of uhst_clients;
 
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-import 'package:universal_html/html.dart';
-
-import './network_client.dart';
-import '../contracts/uhst_relay_client.dart';
-import '../models/relay_stream.dart';
-import '../models/client_configuration.dart';
-import '../models/event_message.dart';
-import '../models/host_configration.dart';
-import '../utils/uhst_exceptions.dart';
-
-class _Consts {
+class _RelayClientConsts {
   static const requestHeaderContentName = 'Content-type';
   static const requestHeaderContentValue = 'application/json';
 }
@@ -23,78 +9,88 @@ class _Consts {
 /// to subscribe to event source, send messages and init [UhstHost]
 /// and Client [UhstSocket]
 class RelayClient implements UhstRelayClient {
+  RelayClient({
+    required this.relayUrl,
+  }) : networkClient = NetworkClient();
   NetworkClient networkClient;
   final String relayUrl;
-  RelayClient({required this.relayUrl}) : networkClient = new NetworkClient();
 
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    var uri = Uri.parse(this.relayUrl);
-    var qParams = Map<String, String>();
+    var uri = Uri.parse(relayUrl);
+    final qParams = <String, String>{};
     qParams['action'] = 'join';
     qParams['hostId'] = hostId;
     uri = uri.replace(queryParameters: qParams);
     try {
-      var response = await this
-          .networkClient
-          .post(uri: uri, fromJson: ClientConfiguration.fromJson);
+      final response = await networkClient.post(
+        uri: uri,
+        fromJson: ClientConfiguration.fromJson,
+      );
       return response;
-    } catch (e) {
-      if (e is NetworkError) {
+    } on Exception catch (e) {
+      if (e is NetworkException) {
         if (e.responseCode == 400) {
-          throw new InvalidHostId(e.message);
+          throw InvalidHostId(e.message);
         } else {
-          throw new RelayError(e.message);
+          throw RelayException(e.message);
         }
       } else {
         print(e);
-        throw new RelayUnreachable(e);
+        throw RelayUnreachable(e);
       }
     }
   }
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    var uri = Uri.parse(this.relayUrl);
-    var qParams = Map<String, String>();
+    var uri = Uri.parse(relayUrl);
+    final qParams = <String, String>{};
     qParams['action'] = 'host';
     if (hostId != null) {
       qParams['hostId'] = hostId;
     }
     uri = uri.replace(queryParameters: qParams);
     try {
-      var response = await this
-          .networkClient
-          .post(uri: uri, fromJson: HostConfiguration.fromJson);
+      final response = await networkClient.post(
+        uri: uri,
+        fromJson: HostConfiguration.fromJson,
+      );
       return response;
-    } catch (e) {
-      if (e is NetworkError) {
+    } on Exception catch (e) {
+      if (e is NetworkException) {
         if (e.responseCode == 400) {
-          throw new HostIdAlreadyInUse(e.message);
+          throw HostIdAlreadyInUse(e.message);
         } else {
-          throw new RelayError(e.message);
+          throw RelayException(e.message);
         }
       } else {
         print(e);
-        throw new RelayUnreachable(e);
+        throw RelayUnreachable(e);
       }
     }
   }
 
   @override
-  Future sendMessage(
-      {required String token, required message, String? sendUrl}) async {
-    var hostUrl = sendUrl ?? relayUrl;
-    var uri = Uri.parse('$hostUrl?token=$token');
-    var response;
+  Future<void> sendMessage({
+    required String token,
+    required dynamic message,
+    String? sendUrl,
+  }) async {
+    final hostUrl = sendUrl ?? relayUrl;
+    final uri = Uri.parse('$hostUrl?token=$token');
+    http.Response response;
     try {
-      response = await http.post(uri,
-          headers: <String, String>{
-            _Consts.requestHeaderContentName: _Consts.requestHeaderContentValue,
-          },
-          body: message);
-    } catch (error) {
-      throw RelayUnreachable(error);
+      response = await http.post(
+        uri,
+        headers: <String, String>{
+          _RelayClientConsts.requestHeaderContentName:
+              _RelayClientConsts.requestHeaderContentValue,
+        },
+        body: message,
+      );
+    } on Exception catch (exception) {
+      throw RelayUnreachable(exception);
     }
     switch (response.statusCode) {
       case 200:
@@ -102,33 +98,33 @@ class RelayClient implements UhstRelayClient {
       case 400:
         throw InvalidClientOrHostId(response.body);
       case 401:
-        throw new InvalidToken(token);
+        throw InvalidToken(token);
       default:
-        throw RelayError(response.body);
+        throw RelayException(response.body);
     }
   }
 
   @override
-  subscribeToMessages(
-      {required String token,
-      required RelayReadyHandler onReady,
-      required RelayErrorHandler onError,
-      required RelayMessageHandler onMessage,
-      String? receiveUrl}) {
-    var url = receiveUrl ?? this.relayUrl;
-    var finalUrl = '$url?token=$token';
-    var uri = Uri.parse(finalUrl);
+  void subscribeToMessages({
+    required String token,
+    required RelayReadyHandler onReady,
+    required RelayExceptionHandler onException,
+    required RelayMessageHandler onMessage,
+    String? receiveUrl,
+  }) {
+    final url = receiveUrl ?? relayUrl;
+    final finalUrl = '$url?token=$token';
 
-    EventSource source = EventSource(finalUrl);
+    final EventSource source = EventSource(finalUrl);
     source.onOpen.listen((event) {
-      onReady(stream: new RelayStream(eventSource: source));
+      onReady(stream: RelayStream(eventSource: source));
     });
     source.onError.listen((event) {
-      onError(error: RelayError(event));
+      onException(exception: RelayException(event));
     });
     source.onMessage.listen((event) {
-      var eventMessageMap = jsonDecode(event.data);
-      var eventMessage = EventMessage.fromJson(eventMessageMap);
+      final eventMessageMap = jsonDecode(event.data);
+      final eventMessage = EventMessage.fromJson(eventMessageMap);
       onMessage(message: eventMessage.body);
     });
   }

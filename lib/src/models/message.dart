@@ -1,17 +1,19 @@
-library uhst;
-
-import '../contracts/type_definitions.dart';
+part of uhst_models;
 
 class Message {
-  final PayloadType type;
-  final String payload;
-  String? responseToken;
-  Message({required this.type, required this.payload, this.responseToken});
+  Message({
+    required this.type,
+    required this.payload,
+    this.responseToken,
+  });
   factory Message.fromJson(Map<dynamic, dynamic> map) {
-    PayloadType verifiedPayloadType = (() {
-      String? _payloadType = map['type'];
-      if (_payloadType == null || _payloadType.isEmpty)
+    final PayloadType verifiedPayloadType = (() {
+      final _payloadType = map['type'];
+      if (_payloadType == null ||
+          _payloadType is! String ||
+          (_payloadType is String && _payloadType.isEmpty)) {
         return PayloadType.string;
+      }
       return PayloadType.fromString[_payloadType];
     })();
 
@@ -20,14 +22,15 @@ class Message {
         type: verifiedPayloadType,
         responseToken: map['responseToken'] ?? '');
   }
+  final PayloadType type;
+  final String payload;
+  String? responseToken;
 
-  toJson() {
-    return {
-      'type': type.toStringValue(),
-      'payload': payload,
-      'responseToken': responseToken,
-    };
-  }
+  Map<String, String?> toJson() => {
+        'type': type.toStringValue(),
+        'payload': payload,
+        'responseToken': responseToken,
+      };
 
   @override
   String toString() => '${toJson()}';

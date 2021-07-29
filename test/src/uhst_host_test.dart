@@ -6,7 +6,10 @@ void main() {
       // const mockRelay = <UhstRelayClient>{};
       // const mockSocketProvider = <UhstSocketProvider>{};
       // const mockSocket = <UhstSocket>{};
-      // const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicmVzcG9uc2VUb2tlbiIsImhvc3RJZCI6InRlc3RIb3N0IiwiY2xpZW50SWQiOiI4ODk2OGUzYi03YTQ1LTQwMTMtYjY2OC1iNWIwMDIwMTQ2M2EiLCJpYXQiOjE1OTk4ODI1NjB9.Ck583aKIeEcEsvCVlNgpMgLrVM1JQQC4vB8PCaTU-pA";
+      // const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicm
+      // VzcG9uc2VUb2tlbiIsImhvc3RJZCI6InRlc3RIb3N0IiwiY2xpZW50SWQiOiI4ODk2OGU
+      // zYi03YTQ1LTQwMTMtYjY2OC1iNWIwMDIwMTQ2M2EiLCJpYXQiOjE1OTk4ODI1NjB9.Ck5
+      // 83aKIeEcEsvCVlNgpMgLrVM1JQQC4vB8PCaTU-pA";
       // Function? messageHandler;
 
       // Stream<UhstSocketEventType> mockStreamClose = (() async*{
@@ -34,7 +37,8 @@ void main() {
       //     expect(message.body).to.equal("testClientMessage");
       // }
 
-      // mockSocketProvider.createUhstSocket = (relayClient, params: HostSocketParams, debug) => {
+      // mockSocketProvider.createUhstSocket = (relayClient, params:
+      // HostSocketParams, debug) => {
       //     expect(relayClient).to.equal(mockRelay);
       //     expect(params.type).to.equal("host");
       //     expect(params.token).to.equal(mockToken);
@@ -42,7 +46,8 @@ void main() {
       //     return mockSocket;
       // }
 
-      // const uhstHost: UhstHost = new UhstHost(mockRelay, mockSocketProvider, "testHostId", false);
+      // const uhstHost: UhstHost = new UhstHost(mockRelay, mockSocketProvider,
+      //"testHostId", false);
       // uhstHost.on("ready", () => {
       //     expect(uhstHost.hostId).to.equal("testHostId");
       //     messageHandler(<HostMessage>{

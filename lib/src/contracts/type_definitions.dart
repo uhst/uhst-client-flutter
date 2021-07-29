@@ -1,10 +1,8 @@
-library uhst;
-
-import 'package:flutter/foundation.dart';
+part of uhst_contracts;
 
 /// Defines callback to handle [FromJson] function
 /// This function is needed to convert [Map] in defined type or model
-typedef T FromJson<T>(Map<String, dynamic> map);
+typedef FromJson<T> = T Function(Map<String, dynamic> map);
 
 /// [PayloadType] is a type of message data which can be send and handled by
 /// Client (for example [RelaySocket] or by Host [UhstHost]
@@ -25,24 +23,16 @@ typedef T FromJson<T>(Map<String, dynamic> map);
 ///
 enum PayloadType { fromString, string, blob, byteBuffer, typedData }
 
+///
 extension PayloadTypeDescribe on PayloadType {
   /// Overload the [] getter to get the name of the fruit.
   /// based on https://stackoverflow.com/a/60209631
-  operator [](String key) => (name) {
-        switch (name) {
-          case 'string':
-            return PayloadType.string;
-          case 'blob':
-            return PayloadType.blob;
-          case 'byteBuffer':
-            return PayloadType.byteBuffer;
-          case 'typedData':
-            return PayloadType.typedData;
-          default:
-            throw RangeError("enum PayloadType contains no value '$name'");
-        }
-      }(key);
+  PayloadType operator [](String key) => getEnumValueFromEnumValues(
+        values: PayloadType.values,
+        value: key,
+      );
 
   /// returns string for enum value only
+  // TODO(arenukvern): remove this when Dart will reach 2.14
   String toStringValue() => describeEnum(this);
 }

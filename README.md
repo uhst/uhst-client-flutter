@@ -60,9 +60,9 @@ host
       _hostIdController.text = hostId;
     });
   })
-  ..onError(handler: ({required dynamic error}) {
-    print('error received! $error');
-    if (error is HostIdAlreadyInUse) {
+  ..onException(handler: ({required dynamic exception}) {
+    print('exception received! $exception');
+    if (exception is HostIdAlreadyInUse) {
       // this is expected if you refresh the page
       // connection is still alive on the relay
       // just need to wait
@@ -72,7 +72,7 @@ host
       });
     } else {
       setState(() {
-        hostMessages.add(error.toString());
+        hostMessages.add(exception.toString());
       });
     }
   })
@@ -125,14 +125,14 @@ client
       clientMessages.add('Client received: $message');
     });
   })
-  ..onError(handler: ({required dynamic error}) {
-    if (error is InvalidHostId || error is InvalidClientOrHostId) {
+  ..onException(handler: ({required dynamic exception}) {
+    if (exception is InvalidHostId || exception is InvalidClientOrHostId) {
       setState(() {
         clientMessages.add('Invalid hostId!');
       });
     } else {
       setState(() {
-        clientMessages.add(error.toString());
+        clientMessages.add(exception.toString());
       });
     }
   })
