@@ -1,17 +1,14 @@
 language: dart
-
-dart:
-  - stable
-
-dart_task:
-  - test
-  - dartfmt
-  - dartanalyzer
-
-# Only building main means that we don't run two builds for each pull request.
-branches:
-  only: [main]
-
+dist: xenial
+addons:
+  apt:
+    packages:
+      - lib32stdc++6
+install:
+  - git clone https://github.com/flutter/flutter.git -b stable
+  - ./flutter/bin/flutter doctor
+script:
+  - ./flutter/bin/flutter test
 cache:
   directories:
     - $HOME/.pub-cache
