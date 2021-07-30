@@ -13,24 +13,26 @@ void main() {
       final provider = RelaySocketProvider();
       final mockClientSocketParams = ClientSocketParams(hostId: 'testHostId');
       expect(
-          provider.createUhstSocket(
-              relayClient: RelayClient(relayUrl: ''),
-              debug: false,
-              clientParams: mockClientSocketParams),
-          isNotNull);
+        provider.createUhstSocket(
+            relayClient: RelayClient(relayUrl: 'http://test.test'),
+            debug: false,
+            clientParams: mockClientSocketParams),
+        isNotNull,
+      );
     });
     test('.createUhstSocket should create RelaySocket for host', () {
       final provider = RelaySocketProvider();
       final mockHostSocketParams = HostSocketParams(token: 'responseToken');
       const relayUrl = 'test';
       expect(
-          provider.createUhstSocket(
-              relayClient: RelayClient(
-                relayUrl: relayUrl,
-              ),
-              hostParams: mockHostSocketParams,
-              debug: false),
-          isNotNull);
+        provider.createUhstSocket(
+            relayClient: RelayClient(
+              relayUrl: relayUrl,
+            ),
+            hostParams: mockHostSocketParams,
+            debug: false),
+        isNotNull,
+      );
     });
   });
 }

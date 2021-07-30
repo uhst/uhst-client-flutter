@@ -49,7 +49,8 @@ E getEnumValueFromEnumValues<E>({
   required final String value,
 }) {
   final resolvedValue = values.firstWhereOrNull(
-    (final element) => element.toString() == value,
+    // TODO(arenukvern): replace with toStringValue() when Dart will reach 2.14
+    (final element) => describeEnum(element as Object) == value,
   );
 
   if (resolvedValue == null) {
