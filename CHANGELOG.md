@@ -1,3 +1,6 @@
+# 3.2.0
+- feat: connect to closest relay based on ping to 10 random relays
+
 # 3.1.0
 
 - BREAKING CHANGE: all `Error` methods and functions renamed to `Exception`.

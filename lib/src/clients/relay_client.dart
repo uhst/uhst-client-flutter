@@ -17,16 +17,12 @@ class RelayClient implements UhstRelayClient {
 
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    var uri = Uri.parse(relayUrl);
     final qParams = <String, String>{};
     qParams['action'] = 'join';
     qParams['hostId'] = hostId;
-    uri = uri.replace(queryParameters: qParams);
     try {
-      final response = await networkClient.post(
-        uri: uri,
-        fromJson: ClientConfiguration.fromJson,
-      );
+      final response = ClientConfiguration.fromJson(
+          await networkClient.post(url: relayUrl, queryParameters: qParams));
       return response;
     } on Exception catch (e) {
       if (e is NetworkException) {
@@ -44,18 +40,14 @@ class RelayClient implements UhstRelayClient {
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    var uri = Uri.parse(relayUrl);
     final qParams = <String, String>{};
     qParams['action'] = 'host';
     if (hostId != null) {
       qParams['hostId'] = hostId;
     }
-    uri = uri.replace(queryParameters: qParams);
     try {
-      final response = await networkClient.post(
-        uri: uri,
-        fromJson: HostConfiguration.fromJson,
-      );
+      final response = HostConfiguration.fromJson(
+          await networkClient.post(url: relayUrl, queryParameters: qParams));
       return response;
     } on Exception catch (e) {
       if (e is NetworkException) {
@@ -65,7 +57,6 @@ class RelayClient implements UhstRelayClient {
           throw RelayException(e.message);
         }
       } else {
-        print(e);
         throw RelayUnreachable(e);
       }
     }
