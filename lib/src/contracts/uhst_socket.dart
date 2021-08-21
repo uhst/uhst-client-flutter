@@ -1,6 +1,7 @@
 part of uhst_contracts;
 
 abstract class UhstSocket {
+  String? get remoteId;
   void onOpen({required OpenHandler handler});
   void onMessage({required MessageHandler handler});
   void onException({required ExceptionHandler handler});

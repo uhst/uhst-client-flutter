@@ -77,8 +77,11 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
     if (hostParams is HostSocketParams) {
       // client connected
       socket.h.token = hostParams.token;
+      socket.h.remoteId = hostParams.clientId;
       socket.h.sendUrl = hostParams.sendUrl;
-      socket.h.emit(message: UhstSocketEventType.open, body: 'opened');
+      // give consumer a chance to subscribe to open event
+      Timer.run(() =>
+          socket.h.emit(message: UhstSocketEventType.open, body: 'opened'));
     } else if (clientParams is ClientSocketParams) {
       // will connect to host
       socket._initClient(hostId: clientParams.hostId);
@@ -102,6 +105,7 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
       }
 
       h
+        ..remoteId = hostId
         ..token = config.clientToken
         ..sendUrl = config.sendUrl
         ..relayClient.subscribeToMessages(
@@ -116,6 +120,9 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
       h.emitException(body: exception);
     }
   }
+
+  @override
+  String? get remoteId => h.remoteId;
 
   @override
   void close() {
