@@ -22,7 +22,8 @@ void main() {
     });
     test('.createUhstSocket should create RelaySocket for host', () {
       final provider = RelaySocketProvider();
-      final mockHostSocketParams = HostSocketParams(token: 'responseToken');
+      final mockHostSocketParams =
+          HostSocketParams(token: 'responseToken', clientId: 'testClient');
       const relayUrl = 'test';
       expect(
         provider.createUhstSocket(

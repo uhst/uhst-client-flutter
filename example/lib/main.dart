@@ -10,18 +10,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
         title: 'Flutter UHST Example',
-        theme: ThemeData(
-            // This is the theme of your application.
-            //
-            // Try running your application with "flutter run". You'll see the
-            // application has a blue toolbar. Then, without quitting the app, try
-            // changing the primarySwatch below to Colors.green and then invoke
-            // "hot reload" (press "r" in the console where you ran "flutter run",
-            // or simply save your changes to "hot reload" in a Flutter IDE).
-            // Notice that the counter didn't reset back to zero; the application
-            // is not restarted.
-            primarySwatch: Colors.blue,
-            brightness: Brightness.dark),
+        theme:
+            ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
         home: MyHomePage(title: 'Flutter UHST Example'),
       );
 }
@@ -71,45 +61,34 @@ class _MyHomePageState extends State<MyHomePage> {
       })
       ..onException(handler: ({required dynamic exception}) {
         print('exception received! $exception');
-        if (exception is HostIdAlreadyInUse) {
-          // this is expected if you refresh the page
-          // connection is still alive on the meeting point
-          // just need to wait
-          setState(() {
-            hostMessages
-                .add('HostId already in use, retrying in 15 seconds...!');
-          });
-        } else {
-          setState(() {
-            hostMessages.add(exception.toString());
-          });
-        }
+        setState(() {
+          hostMessages.add(exception.toString());
+        });
       })
-      ..onConnection(handler: ({required UhstSocket uhstSocket}) {
+      ..onConnection(handler: ({required uhstSocket}) {
         uhstSocket
-          ..onDiagnostic(handler: ({required String message}) {
+          ..onDiagnostic(handler: ({required message}) {
             setState(() {
               hostMessages.add(message);
             });
           })
           ..onMessage(handler: ({required message}) {
             setState(() {
-              hostMessages.add("Host received: $message");
-              host?.broadcastString(message: message);
+              hostMessages
+                  .add('Host received: $message from ${uhstSocket.remoteId}');
             });
+            host?.broadcastString(message: message);
           })
           ..onOpen(handler: () {
             setState(() {
-              hostMessages.add('Client Connected');
+              hostMessages.add('Client ${uhstSocket.remoteId} connected');
             });
           });
       });
   }
 
-  initUHST() {
-    if (uhst == null) {
-      uhst = UHST(debug: true);
-    }
+  void initUHST() {
+    uhst ??= UHST(debug: true);
   }
 
   Future<void> join() async {
@@ -128,14 +107,14 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         }
       })
-      ..onDiagnostic(handler: ({required String message}) {
+      ..onDiagnostic(handler: ({required message}) {
         setState(() {
           clientMessages.add(message);
         });
       })
       ..onOpen(handler: () {
         setState(() {
-          clientMessages.add('Client connected.');
+          clientMessages.add('Client connected to host: ${client?.remoteId}');
         });
       })
       ..onMessage(handler: ({required message}) {

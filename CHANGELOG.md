@@ -1,3 +1,7 @@
+# 3.2.1
+- feat: remoteId added to socket
+- fix: open event not triggering on client connected
+
 # 3.2.0
 - feat: connect to closest relay based on ping to 10 random relays
 

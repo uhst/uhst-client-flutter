@@ -21,6 +21,7 @@ class SocketHelper {
   final closeListenerHandlers = <CloseHandler?, StreamSubscription>{};
   final openListenerHandlers = <OpenHandler?, StreamSubscription>{};
 
+  String? remoteId;
   String? token;
   String get verifiedToken {
     final vtoken = token;
