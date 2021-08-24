@@ -70,9 +70,8 @@ class RelayClient implements UhstRelayClient {
   }) async {
     final hostUrl = sendUrl ?? relayUrl;
     final uri = Uri.parse('$hostUrl?token=$token');
-    http.Response response;
     try {
-      response = await http.post(
+      await http.post(
         uri,
         headers: <String, String>{
           _RelayClientConsts.requestHeaderContentName:
@@ -80,18 +79,17 @@ class RelayClient implements UhstRelayClient {
         },
         body: message,
       );
-    } on Exception catch (exception) {
-      throw RelayUnreachable(exception);
-    }
-    switch (response.statusCode) {
-      case 200:
-        return;
-      case 400:
-        throw InvalidClientOrHostId(response.body);
-      case 401:
-        throw InvalidToken(token);
-      default:
-        throw RelayException(response.body);
+    } on Exception catch (e) {
+      if (e is NetworkException) {
+        switch (e.responseCode) {
+          case 400:
+            throw InvalidClientOrHostId(e.message);
+          case 401:
+            throw InvalidToken(e.message);
+          default:
+            throw RelayUnreachable(e.message);
+        }
+      }
     }
   }
 
