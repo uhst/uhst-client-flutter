@@ -145,9 +145,10 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
   }
 
   Future<void> _handleMessage({required Message message}) async {
-    final token = message.responseToken;
+    final token = message.responseToken ?? '';
 
-    if (token == null || token.isEmpty) throw InvalidToken(token);
+    if (token.isEmpty) throw InvalidToken(token);
+
     final Map<String, dynamic> tokenPayload = JwtDecoder.decode(token);
     final String? clientId = tokenPayload['clientId'];
     if (clientId == null) {
@@ -159,14 +160,20 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
       final hostParams = HostSocketParams(
           token: token, clientId: clientId, sendUrl: _config.sendUrl);
       final socket = _socketProvider.createUhstSocket(
-          relayClient: h.relayClient, hostParams: hostParams, debug: h.debug);
+        relayClient: h.relayClient,
+        hostParams: hostParams,
+        debug: h.debug,
+      );
       if (h.debug) {
         h.emitDiagnostic(
             body: 'Host received client connection from clientId: $clientId');
       }
       h.emit(message: HostEventType.connection, body: socket);
-      _clients.update(clientId, (value) => value = socket,
-          ifAbsent: () => socket);
+      _clients.update(
+        clientId,
+        (value) => value = socket,
+        ifAbsent: () => socket,
+      );
       hostSocket = socket;
       // give the connection handler a chance to subscribe
       Timer.run(() => socket.handleMessage(message: message));
@@ -179,6 +186,7 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
 
   @override
   void disconnect() {
+    h.emit(message: HostEventType.close);
     h.relayMessageStream?.close();
   }
 

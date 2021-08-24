@@ -22,11 +22,10 @@ class SocketHelper {
   final openListenerHandlers = <OpenHandler?, StreamSubscription>{};
 
   String? remoteId;
-  String? token;
+  String token = '';
   String get verifiedToken {
-    final vtoken = token;
-    if (vtoken == null || vtoken.isEmpty) throw ArgumentError.notNull('token');
-    return vtoken;
+    if (token.isEmpty) throw ArgumentError.value(token, 'token', 'isEmpty');
+    return token;
   }
 
   final UhstRelayClient relayClient;

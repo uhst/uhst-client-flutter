@@ -32,4 +32,10 @@ part of uhst_contracts;
 ///
 /// ```
 ///
-enum HostEventType { ready, connection, error, diagnostic }
+enum HostEventType {
+  ready,
+  connection,
+  error,
+  diagnostic,
+  close,
+}
