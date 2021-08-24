@@ -17,12 +17,14 @@ class RelayClient implements UhstRelayClient {
 
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    final qParams = <String, String>{};
-    qParams['action'] = 'join';
-    qParams['hostId'] = hostId;
+    final qParams = <String, String>{
+      'action': 'join',
+      'hostId': hostId,
+    };
     try {
       final response = ClientConfiguration.fromJson(
-          await networkClient.post(url: relayUrl, queryParameters: qParams));
+        await networkClient.post(url: relayUrl, queryParameters: qParams),
+      );
       return response;
     } on Exception catch (e) {
       if (e is NetworkException) {
@@ -32,7 +34,6 @@ class RelayClient implements UhstRelayClient {
           throw RelayException(e.message);
         }
       } else {
-        print(e);
         throw RelayUnreachable(e);
       }
     }
@@ -40,8 +41,7 @@ class RelayClient implements UhstRelayClient {
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    final qParams = <String, String>{};
-    qParams['action'] = 'host';
+    final qParams = <String, String>{'action': 'host'};
     if (hostId != null) {
       qParams['hostId'] = hostId;
     }
@@ -103,13 +103,23 @@ class RelayClient implements UhstRelayClient {
   }) {
     final url = receiveUrl ?? relayUrl;
     final finalUrl = '$url?token=$token';
+    bool resolved = false;
+    void onNotResolved(VoidCallback callback) {
+      if (resolved) return;
+      callback();
+      resolved = true;
+    }
 
     final EventSource source = EventSource(finalUrl);
     source.onOpen.listen((event) {
-      onReady(stream: RelayStream(eventSource: source));
+      onNotResolved(
+        () => onReady(stream: RelayStream(eventSource: source)),
+      );
     });
     source.onError.listen((event) {
-      onException(exception: RelayException(event));
+      onNotResolved(
+        () => onException(exception: RelayException(event)),
+      );
     });
     source.onMessage.listen((event) {
       final eventMessageMap = jsonDecode(event.data);
