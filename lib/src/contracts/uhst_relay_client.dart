@@ -21,6 +21,7 @@ abstract class UhstRelayClient {
     required RelayReadyHandler onReady,
     required RelayExceptionHandler onException,
     required RelayMessageHandler onMessage,
+    RelayEventHandler? onRelayEvent,
     String? receiveUrl,
   });
 }

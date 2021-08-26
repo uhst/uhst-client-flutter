@@ -19,5 +19,22 @@ class RelayEvent extends Message {
           responseToken: responseToken,
         );
 
+  factory RelayEvent.fromJson(dynamic json) {
+    if (json is! Map<String, dynamic>) {
+      throw ArgumentError.value(json, 'json', 'has to be map');
+    }
+    final message = Message.fromJson(json);
+    return RelayEvent.fromMessageAndJson(json: json, message: message);
+  }
+
+  RelayEvent.fromMessageAndJson({
+    required Message message,
+    required Map<String, dynamic> json,
+  })  : eventType = json['eventType'],
+        super(
+            payload: message.payload,
+            type: message.type,
+            responseToken: message.responseToken);
+
   final RelayEventType eventType;
 }

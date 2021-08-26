@@ -99,6 +99,7 @@ class RelayClient implements UhstRelayClient {
     required RelayReadyHandler onReady,
     required RelayExceptionHandler onException,
     required RelayMessageHandler onMessage,
+    RelayEventHandler? onRelayEvent,
     String? receiveUrl,
   }) {
     final url = receiveUrl ?? relayUrl;
@@ -126,5 +127,15 @@ class RelayClient implements UhstRelayClient {
       final eventMessage = EventMessage.fromJson(eventMessageMap);
       onMessage(message: eventMessage.body);
     });
+    if (onRelayEvent != null) {
+      source.addEventListener(
+        'relay_event',
+        (evt) {
+          final messageEvent = evt as MessageEvent;
+          final relayEvent = RelayEvent.fromJson(messageEvent.data);
+          onRelayEvent(message: relayEvent);
+        },
+      );
+    }
   }
 }

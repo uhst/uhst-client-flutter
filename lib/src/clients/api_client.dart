@@ -26,7 +26,7 @@ class ApiClient implements UhstRelayClient {
     required String token,
     required dynamic message,
     String? sendUrl,
-  }) =>
+  }) async =>
       relayClient.sendMessage(
         token: token,
         message: message,
@@ -39,6 +39,7 @@ class ApiClient implements UhstRelayClient {
     required RelayReadyHandler onReady,
     required RelayExceptionHandler onException,
     required RelayMessageHandler onMessage,
+    RelayEventHandler? onRelayEvent,
     String? receiveUrl,
   }) =>
       relayClient.subscribeToMessages(
@@ -46,6 +47,7 @@ class ApiClient implements UhstRelayClient {
         onReady: onReady,
         onException: onException,
         onMessage: onMessage,
+        onRelayEvent: onRelayEvent,
         receiveUrl: receiveUrl,
       );
 }
