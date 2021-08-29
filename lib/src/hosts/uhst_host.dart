@@ -63,6 +63,22 @@ part of uhst_hosts;
 /// you get after receiving a [UhstHost().onReady()] event
 /// when connecting to the host.
 ///
+/// !Important
+///
+/// Remember to call `.dispose()` to cancel all subscriptions and
+/// disconnect host socket from server, client from host.
+///
+/// In Flutter you can add such methods in dispose override.
+///
+/// ```dart
+/// @override
+/// void dispose() {
+///   client?.dispose();
+///   host?.dispose();
+///   super.dispose();
+/// }
+/// ```
+///
 class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
   /// Private factory.
   /// Call it only from static create factory function
@@ -199,6 +215,7 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
   void disconnect() {
     h.emit(message: HostEventType.close, body: hostId);
     h.relayMessageStream?.close();
+    _clients.clear();
   }
 
   @override

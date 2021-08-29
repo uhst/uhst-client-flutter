@@ -1,8 +1,18 @@
+# 3.3.0
+
+- feat: onClose callbacks for client and host relay sockets
+- feat: dispose method for client and host.
+  This method should be called during dispose method in Flutter widget or any another cases that require to cancel all subscriptions and all methods.
+- refactor: client/host action buttons for example & example improvements
+- fix(host relay socket): drop connection on server error
+
 # 3.2.1
+
 - feat: remoteId added to socket
 - fix: open event not triggering on client connected
 
 # 3.2.0
+
 - feat: connect to closest relay based on ping to 10 random relays
 
 # 3.1.0

@@ -150,6 +150,21 @@ Once a client and a host have connected they can exchange messages asynchronousl
 Arbitrary number of clients can connect to the same host but clients
 cannot send messages to each other, they can only communicate with the host.
 
+### Dispose
+
+Remember to call `.dispose()` to cancel all subscriptions and disconnect host socket from server, client from host.
+
+In Flutter you can add such methods in dispose override.
+
+```dart
+@override
+void dispose() {
+  client?.dispose();
+  host?.dispose();
+  super.dispose();
+}
+```
+
 ## Documentation
 
 Visit our website for more complete documentation: [https://docs.uhst.io](https://docs.uhst.io).

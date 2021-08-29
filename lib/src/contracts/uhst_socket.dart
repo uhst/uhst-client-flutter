@@ -57,6 +57,18 @@ abstract class UhstSocket {
   /// all methods
   ///
   /// This method will started with [close] call
+  ///
+  /// In Flutter you can add such methods in dispose override.
+  ///
+  /// ```dart
+  /// @override
+  /// void dispose() {
+  ///   client?.dispose();
+  ///   host?.dispose();
+  ///   super.dispose();
+  /// }
+  /// ```
+  ///
   void dispose();
   void onClientMessage({required Message message});
 }

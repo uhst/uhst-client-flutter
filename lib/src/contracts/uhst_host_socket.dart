@@ -34,6 +34,18 @@ abstract class UhstHostSocket {
   /// all methods
   ///
   /// This method will started with [disconnect] call
+  ///
+  /// In Flutter you can add such methods in dispose override.
+  ///
+  /// ```dart
+  /// @override
+  /// void dispose() {
+  ///   client?.dispose();
+  ///   host?.dispose();
+  ///   super.dispose();
+  /// }
+  /// ```
+  ///
   void dispose();
 
   void broadcastString({required String message});
