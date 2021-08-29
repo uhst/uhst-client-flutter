@@ -21,9 +21,10 @@ class Message {
     })();
 
     return Message(
-        payload: map['payload'],
-        type: verifiedPayloadType,
-        responseToken: map['responseToken'] ?? '');
+      payload: map['payload'],
+      type: verifiedPayloadType,
+      responseToken: map['responseToken'] ?? '',
+    );
   }
   final PayloadType type;
   final String payload;
