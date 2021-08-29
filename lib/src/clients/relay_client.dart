@@ -130,25 +130,26 @@ class RelayClient implements UhstRelayClient {
     }
 
     final html.EventSource source = html.EventSource(finalUrl);
-    source.onOpen.listen((event) {
-      onCompleterNotResolved(
-        () => onReady(stream: RelayStream(eventSource: source)),
-      );
-    });
-    source.onError.listen((event) {
-      void onExceptionCallback() =>
-          onException(exception: RelayException(event));
-      onCompleterNotResolved(
-        onExceptionCallback,
-        exception: RelayException(event),
-        onIfResolved: onExceptionCallback,
-      );
-    });
-    source.onMessage.listen((event) {
-      final eventMessageMap = jsonDecode(event.data);
-      final eventMessage = EventMessage.fromJson(eventMessageMap);
-      onMessage(message: eventMessage.body);
-    });
+    source
+      ..onOpen.listen((event) {
+        onCompleterNotResolved(
+          () => onReady(stream: RelayStream(eventSource: source)),
+        );
+      })
+      ..onError.listen((event) {
+        void onExceptionCallback() =>
+            onException(exception: RelayException(event.toString()));
+        onCompleterNotResolved(
+          onExceptionCallback,
+          exception: RelayException(event),
+          onIfResolved: onExceptionCallback,
+        );
+      })
+      ..onMessage.listen((event) {
+        final eventMessageMap = jsonDecode(event.data);
+        final eventMessage = EventMessage.fromJson(eventMessageMap);
+        onMessage(message: eventMessage.body);
+      });
     if (onRelayEvent != null) {
       source.addEventListener(
         _RelayClientConsts.relayEvent,
