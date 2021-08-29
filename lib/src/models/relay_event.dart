@@ -7,8 +7,12 @@ enum RelayEventType {
   hostClosed,
 }
 
+@immutable
+
+/// Special events sending by relay.
+/// Used to notify about [RelayEventType] events
 class RelayEvent extends Message {
-  RelayEvent({
+  const RelayEvent({
     required this.eventType,
     required String payload,
     required PayloadType type,
@@ -20,11 +24,15 @@ class RelayEvent extends Message {
         );
 
   factory RelayEvent.fromJson(dynamic json) {
-    if (json is! Map<String, dynamic>) {
-      throw ArgumentError.value(json, 'json', 'has to be map');
+    final jsonMap = jsonDecode(json);
+    if (jsonMap is! Map<String, String>) {
+      throw ArgumentError.value(jsonMap, 'json', 'has to be map');
     }
-    final message = Message.fromJson(json);
-    return RelayEvent.fromMessageAndJson(json: json, message: message);
+    final message = Message.fromJson(jsonMap);
+    return RelayEvent.fromMessageAndJson(
+      json: json,
+      message: message,
+    );
   }
 
   RelayEvent.fromMessageAndJson({

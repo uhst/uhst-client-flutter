@@ -6,7 +6,7 @@ class Relay {
   // Reason: use this as callback
   // ignore: prefer_constructors_over_static_methods
   static Relay fromJson(Map<String, dynamic> map) => Relay(
-      urls: List<String>.from(map['urls'].map((i) => i as String)),
+      urls: List<String>.from(map['urls']?.map((i) => i as String)),
       prefix: map['prefix'] ?? '');
   final List<String> urls;
   final String prefix;

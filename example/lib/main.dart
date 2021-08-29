@@ -103,7 +103,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void initUHST() {
-    uhst ??= UHST(debug: true);
+    uhst ??= UHST(
+      debug: true,
+      relayUrl: 'http://127.0.0.1:3000',
+    );
   }
 
   Future<void> join() async {

@@ -1,5 +1,8 @@
 library uhst_models;
 
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:universal_html/html.dart';
 
 import '../contracts/contracts.dart';

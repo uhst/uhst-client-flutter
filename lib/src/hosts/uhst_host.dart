@@ -179,7 +179,8 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
       );
       if (h.debug) {
         h.emitDiagnostic(
-            body: 'Host received client connection from clientId: $clientId');
+          body: 'Host received client connection from clientId: $clientId',
+        );
       }
       h.emit(message: HostEventType.connection, body: socket);
       _clients[clientId] = socket;
