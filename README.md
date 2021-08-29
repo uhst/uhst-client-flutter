@@ -171,11 +171,11 @@ Visit our website for more complete documentation: [https://docs.uhst.io](https:
 
 ### Styling
 
-This project uses (Dart documentation style guidlines)[https://dart.dev/guides/language/effective-dart/documentation]
+This project uses [Dart documentation style guidlines](https://dart.dev/guides/language/effective-dart/documentation)
 
 ### Generation
 
-The project uses (dartdoc)[https://github.com/dart-lang/dartdoc#dartdoc]
+The project uses [dartdoc](https://github.com/dart-lang/dartdoc#dartdoc)
 
 If you don't have installed dartdoc, then to install the latest version of dartdoc compatible with your SDK run:
 
