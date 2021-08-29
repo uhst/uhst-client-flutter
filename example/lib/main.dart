@@ -60,10 +60,12 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       })
       ..onException(handler: ({required dynamic exception}) {
-        print('exception received! $exception');
-        setState(() {
-          hostMessages.add(exception.toString());
-        });
+        if (exception is RelayException) {
+          hostMessages.add('disconneted! $exception');
+        } else {
+          hostMessages.add('exception received! $exception');
+        }
+        setState(() {});
       })
       ..onConnection(handler: ({required uhstSocket}) {
         uhstSocket
@@ -83,6 +85,9 @@ class _MyHomePageState extends State<MyHomePage> {
             setState(() {
               hostMessages.add('Client ${uhstSocket.remoteId} connected');
             });
+          })
+          ..onClose(handler: () {
+            hostMessages.add('Client ${uhstSocket.remoteId} disconected');
           });
       });
   }
@@ -98,14 +103,11 @@ class _MyHomePageState extends State<MyHomePage> {
     client
       ?..onException(handler: ({required dynamic exception}) {
         if (exception is InvalidHostId || exception is InvalidClientOrHostId) {
-          setState(() {
-            clientMessages.add('Invalid hostId!');
-          });
+          clientMessages.add('Invalid hostId!');
         } else {
-          setState(() {
-            clientMessages.add(exception.toString());
-          });
+          clientMessages.add(exception.toString());
         }
+        setState(() {});
       })
       ..onDiagnostic(handler: ({required message}) {
         setState(() {
@@ -116,6 +118,9 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           clientMessages.add('Client connected to host: ${client?.remoteId}');
         });
+      })
+      ..onClose(handler: () {
+        clientMessages.add('Connection to host ${client?.remoteId} dropped.');
       })
       ..onMessage(handler: ({required message}) {
         setState(() {
