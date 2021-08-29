@@ -146,89 +146,119 @@ class _MyHomePageState extends State<MyHomePage> {
             Flexible(
               flex: 2,
               child: Material(
-                  elevation: 4,
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Center(
-                          child: Text(
-                            'Setup & checks',
-                          ),
-                        ),
-                        const Divider(
-                          height: 22,
-                        ),
-                        TextField(
-                          decoration:
-                              const InputDecoration(labelText: 'Host id'),
-                          controller: _hostIdController,
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        TextButton(
-                            onPressed: initHost,
-                            child: const Text('Start hosting')),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextButton(
-                          onPressed: () async => join(),
-                          child: const Text('Click to join a host'),
-                        ),
-                        const Divider(
-                          height: 22,
-                          thickness: 1,
-                        ),
-                        const Center(
-                          child: Text('Host chat'),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Expanded(
-                          child: ListView.builder(
-                            itemBuilder: (context, index) =>
-                                Text(hostMessages[index]),
-                            itemCount: hostMessages.length,
-                          ),
-                        )
-                      ],
-                    ),
-                  )),
-            ),
-            Flexible(
-                flex: 2,
+                elevation: 4,
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Client chat'),
-                      const Divider(
-                        height: 22,
+                      const Center(
+                        child: Text('Host'),
                       ),
+                      const Divider(height: 22),
                       TextField(
-                        controller: hostTextFieldController,
-                        decoration: InputDecoration(
-                            suffix: IconButton(
-                                icon: const Icon(Icons.send),
-                                onPressed: () {
-                                  client?.sendString(
-                                      message: hostTextFieldController.text);
-                                })),
+                        decoration: const InputDecoration(labelText: 'Host id'),
+                        controller: _hostIdController,
                       ),
+                      const SizedBox(height: 20),
+                      Wrap(
+                        children: [
+                          const Text('Host actions:'),
+                          ...[
+                            TextButton(
+                              onPressed: initHost,
+                              child: const Text('Start hosting'),
+                            ),
+                            TextButton(
+                              onPressed: initHost,
+                              child: const Text('Finish hosting'),
+                            ),
+                          ].map(
+                            (w) => Padding(
+                              padding: const EdgeInsets.only(left: 20),
+                              child: w,
+                            ),
+                          )
+                        ],
+                      ),
+                      const Divider(
+                        thickness: 1,
+                      ),
+                      const SizedBox(height: 20),
+                      const Center(
+                        child: Text('Host chat & debug messages'),
+                      ),
+                      const SizedBox(height: 20),
                       Expanded(
                         child: ListView.builder(
                           itemBuilder: (context, index) =>
-                              Text(clientMessages[index]),
-                          itemCount: clientMessages.length,
+                              Text(hostMessages[index]),
+                          itemCount: hostMessages.length,
                         ),
                       )
                     ],
                   ),
-                ))
+                ),
+              ),
+            ),
+            Flexible(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(child: Text('Client')),
+                    const Divider(height: 22),
+                    Wrap(
+                      children: [
+                        const Text('Client actions:'),
+                        ...[
+                          TextButton(
+                            onPressed: () async => join(),
+                            child: const Text('Join a host'),
+                          ),
+                          TextButton(
+                            onPressed: () async => join(),
+                            child: const Text('Leave a host'),
+                          ),
+                        ].map(
+                          (w) => Padding(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: w,
+                          ),
+                        )
+                      ],
+                    ),
+                    const Divider(height: 22),
+                    TextField(
+                      controller: hostTextFieldController,
+                      decoration: InputDecoration(
+                        labelText: 'Client messsage',
+                        suffix: IconButton(
+                          icon: const Icon(Icons.send),
+                          onPressed: () {
+                            client?.sendString(
+                                message: hostTextFieldController.text);
+                            hostTextFieldController.clear();
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Center(child: Text('Client chat and debug messages')),
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: ListView.builder(
+                        itemBuilder: (context, index) =>
+                            Text(clientMessages[index]),
+                        itemCount: clientMessages.length,
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            )
           ],
         ),
       );
