@@ -134,9 +134,9 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
     switch (event.eventType) {
       case RelayEventType.clientClosed:
         final clientId = event.payload;
-        clients
-          ..get(clientId)?.close()
-          ..delete(clientId);
+        final client = _clients[clientId];
+        client?.close();
+        _clients.remove(clientId);
         break;
       default:
     }
@@ -167,7 +167,7 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
     if (clientId == null) {
       throw InvalidToken(token);
     }
-    var hostSocket = _clients[clientId];
+    final hostSocket = _clients[clientId];
 
     if (hostSocket == null) {
       final hostParams = HostSocketParams(
@@ -182,12 +182,7 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
             body: 'Host received client connection from clientId: $clientId');
       }
       h.emit(message: HostEventType.connection, body: socket);
-      _clients.update(
-        clientId,
-        (value) => value = socket,
-        ifAbsent: () => socket,
-      );
-      hostSocket = socket;
+      _clients[clientId] = socket;
       // give the connection handler a chance to subscribe
       Timer.run(() => socket.onClientMessage(message: message));
     } else {
@@ -247,10 +242,10 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
     try {
       await h.relayClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
+      if (h.debug) h.emitDiagnostic(body: 'Sent message $message');
     } on Exception catch (e) {
       if (h.debug) h.emitDiagnostic(body: 'Failed sending message: $e');
       h.emitException(body: e);
     }
-    if (h.debug) h.emitDiagnostic(body: 'Sent message $message');
   }
 }

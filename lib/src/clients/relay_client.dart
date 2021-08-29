@@ -9,11 +9,13 @@ class _RelayClientConsts {
 /// [RelayClient] is a standard host and client provider which used
 /// to subscribe to event source, send messages and init [UhstHost]
 /// and Client [UhstSocket]
+@immutable
 class RelayClient implements UhstRelayClient {
-  RelayClient({
+  const RelayClient({
     required this.relayUrl,
-  }) : networkClient = NetworkClient();
-  NetworkClient networkClient;
+    required this.networkClient,
+  });
+  final NetworkClient networkClient;
   final String relayUrl;
 
   @override
@@ -115,7 +117,7 @@ class RelayClient implements UhstRelayClient {
       completer.complete();
     }
 
-    final EventSource source = EventSource(finalUrl);
+    final html.EventSource source = html.EventSource(finalUrl);
     source.onOpen.listen((event) {
       onNotResolved(
         () => onReady(stream: RelayStream(eventSource: source)),
@@ -136,7 +138,7 @@ class RelayClient implements UhstRelayClient {
       source.addEventListener(
         _RelayClientConsts.relayEvent,
         (evt) {
-          final messageEvent = evt as MessageEvent;
+          final messageEvent = evt as html.MessageEvent;
           final relayEvent = RelayEvent.fromJson(messageEvent.data);
           onRelayEvent(event: relayEvent);
         },

@@ -1,6 +1,9 @@
 part of uhst_clients;
 
+@immutable
 class NetworkClient {
+  const NetworkClient();
+
   /// Returns generic [T] type from response
   /// Handles error cases
   Future<T> post<T>({

@@ -4,8 +4,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:universal_html/html.dart';
+import 'package:universal_html/html.dart' as html;
 
 import '../contracts/contracts.dart';
 import '../models/models.dart';

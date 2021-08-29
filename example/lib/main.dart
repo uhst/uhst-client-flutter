@@ -1,23 +1,28 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:uhst/uhst.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) => MaterialApp(
         title: 'Flutter UHST Example',
         theme:
             ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
-        home: MyHomePage(title: 'Flutter UHST Example'),
+        home: const MyHomePage(title: 'Flutter UHST Example'),
       );
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage({
+    required this.title,
+    Key? key,
+  }) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -32,6 +37,11 @@ class MyHomePage extends StatefulWidget {
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('title', title));
+  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -229,4 +239,16 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       );
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('hostMessages', hostMessages))
+      ..add(DiagnosticsProperty<UHST?>('uhst', uhst))
+      ..add(DiagnosticsProperty<TextEditingController>(
+          'hostTextFieldController', hostTextFieldController))
+      ..add(DiagnosticsProperty<UhstSocket?>('client', client))
+      ..add(IterableProperty<String>('clientMessages', clientMessages))
+      ..add(DiagnosticsProperty<UhstHost?>('host', host));
+  }
 }

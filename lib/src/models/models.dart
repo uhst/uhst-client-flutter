@@ -12,6 +12,5 @@ part 'message.dart';
 part 'ping_response.dart';
 part 'relay.dart';
 part 'relay_event.dart';
-part 'relay_message.dart';
 part 'relay_stream.dart';
 part 'socket_params.dart';
