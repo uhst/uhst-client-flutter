@@ -3,6 +3,7 @@ part of uhst_clients;
 class _RelayClientConsts {
   static const requestHeaderContentName = 'Content-type';
   static const requestHeaderContentValue = 'application/json';
+  static const relayEvent = 'relay_event';
 }
 
 /// [RelayClient] is a standard host and client provider which used
@@ -94,21 +95,24 @@ class RelayClient implements UhstRelayClient {
   }
 
   @override
-  void subscribeToMessages({
+  Future<void> subscribeToMessages({
     required String token,
     required RelayReadyHandler onReady,
     required RelayExceptionHandler onException,
     required RelayMessageHandler onMessage,
     RelayEventHandler? onRelayEvent,
     String? receiveUrl,
-  }) {
+  }) async {
     final url = receiveUrl ?? relayUrl;
     final finalUrl = '$url?token=$token';
-    bool resolved = false;
-    void onNotResolved(VoidCallback callback) {
-      if (resolved) return;
+    final completer = Completer();
+    void onNotResolved(VoidCallback callback, {String errorDescription = ''}) {
+      if (completer.isCompleted) return;
       callback();
-      resolved = true;
+      if (errorDescription.isNotEmpty) {
+        completer.completeError(errorDescription);
+      }
+      completer.complete();
     }
 
     final EventSource source = EventSource(finalUrl);
@@ -120,6 +124,7 @@ class RelayClient implements UhstRelayClient {
     source.onError.listen((event) {
       onNotResolved(
         () => onException(exception: RelayException(event)),
+        errorDescription: RelayException(event).toString(),
       );
     });
     source.onMessage.listen((event) {
@@ -129,7 +134,7 @@ class RelayClient implements UhstRelayClient {
     });
     if (onRelayEvent != null) {
       source.addEventListener(
-        'relay_event',
+        _RelayClientConsts.relayEvent,
         (evt) {
           final messageEvent = evt as MessageEvent;
           final relayEvent = RelayEvent.fromJson(messageEvent.data);
@@ -137,5 +142,6 @@ class RelayClient implements UhstRelayClient {
         },
       );
     }
+    return completer.future;
   }
 }
