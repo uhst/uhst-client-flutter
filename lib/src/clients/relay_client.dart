@@ -109,39 +109,20 @@ class RelayClient implements UhstRelayClient {
     final finalUrl = '$url?token=$token';
     final completer = Completer();
 
-    void onCompleterNotResolved(
-      VoidCallback callback, {
-      Exception? exception,
-      VoidCallback? onIfResolved,
-    }) {
-      if (completer.isCompleted) {
-        onIfResolved?.call();
-        return;
-      }
-
-      if (exception != null) {
-        completer.completeError(exception);
-      } else {
-        callback();
-        completer.complete();
-      }
-    }
-
     final html.EventSource source = html.EventSource(finalUrl);
     source
       ..onOpen.listen((event) {
-        onCompleterNotResolved(
-          () => onReady(stream: RelayStream(eventSource: source)),
-        );
+        if (completer.isCompleted) return;
+        onReady(stream: RelayStream(eventSource: source));
+        completer.complete();
       })
       ..onError.listen((event) {
-        void onExceptionCallback() =>
-            onException(exception: RelayException(event.toString()));
-        onCompleterNotResolved(
-          onExceptionCallback,
-          exception: RelayException(event),
-          onIfResolved: onExceptionCallback,
-        );
+        final e = RelayException(event.toString());
+        if (completer.isCompleted) {
+          onException(exception: e);
+        } else {
+          completer.completeError(e);
+        }
       })
       ..onMessage.listen((event) {
         final eventMessageMap = jsonDecode(event.data);
