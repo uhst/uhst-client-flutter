@@ -48,5 +48,5 @@ abstract class UhstSocket {
 
   void close();
 
-  void handleMessage({required Message message});
+  void onClientMessage({required Message message});
 }

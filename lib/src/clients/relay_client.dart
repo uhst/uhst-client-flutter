@@ -138,7 +138,7 @@ class RelayClient implements UhstRelayClient {
         (evt) {
           final messageEvent = evt as MessageEvent;
           final relayEvent = RelayEvent.fromJson(messageEvent.data);
-          onRelayEvent(message: relayEvent);
+          onRelayEvent(event: relayEvent);
         },
       );
     }

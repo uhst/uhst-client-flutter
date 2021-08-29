@@ -116,6 +116,7 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
           onException: _handleException,
           onMessage: _handleMessage,
           receiveUrl: _config.receiveUrl,
+          onRelayEvent: _handleRelayEvent,
         )
         ..token = _config.hostToken
         ..sendUrl = _config.sendUrl;
@@ -126,6 +127,18 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
         );
       }
       h.emitException(body: exception);
+    }
+  }
+
+  void _handleRelayEvent({required RelayEvent event}) {
+    switch (event.eventType) {
+      case RelayEventType.clientClosed:
+        final clientId = event.payload;
+        clients
+          ..get(clientId)?.close()
+          ..delete(clientId);
+        break;
+      default:
     }
   }
 
@@ -176,9 +189,9 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
       );
       hostSocket = socket;
       // give the connection handler a chance to subscribe
-      Timer.run(() => socket.handleMessage(message: message));
+      Timer.run(() => socket.onClientMessage(message: message));
     } else {
-      hostSocket.handleMessage(message: message);
+      hostSocket.onClientMessage(message: message);
     }
   }
 
