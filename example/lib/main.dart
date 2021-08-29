@@ -52,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   UhstSocket? client;
   final TextEditingController _hostIdController = TextEditingController();
 
-  Future<void> connectHost() async {
+  Future<void> startHosting() async {
     initUHST();
     host?.disconnect();
     host = uhst?.host();
@@ -71,8 +71,8 @@ class _MyHomePageState extends State<MyHomePage> {
         }
         setState(() {});
       })
-      ..onClose(handler: ({required hostId}) {
-        hostMessages.add('Host with id $hostId disconnected');
+      ..onClose(handler: () {
+        hostMessages.add('Host disconnected');
         setState(() {});
       })
       ..onConnection(handler: ({required uhstSocket}) {
@@ -91,14 +91,14 @@ class _MyHomePageState extends State<MyHomePage> {
             hostMessages.add('Client ${uhstSocket.remoteId} connected');
             setState(() {});
           })
-          ..onClose(handler: ({required hostId}) {
+          ..onClose(handler: () {
             hostMessages.add('Client ${uhstSocket.remoteId} disconected');
             setState(() {});
           });
       });
   }
 
-  Future<void> disconnectHost() async => host?.disconnect();
+  Future<void> stopHosting() async => host?.disconnect();
   void initUHST() {
     uhst ??= UHST(
       debug: true,
@@ -106,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<void> joinHost() async {
+  Future<void> join() async {
     initUHST();
     client?.close();
     client = uhst?.join(hostId: _hostIdController.text);
@@ -127,8 +127,8 @@ class _MyHomePageState extends State<MyHomePage> {
         clientMessages.add('Client connected to host: ${client?.remoteId}');
         setState(() {});
       })
-      ..onClose(handler: ({required hostId}) {
-        clientMessages.add('Connection to host $hostId dropped.');
+      ..onClose(handler: () {
+        clientMessages.add('Connection to host dropped.');
         setState(() {});
       })
       ..onMessage(handler: ({required message}) {
@@ -137,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
   }
 
-  Future<void> leaveHost() async => client?.close();
+  Future<void> diconnect() async => client?.close();
 
   TextEditingController hostTextFieldController = TextEditingController();
   @override
@@ -173,11 +173,11 @@ class _MyHomePageState extends State<MyHomePage> {
                           const Text('Host actions:'),
                           ...[
                             TextButton(
-                              onPressed: connectHost,
+                              onPressed: startHosting,
                               child: const Text('Start hosting'),
                             ),
                             TextButton(
-                              onPressed: disconnectHost,
+                              onPressed: stopHosting,
                               child: const Text('Finish hosting'),
                             ),
                             TextButton(
@@ -229,11 +229,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         const Text('Client actions:'),
                         ...[
                           TextButton(
-                            onPressed: joinHost,
+                            onPressed: join,
                             child: const Text('Join a host'),
                           ),
                           TextButton(
-                            onPressed: leaveHost,
+                            onPressed: diconnect,
                             child: const Text('Leave a host'),
                           ),
                           TextButton(

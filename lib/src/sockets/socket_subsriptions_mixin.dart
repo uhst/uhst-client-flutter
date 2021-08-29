@@ -41,8 +41,7 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
     final subsription = h.eventStream.listen((event) {})
       ..onData((data) {
         if (data.containsKey(UhstSocketEventType.close)) {
-          final maybeHostId = data.values.first ?? '';
-          handler(hostId: maybeHostId);
+          handler();
         }
       });
     h.closeListenerHandlers

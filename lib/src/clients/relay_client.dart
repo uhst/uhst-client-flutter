@@ -9,12 +9,10 @@ class _RelayClientConsts {
 /// [RelayClient] is a standard host and client provider which used
 /// to subscribe to event source, send messages and init [UhstHost]
 /// and Client [UhstSocket]
-@immutable
 class RelayClient implements UhstRelayClient {
-  const RelayClient({
+  RelayClient({
     required this.relayUrl,
-    required this.networkClient,
-  });
+  }) : networkClient = const NetworkClient();
   final NetworkClient networkClient;
   final String relayUrl;
 

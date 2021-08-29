@@ -39,7 +39,6 @@ class UHST {
     } else if (relayUrl != null) {
       _relayClient = RelayClient(
         relayUrl: relayUrl,
-        networkClient: const NetworkClient(),
       );
     } else {
       _relayClient = ApiClient();

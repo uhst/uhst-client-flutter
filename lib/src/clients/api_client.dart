@@ -15,7 +15,6 @@ class ApiClient implements UhstRelayClient {
     final relayUrl = await relayUrlsProvider.getBestRelayUrl(hostId);
     relayClient = RelayClient(
       relayUrl: relayUrl,
-      networkClient: const NetworkClient(),
     );
     return relayClient.initClient(hostId: hostId);
   }
@@ -25,7 +24,6 @@ class ApiClient implements UhstRelayClient {
     final relayUrl = await relayUrlsProvider.getBestRelayUrl(hostId);
     relayClient = RelayClient(
       relayUrl: relayUrl,
-      networkClient: const NetworkClient(),
     );
     return relayClient.initHost(hostId: hostId);
   }
