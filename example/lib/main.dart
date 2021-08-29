@@ -52,13 +52,13 @@ class _MyHomePageState extends State<MyHomePage> {
   UhstSocket? client;
   final TextEditingController _hostIdController = TextEditingController();
 
-  Future<void> initHost() async {
+  Future<void> connectHost() async {
     initUHST();
     host?.disconnect();
     host = uhst?.host();
     host
       ?..onReady(handler: ({required hostId}) {
-        hostMessages.add('Host Ready! Using $hostId');
+        hostMessages.add('Host Ready! Using hostId $hostId');
         print('host is ready!');
         _hostIdController.text = hostId;
         setState(() {});
@@ -69,6 +69,10 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           hostMessages.add('exception received! $exception');
         }
+        setState(() {});
+      })
+      ..onClose(handler: ({required hostId}) {
+        hostMessages.add('Host with id $hostId disconnected');
         setState(() {});
       })
       ..onConnection(handler: ({required uhstSocket}) {
@@ -94,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
   }
 
+  Future<void> disconnectHost() async => host?.disconnect();
   void initUHST() {
     uhst ??= UHST(
       debug: true,
@@ -101,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<void> join() async {
+  Future<void> joinHost() async {
     initUHST();
     client?.close();
     client = uhst?.join(hostId: _hostIdController.text);
@@ -131,6 +136,8 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {});
       });
   }
+
+  Future<void> leaveHost() async => client?.close();
 
   TextEditingController hostTextFieldController = TextEditingController();
   @override
@@ -166,12 +173,19 @@ class _MyHomePageState extends State<MyHomePage> {
                           const Text('Host actions:'),
                           ...[
                             TextButton(
-                              onPressed: initHost,
+                              onPressed: connectHost,
                               child: const Text('Start hosting'),
                             ),
                             TextButton(
-                              onPressed: initHost,
+                              onPressed: disconnectHost,
                               child: const Text('Finish hosting'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                hostMessages.clear();
+                                setState(() {});
+                              },
+                              child: const Text('Clear host messages'),
                             ),
                           ].map(
                             (w) => Padding(
@@ -215,12 +229,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         const Text('Client actions:'),
                         ...[
                           TextButton(
-                            onPressed: () async => join(),
+                            onPressed: joinHost,
                             child: const Text('Join a host'),
                           ),
                           TextButton(
-                            onPressed: () async => join(),
+                            onPressed: leaveHost,
                             child: const Text('Leave a host'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              clientMessages.clear();
+                              setState(() {});
+                            },
+                            child: const Text('Clear client messages'),
                           ),
                         ].map(
                           (w) => Padding(
@@ -238,9 +259,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         suffix: IconButton(
                           icon: const Icon(Icons.send),
                           onPressed: () {
+                            if (client == null) {
+                              clientMessages.add(
+                                'No client initialized! '
+                                'Start hosting and join a host first',
+                              );
+                            }
+
                             client?.sendString(
                                 message: hostTextFieldController.text);
                             hostTextFieldController.clear();
+                            setState(() {});
                           },
                         ),
                       ),

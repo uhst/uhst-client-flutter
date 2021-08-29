@@ -191,11 +191,12 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
     }
   }
 
+  /// Static id that can identified a host
   String get hostId => _config.hostId;
 
   @override
   void disconnect() {
-    h.emit(message: HostEventType.close);
+    h.emit(message: HostEventType.close, body: hostId);
     h.relayMessageStream?.close();
   }
 
