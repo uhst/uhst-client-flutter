@@ -92,6 +92,8 @@ class RelayClient implements UhstRelayClient {
           default:
             throw RelayUnreachable(e.message);
         }
+      } else {
+        throw RelayUnreachable(e);
       }
     }
   }
@@ -108,8 +110,16 @@ class RelayClient implements UhstRelayClient {
     final url = receiveUrl ?? relayUrl;
     final finalUrl = '$url?token=$token';
     final completer = Completer();
-    void onNotResolved(VoidCallback callback, {String errorDescription = ''}) {
-      if (completer.isCompleted) return;
+    void onCompleterNotResolved(
+      VoidCallback callback, {
+      String errorDescription = '',
+      VoidCallback? onIfResolved,
+    }) {
+      if (completer.isCompleted) {
+        onIfResolved?.call();
+        return;
+      }
+
       callback();
       if (errorDescription.isNotEmpty) {
         completer.completeError(errorDescription);
@@ -119,14 +129,17 @@ class RelayClient implements UhstRelayClient {
 
     final html.EventSource source = html.EventSource(finalUrl);
     source.onOpen.listen((event) {
-      onNotResolved(
+      onCompleterNotResolved(
         () => onReady(stream: RelayStream(eventSource: source)),
       );
     });
     source.onError.listen((event) {
-      onNotResolved(
+      onCompleterNotResolved(
         () => onException(exception: RelayException(event)),
         errorDescription: RelayException(event).toString(),
+        onIfResolved: () {
+          onException(exception: RelayException(event));
+        },
       );
     });
     source.onMessage.listen((event) {
