@@ -109,7 +109,7 @@ class RelayClient implements UhstRelayClient {
     final finalUrl = '$url?token=$token';
     final completer = Completer();
 
-    final html.EventSource source = html.EventSource(finalUrl);
+    final source = html.EventSource(finalUrl);
     source
       ..onOpen.listen((event) {
         if (completer.isCompleted) return;

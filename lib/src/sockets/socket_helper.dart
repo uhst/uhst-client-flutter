@@ -7,13 +7,12 @@ class SocketHelper {
   }) {
     eventStreamController =
         StreamController<Map<UhstSocketEventType, dynamic>>.broadcast();
-
-    eventStream = eventStreamController.stream;
   }
 
   late final StreamController<Map<UhstSocketEventType, dynamic>>
       eventStreamController;
-  late final Stream<Map<UhstSocketEventType, dynamic>> eventStream;
+  Stream<Map<UhstSocketEventType, dynamic>> get eventStream =>
+      eventStreamController.stream;
   final diagntosticListenerHandlers =
       <DiagnosticHandler?, StreamSubscription>{};
   final messageListenerHandlers = <MessageHandler?, StreamSubscription>{};

@@ -136,6 +136,12 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
   }
 
   @override
+  void dispose() {
+    close();
+    h.eventStreamController.close();
+  }
+
+  @override
   void sendByteBufer({required ByteBuffer byteBuffer}) {
     _send(message: byteBuffer, payloadType: PayloadType.byteBuffer);
   }

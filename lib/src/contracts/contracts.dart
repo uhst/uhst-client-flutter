@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:recase/recase.dart';
 import 'package:universal_html/html.dart';
+import 'package:universal_html/html.dart' as html;
 
 import '../extensions/extensions.dart';
 import '../models/models.dart';

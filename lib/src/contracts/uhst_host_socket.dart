@@ -29,6 +29,13 @@ abstract class UhstHostSocket {
   /// will be called, if any provided
   void disconnect();
 
+  /// This method should be called during dispose method in Flutter widget
+  /// or any another cases that require to cancel all subscriptions and
+  /// all methods
+  ///
+  /// This method will started with [disconnect] call
+  void dispose();
+
   void broadcastString({required String message});
   void broadcastBlob({required Blob blob});
 

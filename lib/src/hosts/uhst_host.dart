@@ -201,6 +201,12 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
   }
 
   @override
+  void dispose() {
+    disconnect();
+    h.eventStreamController.close();
+  }
+
+  @override
   void broadcastBlob({required Blob blob}) {
     _send(message: blob, payloadType: PayloadType.blob);
   }
