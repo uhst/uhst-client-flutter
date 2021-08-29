@@ -39,7 +39,8 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
       {required CloseHandler handler}) {
     final subsription = h.eventStream.listen((event) {
       if (event.containsKey(HostEventType.close)) {
-        handler();
+        final maybeHostId = event.values.first ?? '';
+        handler(hostId: maybeHostId);
       }
     });
     h.closeListenerHandlers

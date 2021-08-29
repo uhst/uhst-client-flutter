@@ -52,22 +52,16 @@ class _MyHomePageState extends State<MyHomePage> {
   UhstSocket? client;
   final TextEditingController _hostIdController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Future<void> initHost() async {
     initUHST();
     host?.disconnect();
     host = uhst?.host();
     host
       ?..onReady(handler: ({required hostId}) {
-        setState(() {
-          hostMessages.add('Host Ready! Using $hostId');
-          print('host is ready!');
-          _hostIdController.text = hostId;
-        });
+        hostMessages.add('Host Ready! Using $hostId');
+        print('host is ready!');
+        _hostIdController.text = hostId;
+        setState(() {});
       })
       ..onException(handler: ({required dynamic exception}) {
         if (exception is RelayException) {
@@ -80,24 +74,22 @@ class _MyHomePageState extends State<MyHomePage> {
       ..onConnection(handler: ({required uhstSocket}) {
         uhstSocket
           ..onDiagnostic(handler: ({required message}) {
-            setState(() {
-              hostMessages.add(message);
-            });
+            hostMessages.add(message);
+            setState(() {});
           })
           ..onMessage(handler: ({required message}) {
-            setState(() {
-              hostMessages
-                  .add('Host received: $message from ${uhstSocket.remoteId}');
-            });
+            hostMessages
+                .add('Host received: $message from ${uhstSocket.remoteId}');
+            setState(() {});
             host?.broadcastString(message: message);
           })
           ..onOpen(handler: () {
-            setState(() {
-              hostMessages.add('Client ${uhstSocket.remoteId} connected');
-            });
+            hostMessages.add('Client ${uhstSocket.remoteId} connected');
+            setState(() {});
           })
-          ..onClose(handler: () {
+          ..onClose(handler: ({required hostId}) {
             hostMessages.add('Client ${uhstSocket.remoteId} disconected');
+            setState(() {});
           });
       });
   }
@@ -123,22 +115,20 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {});
       })
       ..onDiagnostic(handler: ({required message}) {
-        setState(() {
-          clientMessages.add(message);
-        });
+        clientMessages.add(message);
+        setState(() {});
       })
       ..onOpen(handler: () {
-        setState(() {
-          clientMessages.add('Client connected to host: ${client?.remoteId}');
-        });
+        clientMessages.add('Client connected to host: ${client?.remoteId}');
+        setState(() {});
       })
-      ..onClose(handler: () {
-        clientMessages.add('Connection to host ${client?.remoteId} dropped.');
+      ..onClose(handler: ({required hostId}) {
+        clientMessages.add('Connection to host $hostId dropped.');
+        setState(() {});
       })
       ..onMessage(handler: ({required message}) {
-        setState(() {
-          clientMessages.add('Client received: $message');
-        });
+        clientMessages.add('Client received: $message');
+        setState(() {});
       });
   }
 

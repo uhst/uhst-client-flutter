@@ -120,9 +120,6 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
           onRelayEvent: _onClientRelayEvent,
           receiveUrl: config.receiveUrl,
         );
-      if (h.debug) {
-        h.emitDiagnostic(body: 'Client subscribed to messages from server.');
-      }
     } on Exception catch (exception) {
       if (h.debug) h.emitDiagnostic(body: 'Client failed: $exception');
       h.emitException(body: exception);
@@ -134,7 +131,7 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
 
   @override
   void close() {
-    h.emit(message: UhstSocketEventType.close);
+    h.emit(message: UhstSocketEventType.close, body: remoteId);
     h.relayMessageStream?.close();
   }
 
@@ -180,7 +177,11 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
   }
 
   void _onClientException({required RelayException exception}) {
-    if (h.debug) h.emitDiagnostic(body: 'Client connection to relay dropped.');
+    if (h.debug) {
+      h.emitDiagnostic(
+        body: 'Client connection to relay dropped with exception: $exception',
+      );
+    }
     close();
   }
 

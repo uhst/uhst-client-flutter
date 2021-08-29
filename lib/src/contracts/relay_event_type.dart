@@ -1,4 +1,4 @@
-part of uhst_models;
+part of uhst_contracts;
 
 /// Relay(Server) events happened on host or client side
 /// As all events are in snake_case they will be converted automatically
