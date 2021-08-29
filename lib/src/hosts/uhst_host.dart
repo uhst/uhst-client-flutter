@@ -155,6 +155,7 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
       h.emitDiagnostic(body: 'Host received exception from relay: $exception');
     }
     h.emitException(body: exception);
+    disconnect();
   }
 
   Future<void> _handleMessage({required Message message}) async {

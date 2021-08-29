@@ -138,6 +138,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> diconnect() async => client?.close();
+  @override
+  void dispose() {
+    client?.dispose();
+    host?.dispose();
+    super.dispose();
+  }
 
   TextEditingController hostTextFieldController = TextEditingController();
   @override
