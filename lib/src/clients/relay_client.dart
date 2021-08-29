@@ -110,9 +110,10 @@ class RelayClient implements UhstRelayClient {
     final url = receiveUrl ?? relayUrl;
     final finalUrl = '$url?token=$token';
     final completer = Completer();
+
     void onCompleterNotResolved(
       VoidCallback callback, {
-      String errorDescription = '',
+      Exception? exception,
       VoidCallback? onIfResolved,
     }) {
       if (completer.isCompleted) {
@@ -120,11 +121,12 @@ class RelayClient implements UhstRelayClient {
         return;
       }
 
-      callback();
-      if (errorDescription.isNotEmpty) {
-        completer.completeError(errorDescription);
+      if (exception != null) {
+        completer.completeError(exception);
+      } else {
+        callback();
+        completer.complete();
       }
-      completer.complete();
     }
 
     final html.EventSource source = html.EventSource(finalUrl);
@@ -134,12 +136,12 @@ class RelayClient implements UhstRelayClient {
       );
     });
     source.onError.listen((event) {
-      onCompleterNotResolved(
-        () => onException(exception: RelayException(event)),
-        errorDescription: RelayException(event).toString(),
-        onIfResolved: () {
+      void onExceptionCallback() =>
           onException(exception: RelayException(event));
-        },
+      onCompleterNotResolved(
+        onExceptionCallback,
+        exception: RelayException(event),
+        onIfResolved: onExceptionCallback,
       );
     });
     source.onMessage.listen((event) {
