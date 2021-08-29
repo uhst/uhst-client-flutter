@@ -1,12 +1,5 @@
 part of uhst_models;
 
-enum RelayEventType {
-  //  CLIENT_CLOSED = 'client_closed',
-  //  HOST_CLOSED = 'host_closed',
-  clientClosed,
-  hostClosed,
-}
-
 @immutable
 
 /// Special events sent by relay.
@@ -29,7 +22,7 @@ class RelayEvent extends Message {
       throw ArgumentError.value(jsonMap, 'json', 'has to be map');
     }
     return RelayEvent(
-      eventType: jsonMap['eventType'],
+      eventType: RelayEventType.fromJson[jsonMap['eventType']],
       payload: jsonMap['body'],
       type: PayloadType.string,
     );
