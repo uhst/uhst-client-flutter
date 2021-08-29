@@ -80,8 +80,12 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
       socket.h.remoteId = hostParams.clientId;
       socket.h.sendUrl = hostParams.sendUrl;
       // give consumer a chance to subscribe to open event
-      Timer.run(() =>
-          socket.h.emit(message: UhstSocketEventType.open, body: 'opened'));
+      Timer.run(
+        () => socket.h.emit(
+          message: UhstSocketEventType.open,
+          body: 'opened',
+        ),
+      );
     } else if (clientParams is ClientSocketParams) {
       // will connect to host
       socket._initClient(hostId: clientParams.hostId);
@@ -110,9 +114,10 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
         ..sendUrl = config.sendUrl
         ..relayClient.subscribeToMessages(
           token: config.clientToken,
-          onReady: _handleReady,
-          onException: _handleException,
-          onMessage: handleMessage,
+          onReady: _onClientReady,
+          onException: _onClientException,
+          onMessage: onClientMessage,
+          onRelayEvent: _onClientRelayEvent,
           receiveUrl: config.receiveUrl,
         );
     } on Exception catch (exception) {
@@ -126,16 +131,14 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
 
   @override
   void close() {
+    h.emit(message: UhstSocketEventType.close, body: remoteId);
     h.relayMessageStream?.close();
   }
 
   @override
-  void handleMessage({required Message message}) {
-    final String payload = message.payload;
-
-    if (h.debug) h.emitDiagnostic(body: 'Message received: $payload');
-
-    h.emit(message: UhstSocketEventType.message, body: payload);
+  void dispose() {
+    close();
+    h.eventStreamController.close();
   }
 
   @override
@@ -170,7 +173,7 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
     _send(message: message, payloadType: PayloadType.string);
   }
 
-  void _handleReady({required RelayStream stream}) {
+  void _onClientReady({required RelayStream stream}) {
     h.relayMessageStream = stream;
     if (h.debug) {
       h.emitDiagnostic(body: 'Client subscribed to messages from server.');
@@ -179,7 +182,33 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
     h.emit(message: UhstSocketEventType.open, body: 'opened');
   }
 
-  void _handleException({required RelayException exception}) {}
+  void _onClientException({required RelayException exception}) {
+    if (h.debug) {
+      h.emitDiagnostic(
+        body: 'Client connection to relay dropped with exception: $exception',
+      );
+    }
+    close();
+  }
+
+  void _onClientRelayEvent({required RelayEvent event}) {
+    switch (event.eventType) {
+      case RelayEventType.hostClosed:
+        if (h.debug) h.emitDiagnostic(body: 'Host disconnected from relay.');
+        close();
+        break;
+      default:
+    }
+  }
+
+  @override
+  void onClientMessage({required Message message}) {
+    final String payload = message.payload;
+
+    if (h.debug) h.emitDiagnostic(body: 'Message received: $payload');
+
+    h.emit(message: UhstSocketEventType.message, body: payload);
+  }
 
   void _send({
     required PayloadType payloadType,

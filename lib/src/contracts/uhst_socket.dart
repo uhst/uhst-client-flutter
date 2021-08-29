@@ -46,7 +46,29 @@ abstract class UhstSocket {
   @Deprecated('Use sendTypedData instead')
   void sendArrayBufferView({required TypedData arrayBufferView});
 
+  /// This method is using to close EventSource.
+  /// Before close will be fired [onClose] [onceClose]
+  /// will be called, if any provided
+
   void close();
 
-  void handleMessage({required Message message});
+  /// This method should be called during dispose method in Flutter widget
+  /// or any another cases that require to cancel all subscriptions and
+  /// all methods
+  ///
+  /// This method will started with [close] call
+  ///
+  /// In Flutter you can add such methods in dispose override.
+  ///
+  /// ```dart
+  /// @override
+  /// void dispose() {
+  ///   client?.dispose();
+  ///   host?.dispose();
+  ///   super.dispose();
+  /// }
+  /// ```
+  ///
+  void dispose();
+  void onClientMessage({required Message message});
 }

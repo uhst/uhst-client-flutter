@@ -2,6 +2,8 @@ part of uhst_contracts;
 
 typedef RelayReadyHandler = void Function({required RelayStream stream});
 typedef RelayMessageHandler = void Function({required Message message});
+typedef RelayEventHandler = void Function({required RelayEvent event});
+
 typedef RelayExceptionHandler = void Function({
   required RelayException exception,
 });
@@ -19,6 +21,7 @@ abstract class UhstRelayClient {
     required RelayReadyHandler onReady,
     required RelayExceptionHandler onException,
     required RelayMessageHandler onMessage,
+    RelayEventHandler? onRelayEvent,
     String? receiveUrl,
   });
 }

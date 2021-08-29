@@ -7,12 +7,11 @@ class HostHelper {
   }) {
     eventStreamController =
         StreamController<Map<HostEventType, dynamic>>.broadcast();
-
-    eventStream = eventStreamController.stream;
   }
   late final StreamController<Map<HostEventType, dynamic>>
       eventStreamController;
-  late final Stream<Map<HostEventType, dynamic>> eventStream;
+  Stream<Map<HostEventType, dynamic>> get eventStream =>
+      eventStreamController.stream;
   final diagntosticListenerHandlers =
       <DiagnosticHandler?, StreamSubscription>{};
   final exceptionListenerHandlers = <ExceptionHandler?, StreamSubscription>{};
@@ -21,13 +20,10 @@ class HostHelper {
   final connectionListenerHandlers =
       <HostConnectionHandler?, StreamSubscription>{};
 
-  String? token;
+  String token = '';
   String get verifiedToken {
-    final vtoken = token;
-    if (vtoken == null || vtoken.isEmpty) {
-      throw ArgumentError.notNull('token');
-    }
-    return vtoken;
+    if (token.isEmpty) throw ArgumentError.value(token, 'token', 'isEmpty');
+    return token;
   }
 
   final UhstRelayClient relayClient;

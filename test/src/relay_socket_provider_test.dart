@@ -14,7 +14,9 @@ void main() {
       final mockClientSocketParams = ClientSocketParams(hostId: 'testHostId');
       expect(
         provider.createUhstSocket(
-            relayClient: RelayClient(relayUrl: 'http://test.test'),
+            relayClient: RelayClient(
+              relayUrl: 'http://test.test',
+            ),
             debug: false,
             clientParams: mockClientSocketParams),
         isNotNull,
@@ -27,11 +29,12 @@ void main() {
       const relayUrl = 'test';
       expect(
         provider.createUhstSocket(
-            relayClient: RelayClient(
-              relayUrl: relayUrl,
-            ),
-            hostParams: mockHostSocketParams,
-            debug: false),
+          relayClient: RelayClient(
+            relayUrl: relayUrl,
+          ),
+          hostParams: mockHostSocketParams,
+          debug: false,
+        ),
         isNotNull,
       );
     });

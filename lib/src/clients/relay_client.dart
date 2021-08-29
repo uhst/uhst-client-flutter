@@ -3,6 +3,7 @@ part of uhst_clients;
 class _RelayClientConsts {
   static const requestHeaderContentName = 'Content-type';
   static const requestHeaderContentValue = 'application/json';
+  static const relayEvent = 'relay_event';
 }
 
 /// [RelayClient] is a standard host and client provider which used
@@ -11,18 +12,20 @@ class _RelayClientConsts {
 class RelayClient implements UhstRelayClient {
   RelayClient({
     required this.relayUrl,
-  }) : networkClient = NetworkClient();
-  NetworkClient networkClient;
+  }) : networkClient = const NetworkClient();
+  final NetworkClient networkClient;
   final String relayUrl;
 
   @override
   Future<ClientConfiguration> initClient({required String hostId}) async {
-    final qParams = <String, String>{};
-    qParams['action'] = 'join';
-    qParams['hostId'] = hostId;
+    final qParams = <String, String>{
+      'action': 'join',
+      'hostId': hostId,
+    };
     try {
       final response = ClientConfiguration.fromJson(
-          await networkClient.post(url: relayUrl, queryParameters: qParams));
+        await networkClient.post(url: relayUrl, queryParameters: qParams),
+      );
       return response;
     } on Exception catch (e) {
       if (e is NetworkException) {
@@ -32,7 +35,6 @@ class RelayClient implements UhstRelayClient {
           throw RelayException(e.message);
         }
       } else {
-        print(e);
         throw RelayUnreachable(e);
       }
     }
@@ -40,8 +42,7 @@ class RelayClient implements UhstRelayClient {
 
   @override
   Future<HostConfiguration> initHost({String? hostId}) async {
-    final qParams = <String, String>{};
-    qParams['action'] = 'host';
+    final qParams = <String, String>{'action': 'host'};
     if (hostId != null) {
       qParams['hostId'] = hostId;
     }
@@ -70,9 +71,8 @@ class RelayClient implements UhstRelayClient {
   }) async {
     final hostUrl = sendUrl ?? relayUrl;
     final uri = Uri.parse('$hostUrl?token=$token');
-    http.Response response;
     try {
-      response = await http.post(
+      await http.post(
         uri,
         headers: <String, String>{
           _RelayClientConsts.requestHeaderContentName:
@@ -80,43 +80,65 @@ class RelayClient implements UhstRelayClient {
         },
         body: message,
       );
-    } on Exception catch (exception) {
-      throw RelayUnreachable(exception);
-    }
-    switch (response.statusCode) {
-      case 200:
-        return;
-      case 400:
-        throw InvalidClientOrHostId(response.body);
-      case 401:
-        throw InvalidToken(token);
-      default:
-        throw RelayException(response.body);
+    } on Exception catch (e) {
+      if (e is NetworkException) {
+        switch (e.responseCode) {
+          case 400:
+            throw InvalidClientOrHostId(e.message);
+          case 401:
+            throw InvalidToken(e.message);
+          default:
+            throw RelayUnreachable(e.message);
+        }
+      } else {
+        throw RelayUnreachable(e);
+      }
     }
   }
 
   @override
-  void subscribeToMessages({
+  Future<void> subscribeToMessages({
     required String token,
     required RelayReadyHandler onReady,
     required RelayExceptionHandler onException,
     required RelayMessageHandler onMessage,
+    RelayEventHandler? onRelayEvent,
     String? receiveUrl,
-  }) {
+  }) async {
     final url = receiveUrl ?? relayUrl;
     final finalUrl = '$url?token=$token';
+    final completer = Completer();
 
-    final EventSource source = EventSource(finalUrl);
-    source.onOpen.listen((event) {
-      onReady(stream: RelayStream(eventSource: source));
-    });
-    source.onError.listen((event) {
-      onException(exception: RelayException(event));
-    });
-    source.onMessage.listen((event) {
-      final eventMessageMap = jsonDecode(event.data);
-      final eventMessage = EventMessage.fromJson(eventMessageMap);
-      onMessage(message: eventMessage.body);
-    });
+    final source = html.EventSource(finalUrl);
+    source
+      ..onOpen.listen((event) {
+        if (completer.isCompleted) return;
+        onReady(stream: RelayStream(eventSource: source));
+        completer.complete();
+      })
+      ..onError.listen((event) {
+        final e = RelayException(event.toString());
+        if (completer.isCompleted) {
+          onException(exception: e);
+        } else {
+          completer.completeError(e);
+        }
+      })
+      ..onMessage.listen((event) {
+        final eventMessageMap = jsonDecode(event.data);
+        final eventMessage = EventMessage.fromJson(eventMessageMap);
+        onMessage(message: eventMessage.body);
+      });
+    if (onRelayEvent != null) {
+      source.addEventListener(
+        _RelayClientConsts.relayEvent,
+        (evt) {
+          final messageEvent = evt as html.MessageEvent;
+          final relayEvent = RelayEvent.fromJson(messageEvent.data);
+          onRelayEvent(event: relayEvent);
+        },
+      );
+    }
+    return completer.future;
   }
 }

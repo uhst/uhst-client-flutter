@@ -1,5 +1,5 @@
 name: uhst
-version: 3.2.1
+version: 3.3.0
 
 description: UHST client for Flutter
 
@@ -14,6 +14,7 @@ dependencies:
   # universal_io: ^1.0.2
   http: ^0.13.3
   jwt_decoder: ^2.0.1
+  recase: ^4.0.0
 
 dev_dependencies:
   # https://pub.dev/packages/test

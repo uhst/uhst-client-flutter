@@ -63,6 +63,22 @@ part of uhst_hosts;
 /// you get after receiving a [UhstHost().onReady()] event
 /// when connecting to the host.
 ///
+/// !Important
+///
+/// Remember to call `.dispose()` to cancel all subscriptions and
+/// disconnect host socket from server, client from host.
+///
+/// In Flutter you can add such methods in dispose override.
+///
+/// ```dart
+/// @override
+/// void dispose() {
+///   client?.dispose();
+///   host?.dispose();
+///   super.dispose();
+/// }
+/// ```
+///
 class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
   /// Private factory.
   /// Call it only from static create factory function
@@ -116,6 +132,7 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
           onException: _handleException,
           onMessage: _handleMessage,
           receiveUrl: _config.receiveUrl,
+          onRelayEvent: _handleRelayEvent,
         )
         ..token = _config.hostToken
         ..sendUrl = _config.sendUrl;
@@ -126,6 +143,18 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
         );
       }
       h.emitException(body: exception);
+    }
+  }
+
+  void _handleRelayEvent({required RelayEvent event}) {
+    switch (event.eventType) {
+      case RelayEventType.clientClosed:
+        final clientId = event.payload;
+        final client = _clients[clientId];
+        client?.close();
+        _clients.remove(clientId);
+        break;
+      default:
     }
   }
 
@@ -142,44 +171,57 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
       h.emitDiagnostic(body: 'Host received exception from relay: $exception');
     }
     h.emitException(body: exception);
+    disconnect();
   }
 
   Future<void> _handleMessage({required Message message}) async {
-    final token = message.responseToken;
+    final token = message.responseToken ?? '';
 
-    if (token == null || token.isEmpty) throw InvalidToken(token);
+    if (token.isEmpty) throw InvalidToken(token);
+
     final Map<String, dynamic> tokenPayload = JwtDecoder.decode(token);
     final String? clientId = tokenPayload['clientId'];
     if (clientId == null) {
       throw InvalidToken(token);
     }
-    var hostSocket = _clients[clientId];
+    final hostSocket = _clients[clientId];
 
     if (hostSocket == null) {
       final hostParams = HostSocketParams(
           token: token, clientId: clientId, sendUrl: _config.sendUrl);
       final socket = _socketProvider.createUhstSocket(
-          relayClient: h.relayClient, hostParams: hostParams, debug: h.debug);
+        relayClient: h.relayClient,
+        hostParams: hostParams,
+        debug: h.debug,
+      );
       if (h.debug) {
         h.emitDiagnostic(
-            body: 'Host received client connection from clientId: $clientId');
+          body: 'Host received client connection from clientId: $clientId',
+        );
       }
       h.emit(message: HostEventType.connection, body: socket);
-      _clients.update(clientId, (value) => value = socket,
-          ifAbsent: () => socket);
-      hostSocket = socket;
+      _clients[clientId] = socket;
       // give the connection handler a chance to subscribe
-      Timer.run(() => socket.handleMessage(message: message));
+      Timer.run(() => socket.onClientMessage(message: message));
     } else {
-      hostSocket.handleMessage(message: message);
+      hostSocket.onClientMessage(message: message);
     }
   }
 
+  /// Static id that can identified a host
   String get hostId => _config.hostId;
 
   @override
   void disconnect() {
+    h.emit(message: HostEventType.close, body: hostId);
     h.relayMessageStream?.close();
+    _clients.clear();
+  }
+
+  @override
+  void dispose() {
+    disconnect();
+    h.eventStreamController.close();
   }
 
   @override
@@ -226,10 +268,10 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
     try {
       await h.relayClient.sendMessage(
           token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
+      if (h.debug) h.emitDiagnostic(body: 'Sent message $message');
     } on Exception catch (e) {
       if (h.debug) h.emitDiagnostic(body: 'Failed sending message: $e');
       h.emitException(body: e);
     }
-    if (h.debug) h.emitDiagnostic(body: 'Sent message $message');
   }
 }

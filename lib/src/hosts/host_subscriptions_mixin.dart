@@ -5,6 +5,12 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
   late final HostHelper h;
 
   @override
+  void offClose({required CloseHandler handler}) {
+    final subscription = h.closeListenerHandlers.remove(handler);
+    subscription?.cancel();
+  }
+
+  @override
   void offConnection({required HostConnectionHandler handler}) {
     final subsription = h.connectionListenerHandlers.remove(handler);
     subsription?.cancel();
@@ -26,6 +32,19 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
   void offReady({required HostReadyHandler handler}) {
     final subsription = h.readyListenerHandlers.remove(handler);
     subsription?.cancel();
+  }
+
+  @override
+  StreamSubscription<Map<HostEventType, dynamic>> onClose(
+      {required CloseHandler handler}) {
+    final subsription = h.eventStream.listen((event) {
+      if (event.containsKey(HostEventType.close)) {
+        handler();
+      }
+    });
+    h.closeListenerHandlers
+        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    return subsription;
   }
 
   @override
@@ -94,6 +113,15 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
     onConnection(handler: handler).onData((data) {
       if (data.containsKey(HostEventType.connection)) {
         offConnection(handler: handler);
+      }
+    });
+  }
+
+  @override
+  void onceClose({required CloseHandler handler}) {
+    onClose(handler: handler).onData((data) {
+      if (data.containsKey(HostEventType.close)) {
+        offClose(handler: handler);
       }
     });
   }

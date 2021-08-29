@@ -5,10 +5,11 @@ class _RelayUrlsProviderConsts {
       'https://raw.githubusercontent.com/uhst/relays/main/list.json';
 }
 
-// Find the best relay
+/// Find the best relay
+@immutable
 class RelayUrlsProvider {
-  RelayUrlsProvider() : networkClient = NetworkClient();
-  NetworkClient networkClient;
+  const RelayUrlsProvider({required this.networkClient});
+  final NetworkClient networkClient;
 
   Future<List<String>> getRelayUrls(String? hostId) async {
     final List<Relay> relays = List<Relay>.from((await networkClient.get(
