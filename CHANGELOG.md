@@ -1,5 +1,10 @@
 # 3.3.0
 
+- feat: onClose callbacks now have hostId parameter
+- feat(relay socket): if host drops connection new HostDisconnected exception will be raised.
+
+# 3.3.0
+
 - feat: onClose callbacks for client and host relay sockets
 - feat: dispose method for client and host.
   This method should be called during dispose method in Flutter widget or any another cases that require to cancel all subscriptions and all methods.
