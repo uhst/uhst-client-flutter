@@ -195,6 +195,9 @@ class RelaySocket with SocketSubsriptionsMixin implements UhstSocket {
     switch (event.eventType) {
       case RelayEventType.hostClosed:
         if (h.debug) h.emitDiagnostic(body: 'Host disconnected from relay.');
+        h.emitException(
+          body: HostDisconnected('Host disconnected from relay.'),
+        );
         close();
         break;
       default:

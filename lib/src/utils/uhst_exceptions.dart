@@ -13,6 +13,13 @@
 /// Errors tend to be reserved for unexpected and fatal problems.
 part of uhst_utils;
 
+class HostDisconnected extends _ExceptionMessage {
+  /// This exception is used for Relay connection,
+  /// when socket receives [RelayEventType.hostClosed] event
+  HostDisconnected([message])
+      : super(exceptionName: 'HostDisconnected', message: message);
+}
+
 class InvalidHostId extends _ExceptionMessage {
   InvalidHostId([message])
       : super(exceptionName: 'InvalidHostId', message: message);
