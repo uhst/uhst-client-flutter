@@ -71,8 +71,8 @@ class _MyHomePageState extends State<MyHomePage> {
         }
         setState(() {});
       })
-      ..onClose(handler: () {
-        hostMessages.add('Host disconnected');
+      ..onClose(handler: ({required hostId}) {
+        hostMessages.add('Host $hostId disconnected');
         setState(() {});
       })
       ..onConnection(handler: ({required uhstSocket}) {
@@ -91,8 +91,8 @@ class _MyHomePageState extends State<MyHomePage> {
             hostMessages.add('Client ${uhstSocket.remoteId} connected');
             setState(() {});
           })
-          ..onClose(handler: () {
-            hostMessages.add('Client ${uhstSocket.remoteId} disconected');
+          ..onClose(handler: ({required hostId}) {
+            hostMessages.add('Client $hostId disconected');
             setState(() {});
           });
       });
@@ -112,10 +112,13 @@ class _MyHomePageState extends State<MyHomePage> {
     client = uhst?.join(hostId: _hostIdController.text);
     client
       ?..onException(handler: ({required dynamic exception}) {
+        final text = '[EXCEPION]: ${exception.toString()}';
         if (exception is InvalidHostId || exception is InvalidClientOrHostId) {
-          clientMessages.add('Invalid hostId!');
+          clientMessages.add('[EXCEPION]: Invalid hostId!');
+        } else if (exception is HostDisconnected) {
+          clientMessages.add(text);
         } else {
-          clientMessages.add(exception.toString());
+          clientMessages.add(text);
         }
         setState(() {});
       })
@@ -127,8 +130,8 @@ class _MyHomePageState extends State<MyHomePage> {
         clientMessages.add('Client connected to host: ${client?.remoteId}');
         setState(() {});
       })
-      ..onClose(handler: () {
-        clientMessages.add('Connection to host dropped.');
+      ..onClose(handler: ({required hostId}) {
+        clientMessages.add('Connection to host $hostId dropped.');
         setState(() {});
       })
       ..onMessage(handler: ({required message}) {

@@ -38,12 +38,12 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
   StreamSubscription<Map<UhstSocketEventType, dynamic>> onClose({
     required CloseHandler handler,
   }) {
-    final subsription = h.eventStream.listen((event) {})
-      ..onData((data) {
-        if (data.containsKey(UhstSocketEventType.close)) {
-          handler();
-        }
-      });
+    final subsription = h.eventStream.listen((data) {
+      if (data.containsKey(UhstSocketEventType.close)) {
+        final maybeHostId = data.values.first ?? '';
+        handler(hostId: maybeHostId);
+      }
+    });
     h.closeListenerHandlers
         .update(handler, (value) => subsription, ifAbsent: () => subsription);
     return subsription;
@@ -53,12 +53,11 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
   StreamSubscription<Map<UhstSocketEventType, dynamic>> onDiagnostic({
     required DiagnosticHandler handler,
   }) {
-    final subsription = h.eventStream.listen((event) {})
-      ..onData((data) {
-        if (data.containsKey(UhstSocketEventType.diagnostic)) {
-          handler(message: data.values.first);
-        }
-      });
+    final subsription = h.eventStream.listen((data) {
+      if (data.containsKey(UhstSocketEventType.diagnostic)) {
+        handler(message: data.values.first);
+      }
+    });
     h.diagntosticListenerHandlers
         .update(handler, (value) => subsription, ifAbsent: () => subsription);
     return subsription;
@@ -68,12 +67,11 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
   StreamSubscription<Map<UhstSocketEventType, dynamic>> onException({
     required ExceptionHandler handler,
   }) {
-    final subsription = h.eventStream.listen((event) {})
-      ..onData((data) {
-        if (data.containsKey(UhstSocketEventType.error)) {
-          handler(exception: data.values.first);
-        }
-      });
+    final subsription = h.eventStream.listen((data) {
+      if (data.containsKey(UhstSocketEventType.error)) {
+        handler(exception: data.values.first);
+      }
+    });
     h.exceptionListenerHandlers.update(
       handler,
       (value) => subsription,

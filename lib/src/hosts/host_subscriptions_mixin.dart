@@ -39,7 +39,8 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
       {required CloseHandler handler}) {
     final subsription = h.eventStream.listen((event) {
       if (event.containsKey(HostEventType.close)) {
-        handler();
+        final maybeHostId = event.values.first ?? '';
+        handler(hostId: maybeHostId);
       }
     });
     h.closeListenerHandlers
@@ -68,12 +69,11 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
   StreamSubscription<Map<HostEventType, dynamic>> onDiagnostic({
     required DiagnosticHandler handler,
   }) {
-    final subsription = h.eventStream.listen((event) {})
-      ..onData((data) {
-        if (data.containsKey(HostEventType.diagnostic)) {
-          handler(message: data.values.first);
-        }
-      });
+    final subsription = h.eventStream.listen((data) {
+      if (data.containsKey(HostEventType.diagnostic)) {
+        handler(message: data.values.first);
+      }
+    });
     h.diagntosticListenerHandlers
         .update(handler, (value) => subsription, ifAbsent: () => subsription);
     return subsription;
@@ -83,12 +83,11 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
   StreamSubscription<Map<HostEventType, dynamic>> onException({
     required ExceptionHandler handler,
   }) {
-    final subsription = h.eventStream.listen((event) {})
-      ..onData((data) {
-        if (data.containsKey(HostEventType.error)) {
-          handler(exception: data.values.first);
-        }
-      });
+    final subsription = h.eventStream.listen((data) {
+      if (data.containsKey(HostEventType.error)) {
+        handler(exception: data.values.first);
+      }
+    });
     h.exceptionListenerHandlers
         .update(handler, (value) => subsription, ifAbsent: () => subsription);
     return subsription;
