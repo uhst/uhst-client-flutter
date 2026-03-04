@@ -1,3 +1,1 @@
-library uhst_utils;
-
-part 'uhst_exceptions.dart';
+export 'uhst_exceptions.dart';

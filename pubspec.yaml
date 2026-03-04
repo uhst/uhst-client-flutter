@@ -1,24 +1,22 @@
 name: uhst
-version: 3.4.0
+version: 4.0.0
 
-description: UHST client for Flutter
+description: UHST client for Dart — peer-to-peer communication via relay servers
 
 homepage: https://github.com/uhst/uhst-client-flutter
+repository: https://github.com/uhst/uhst-client-flutter
+issue_tracker: https://github.com/uhst/uhst-client-flutter/issues
+
 environment:
-  sdk: ">=2.13.0 <3.0.0"
+  sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
-  flutter:
-    sdk: flutter
-  universal_html: ^2.0.8
-  # universal_io: ^1.0.2
-  http: ^0.13.3
+  universal_html: ^2.2.4
+  http: ^1.2.0
   jwt_decoder: ^2.0.1
-  recase: ^4.0.0
+  recase: ^4.1.0
+  meta: ^1.11.0
 
 dev_dependencies:
-  # https://pub.dev/packages/test
-  test: ^1.17.10
-  flutter_lints: ^1.0.4
-  # https://github.com/dart-lang/mockito/blob/master/NULL_SAFETY_README.md
-  # mockito: ^5.0.0-nullsafety.2
+  test: ^1.25.0
+  lints: ^4.0.0

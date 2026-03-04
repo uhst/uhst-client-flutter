@@ -1,7 +1,11 @@
-part of uhst_hosts;
+import 'dart:async';
 
-/// Use this mixin to implement HostSocket
+import '../contracts/contracts.dart';
+import 'host_helper.dart';
+
+/// Use this mixin to implement HostSocket.
 mixin HostSubsriptionsMixin implements UhstHostSocket {
+  /// The host helper.
   late final HostHelper h;
 
   @override
@@ -35,16 +39,20 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
   }
 
   @override
-  StreamSubscription<Map<HostEventType, dynamic>> onClose(
-      {required CloseHandler handler}) {
+  StreamSubscription<Map<HostEventType, dynamic>> onClose({
+    required CloseHandler handler,
+  }) {
     final subsription = h.eventStream.listen((event) {
       if (event.containsKey(HostEventType.close)) {
         final maybeHostId = event.values.first ?? '';
         handler(hostId: maybeHostId);
       }
     });
-    h.closeListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.closeListenerHandlers.update(
+      handler,
+      (value) => subsription,
+      ifAbsent: () => subsription,
+    );
     return subsription;
   }
 
@@ -60,8 +68,11 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
         }
       }
     });
-    h.connectionListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.connectionListenerHandlers.update(
+      handler,
+      (value) => subsription,
+      ifAbsent: () => subsription,
+    );
     return subsription;
   }
 
@@ -74,8 +85,11 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
         handler(message: data.values.first);
       }
     });
-    h.diagntosticListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.diagntosticListenerHandlers.update(
+      handler,
+      (value) => subsription,
+      ifAbsent: () => subsription,
+    );
     return subsription;
   }
 
@@ -88,8 +102,11 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
         handler(exception: data.values.first);
       }
     });
-    h.exceptionListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.exceptionListenerHandlers.update(
+      handler,
+      (value) => subsription,
+      ifAbsent: () => subsription,
+    );
     return subsription;
   }
 
@@ -102,8 +119,11 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
         handler(hostId: event.values.first);
       }
     });
-    h.readyListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.readyListenerHandlers.update(
+      handler,
+      (value) => subsription,
+      ifAbsent: () => subsription,
+    );
     return subsription;
   }
 
@@ -137,14 +157,18 @@ mixin HostSubsriptionsMixin implements UhstHostSocket {
   @override
   void onceException({required ExceptionHandler handler}) {
     onException(handler: handler).onData((data) {
-      if (data.containsKey(HostEventType.error)) offException(handler: handler);
+      if (data.containsKey(HostEventType.error)) {
+        offException(handler: handler);
+      }
     });
   }
 
   @override
   void onceReady({required HostReadyHandler handler}) {
     onReady(handler: handler).onData((data) {
-      if (data.containsKey(HostEventType.ready)) offReady(handler: handler);
+      if (data.containsKey(HostEventType.ready)) {
+        offReady(handler: handler);
+      }
     });
   }
 }

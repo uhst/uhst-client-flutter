@@ -1,7 +1,5 @@
-part of uhst_contracts;
-
 /// Defines message types for event streams
-/// inside client sockets
+/// inside client sockets.
 ///
 /// Usage example:
 /// ```dart
@@ -32,5 +30,19 @@ part of uhst_contracts;
 /// });
 ///
 /// ```
-///
-enum UhstSocketEventType { error, message, open, close, diagnostic }
+enum UhstSocketEventType {
+  /// An error occurred.
+  error,
+
+  /// A message received.
+  message,
+
+  /// Connection opened.
+  open,
+
+  /// Connection closed.
+  close,
+
+  /// A diagnostic message.
+  diagnostic,
+}

@@ -1,7 +1,5 @@
-part of uhst_contracts;
-
 /// Defines message types for event streams
-/// inside host sockets
+/// inside host sockets.
 ///
 /// Usage example:
 /// ```dart
@@ -31,11 +29,19 @@ part of uhst_contracts;
 /// });
 ///
 /// ```
-///
 enum HostEventType {
+  /// Host is ready.
   ready,
+
+  /// A client connected.
   connection,
+
+  /// An error occurred.
   error,
+
+  /// A diagnostic message.
   diagnostic,
+
+  /// The host closed.
   close,
 }

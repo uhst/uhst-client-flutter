@@ -1,11 +1,18 @@
-part of uhst_clients;
+import 'dart:convert';
 
+import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
+
+import '../utils/utils.dart';
+
+/// Low-level HTTP networking client.
 @immutable
 class NetworkClient {
+  /// Creates a [NetworkClient].
   const NetworkClient();
 
-  /// Returns generic [T] type from response
-  /// Handles error cases
+  /// Returns generic [T] type from response.
+  /// Handles error cases.
   Future<T> post<T>({
     required String url,
     Map<String, dynamic>? queryParameters,
@@ -30,8 +37,8 @@ class NetworkClient {
     }
   }
 
-  /// Returns generic [T] type from response
-  /// Handles error cases
+  /// Returns generic [T] type from response.
+  /// Handles error cases.
   Future<T> get<T>({
     required String url,
     Map<String, dynamic>? queryParameters,

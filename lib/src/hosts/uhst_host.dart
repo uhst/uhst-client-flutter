@@ -1,87 +1,29 @@
-part of uhst_hosts;
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:universal_html/html.dart';
+
+import '../contracts/contracts.dart';
+import '../models/models.dart';
+import '../utils/utils.dart';
+import 'host_helper.dart';
+import 'host_subscriptions_mixin.dart';
 
 /// [UhstHost] in UHST is a peer which every other peer ([UhstSocket])
-/// connects to. This concept is similar to listen-server in multiplayer games.
+/// connects to. This concept is similar to listen-server in multiplayer
+/// games.
 ///
-/// [UhstHost] used to:
-/// - listen messages from [UhstSocket]
-/// - broadcast messages to all subscsribed Client [UhstSocket]
-///
-/// The simplest way to create a new host is:
-///
-/// ```dart
-/// var host = uhst.host("testHost");
-///
-/// host?.disconnect();
-///
-/// host = uhst?.host(hostId: _hostIdController.text);
-///
-/// host
-///       ?..onReady(handler: ({required String hostId}) {
-///         setState(() {
-///           hostMessages.add('Host Ready! Using $hostId');
-///           print('host is ready!');
-///           _hostIdController.text = hostId;
-///         });
-///       })
-///       ..onException(handler: ({required dynamic exception}) {
-///         print('exception received! $exception');
-///         if (exception is HostIdAlreadyInUse) {
-///           // this is expected if you refresh the page
-///           // connection is still alive on the meeting point
-///           // just need to wait
-///           setState(() {
-///             hostMessages
-///                 .add('HostId already in use, retrying in 15 seconds...!');
-///           });
-///         } else {
-///           setState(() {
-///             hostMessages.add(error.toString());
-///           });
-///         }
-///       })
-///       ..onConnection(handler: ({required UhstSocket uhstSocket}) {
-///         uhstSocket.onDiagnostic(handler: ({required String message}) {
-///           setState(() {
-///             hostMessages.add(message);
-///           });
-///         });
-///         uhstSocket.onMessage(handler: ({required message}) {
-///           setState(() {
-///             hostMessages.add("Host received: ${message.toString()}");
-///             host?.broadcastString(message: message);
-///           });
-///         });
-///         uhstSocket.onOpen(handler: () {
-///           // uhstSocket.sendString(message: 'Host sent message!');
-///         });
-///       });
-/// ```
-///
-/// Note that your requested host id may not be accepted
-/// by the signalling server, you should always use the `hostId`
-/// you get after receiving a [UhstHost().onReady()] event
-/// when connecting to the host.
-///
-/// !Important
+/// [UhstHost] is used to:
+/// - listen for messages from [UhstSocket]
+/// - broadcast messages to all subscribed Client [UhstSocket]
 ///
 /// Remember to call `.dispose()` to cancel all subscriptions and
 /// disconnect host socket from server, client from host.
-///
-/// In Flutter you can add such methods in dispose override.
-///
-/// ```dart
-/// @override
-/// void dispose() {
-///   client?.dispose();
-///   host?.dispose();
-///   super.dispose();
-/// }
-/// ```
-///
 class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
   /// Private factory.
-  /// Call it only from static create factory function
+  /// Call it only from static create factory function.
   UhstHost._create({
     required relayClient,
     required socketProvider,
@@ -90,9 +32,10 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
     h = HostHelper(relayClient: relayClient, debug: debug);
   }
 
-  /// Public factory
+  /// Public factory.
   ///
-  /// [hostId] can be null and will be returned with `onReady` event
+  /// [hostId] can be null and will be returned with `onReady`
+  /// event.
   factory UhstHost.create({
     required UhstRelayClient relayClient,
     required UhstSocketProvider socketProvider,
@@ -110,19 +53,21 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
 
   final Map<String, UhstSocket> _clients = <String, UhstSocket>{};
 
-  /// Initilizing during init method
+  /// Initialized during init method.
   late final HostConfiguration _config;
 
-  /// Initilizing during init method
+  /// Initialized during init method.
   final UhstSocketProvider _socketProvider;
 
   /// Initialize function must be called from within
-  /// static create factory function
+  /// static create factory function.
   Future<void> _init({String? hostId}) async {
     try {
       _config = await h.relayClient.initHost(hostId: hostId);
       if (h.debug) {
-        h.emitDiagnostic(body: 'Host configuration received from server.');
+        h.emitDiagnostic(
+          body: 'Host configuration received from server.',
+        );
       }
 
       h
@@ -150,31 +95,41 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
     switch (event.eventType) {
       case RelayEventType.clientClosed:
         final clientId = event.payload;
-        final client = _clients[clientId];
-        client?.close();
+        _clients[clientId]?.close();
         _clients.remove(clientId);
+      case RelayEventType.hostClosed:
         break;
-      default:
     }
   }
 
   void _handleReady({required RelayStream stream}) {
     h.relayMessageStream = stream;
     if (h.debug) {
-      h.emitDiagnostic(body: 'Host subscribed to messages from server.');
+      h.emitDiagnostic(
+        body: 'Host subscribed to messages from server.',
+      );
     }
-    h.emit(message: HostEventType.ready, body: _config.hostId);
+    h.emit(
+      message: HostEventType.ready,
+      body: _config.hostId,
+    );
   }
 
-  void _handleException({required RelayException exception}) {
+  void _handleException({
+    required RelayException exception,
+  }) {
     if (h.debug) {
-      h.emitDiagnostic(body: 'Host received exception from relay: $exception');
+      h.emitDiagnostic(
+        body: 'Host received exception from relay: $exception',
+      );
     }
     h.emitException(body: exception);
     disconnect();
   }
 
-  Future<void> _handleMessage({required Message message}) async {
+  Future<void> _handleMessage({
+    required Message message,
+  }) async {
     final token = message.responseToken ?? '';
 
     if (token.isEmpty) throw InvalidToken(token);
@@ -188,7 +143,10 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
 
     if (hostSocket == null) {
       final hostParams = HostSocketParams(
-          token: token, clientId: clientId, sendUrl: _config.sendUrl);
+        token: token,
+        clientId: clientId,
+        sendUrl: _config.sendUrl,
+      );
       final socket = _socketProvider.createUhstSocket(
         relayClient: h.relayClient,
         hostParams: hostParams,
@@ -196,19 +154,25 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
       );
       if (h.debug) {
         h.emitDiagnostic(
-          body: 'Host received client connection from clientId: $clientId',
+          body: 'Host received client connection from '
+              'clientId: $clientId',
         );
       }
-      h.emit(message: HostEventType.connection, body: socket);
+      h.emit(
+        message: HostEventType.connection,
+        body: socket,
+      );
       _clients[clientId] = socket;
       // give the connection handler a chance to subscribe
-      Timer.run(() => socket.onClientMessage(message: message));
+      Timer.run(
+        () => socket.onClientMessage(message: message),
+      );
     } else {
       hostSocket.onClientMessage(message: message);
     }
   }
 
-  /// Static id that can identified a host
+  /// Static id that can identify a host.
   String get hostId => _config.hostId;
 
   @override
@@ -230,25 +194,35 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
   }
 
   @override
-  @Deprecated('Use sendByteBufer instead')
-  void broadcastArrayBuffer({required ByteBuffer arrayBuffer}) {
+  @Deprecated('Use broadcastByteBufer instead')
+  void broadcastArrayBuffer({
+    required ByteBuffer arrayBuffer,
+  }) {
     broadcastByteBufer(byteBuffer: arrayBuffer);
   }
 
   @override
   void broadcastByteBufer({required ByteBuffer byteBuffer}) {
-    _send(message: byteBuffer, payloadType: PayloadType.byteBuffer);
+    _send(
+      message: byteBuffer,
+      payloadType: PayloadType.byteBuffer,
+    );
   }
 
   @override
-  @Deprecated('Use sendTypedData instead')
-  void broadcastArrayBufferView({required TypedData arrayBufferView}) {
+  @Deprecated('Use broadcastTypedData instead')
+  void broadcastArrayBufferView({
+    required TypedData arrayBufferView,
+  }) {
     broadcastTypedData(typedData: arrayBufferView);
   }
 
   @override
   void broadcastTypedData({required TypedData typedData}) {
-    _send(message: typedData, payloadType: PayloadType.typedData);
+    _send(
+      message: typedData,
+      payloadType: PayloadType.typedData,
+    );
   }
 
   @override
@@ -267,10 +241,19 @@ class UhstHost with HostSubsriptionsMixin implements UhstHostSocket {
     final envelope = jsonEncode(verifiedMessage.toJson());
     try {
       await h.relayClient.sendMessage(
-          token: h.verifiedToken, message: envelope, sendUrl: h.sendUrl);
-      if (h.debug) h.emitDiagnostic(body: 'Sent message $message');
+        token: h.verifiedToken,
+        message: envelope,
+        sendUrl: h.sendUrl,
+      );
+      if (h.debug) {
+        h.emitDiagnostic(body: 'Sent message $message');
+      }
     } on Exception catch (e) {
-      if (h.debug) h.emitDiagnostic(body: 'Failed sending message: $e');
+      if (h.debug) {
+        h.emitDiagnostic(
+          body: 'Failed sending message: $e',
+        );
+      }
       h.emitException(body: e);
     }
   }

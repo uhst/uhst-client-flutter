@@ -1,5 +1,8 @@
-part of uhst_sockets;
+import '../contracts/contracts.dart';
+import '../models/models.dart';
+import 'relay_socket.dart';
 
+/// Factory for creating [RelaySocket] instances.
 class RelaySocketProvider implements UhstSocketProvider {
   @override
   UhstSocket createUhstSocket({

@@ -1,3 +1,16 @@
+# 4.0.0
+
+- BREAKING CHANGE: Now a pure Dart package — Flutter SDK dependency removed
+- BREAKING CHANGE: Requires Dart 3.4.0 or later
+- feat: Converted `part`/`part of` to modern `import`/`export` pattern
+- feat: Modernized enums using Dart 3 enhanced enums
+- feat: Sealed exception hierarchy (`UhstException`)
+- refactor: Replaced `describeEnum()` with `.name`
+- refactor: Replaced `flutter_lints` with `lints` package
+- refactor: Updated `http` to v1.2.0, `universal_html` to v2.2.4
+- ci: Replaced Travis CI with GitHub Actions
+- ci: Updated doc workflow to use latest actions
+
 # 3.4.0
 
 - feat: onClose callbacks now have hostId parameter

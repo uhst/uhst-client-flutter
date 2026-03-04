@@ -1,17 +1,28 @@
-part of uhst_clients;
+import '../contracts/contracts.dart';
+import '../models/models.dart';
+import 'network_client.dart';
+import 'relay_client.dart';
+import 'relay_urls_provider.dart';
 
 /// [ApiClient] Wraps [RelayClient] and is responsible for getting a
 /// relayUrl from the UHST public relays directory.
 class ApiClient implements UhstRelayClient {
+  /// Creates an [ApiClient].
   ApiClient()
       : relayUrlsProvider = const RelayUrlsProvider(
           networkClient: NetworkClient(),
         );
+
+  /// The relay URLs provider.
   RelayUrlsProvider relayUrlsProvider;
+
+  /// The underlying relay client.
   late RelayClient relayClient;
 
   @override
-  Future<ClientConfiguration> initClient({required String hostId}) async {
+  Future<ClientConfiguration> initClient({
+    required String hostId,
+  }) async {
     final relayUrl = await relayUrlsProvider.getBestRelayUrl(hostId);
     relayClient = RelayClient(
       relayUrl: relayUrl,

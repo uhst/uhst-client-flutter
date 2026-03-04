@@ -1,19 +1,10 @@
-library uhst_models;
-
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
-import 'package:universal_html/html.dart';
-
-import '../contracts/contracts.dart';
-
-part 'api_response.dart';
-part 'client_configuration.dart';
-part 'event_message.dart';
-part 'host_configration.dart';
-part 'message.dart';
-part 'ping_response.dart';
-part 'relay.dart';
-part 'relay_event.dart';
-part 'relay_stream.dart';
-part 'socket_params.dart';
+export 'api_response.dart';
+export 'client_configuration.dart';
+export 'event_message.dart';
+export 'host_configration.dart';
+export 'message.dart';
+export 'ping_response.dart';
+export 'relay.dart';
+export 'relay_event.dart';
+export 'relay_stream.dart';
+export 'socket_params.dart';
