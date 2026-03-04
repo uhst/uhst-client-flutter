@@ -25,7 +25,7 @@ Please notice current version limitations:
 
 ### Requirements
 
-- Dart SDK `>=3.0.0 <4.0.0`
+- Dart SDK `>=3.4.0 <4.0.0`
 
 ### Support and discussions
 

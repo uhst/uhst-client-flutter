@@ -1,7 +1,7 @@
 # 4.0.0
 
 - BREAKING CHANGE: Now a pure Dart package — Flutter SDK dependency removed
-- BREAKING CHANGE: Requires Dart 3.0.0 or later
+- BREAKING CHANGE: Requires Dart 3.4.0 or later
 - feat: Converted `part`/`part of` to modern `import`/`export` pattern
 - feat: Modernized enums using Dart 3 enhanced enums
 - feat: Sealed exception hierarchy (`UhstException`)

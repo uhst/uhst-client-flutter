@@ -8,7 +8,7 @@ repository: https://github.com/uhst/uhst-client-flutter
 issue_tracker: https://github.com/uhst/uhst-client-flutter/issues
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
   universal_html: ^2.2.4
@@ -19,4 +19,4 @@ dependencies:
 
 dev_dependencies:
   test: ^1.25.0
-  lints: ^5.0.0
+  lints: ^4.0.0
