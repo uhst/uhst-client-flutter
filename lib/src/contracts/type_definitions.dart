@@ -1,38 +1,40 @@
-part of uhst_contracts;
-
-/// Defines callback to handle [FromJson] function
-/// This function is needed to convert [Map] in defined type or model
+/// Defines callback to handle [FromJson] function.
+/// This function is needed to convert [Map] in defined type or model.
 typedef FromJson<T> = T Function(dynamic map);
 
-/// [PayloadType] is a type of message data which can be send and handled by
-/// Client (for example [RelaySocket] or by Host [UhstHost]
+/// [PayloadType] is a type of message data which can be sent and handled by
+/// Client (for example [RelaySocket]) or by Host [UhstHost].
 ///
-/// _from is used to get valid enum property from string
-/// example:
+/// Use [PayloadType.fromString] to convert a string to enum value:
 ///
 /// ```dart
-/// PayloadType.fromString['string'];
+/// PayloadType.fromString('string');
 /// ```
 ///
-/// to get string value use toStringValue
-/// example:
+/// Use [toStringValue] to get the string value:
 ///
 /// ```dart
 /// PayloadType.string.toStringValue() // output: 'string'
 /// ```
-///
-enum PayloadType { fromString, string, blob, byteBuffer, typedData }
+enum PayloadType {
+  /// String payload type.
+  string,
 
-///
-extension PayloadTypeDescribe on PayloadType {
-  /// Overload the [] getter to get the name of the fruit.
-  /// based on https://stackoverflow.com/a/60209631
-  PayloadType operator [](String key) => getEnumValueFromEnumValues(
-        values: PayloadType.values,
-        value: key,
+  /// Blob payload type.
+  blob,
+
+  /// ByteBuffer payload type.
+  byteBuffer,
+
+  /// TypedData payload type.
+  typedData;
+
+  /// Convert from string to enum value.
+  static PayloadType fromString(String value) => PayloadType.values.firstWhere(
+        (e) => e.name == value,
+        orElse: () => throw ArgumentError('Unknown PayloadType: $value'),
       );
 
-  /// returns string for enum value only
-  // TODO(arenukvern): remove this when Dart will reach 2.14
-  String toStringValue() => describeEnum(this);
+  /// Returns string for enum value.
+  String toStringValue() => name;
 }

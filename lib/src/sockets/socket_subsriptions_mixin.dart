@@ -1,7 +1,11 @@
-part of uhst_sockets;
+import 'dart:async';
 
-/// Use this mixin for client socket implementations
+import '../contracts/contracts.dart';
+import 'socket_helper.dart';
+
+/// Use this mixin for client socket implementations.
 mixin SocketSubsriptionsMixin implements UhstSocket {
+  /// The socket helper.
   late final SocketHelper h;
 
   @override
@@ -44,8 +48,11 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
         handler(hostId: maybeHostId);
       }
     });
-    h.closeListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.closeListenerHandlers.update(
+      handler,
+      (value) => subsription,
+      ifAbsent: () => subsription,
+    );
     return subsription;
   }
 
@@ -58,8 +65,11 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
         handler(message: data.values.first);
       }
     });
-    h.diagntosticListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.diagntosticListenerHandlers.update(
+      handler,
+      (value) => subsription,
+      ifAbsent: () => subsription,
+    );
     return subsription;
   }
 
@@ -89,8 +99,11 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
         handler(message: event.values.first);
       }
     });
-    h.messageListenerHandlers
-        .update(handler, (value) => subsription, ifAbsent: () => subsription);
+    h.messageListenerHandlers.update(
+      handler,
+      (value) => subsription,
+      ifAbsent: () => subsription,
+    );
     return subsription;
   }
 
@@ -99,7 +112,9 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
     required OpenHandler handler,
   }) {
     final subsription = h.eventStream.listen((event) {
-      if (event.containsKey(UhstSocketEventType.open)) handler();
+      if (event.containsKey(UhstSocketEventType.open)) {
+        handler();
+      }
     });
     h.openListenerHandlers.update(
       handler,
@@ -148,7 +163,9 @@ mixin SocketSubsriptionsMixin implements UhstSocket {
   @override
   void onceOpen({required OpenHandler handler}) {
     onOpen(handler: handler).onData((data) {
-      if (data.containsKey(UhstSocketEventType.open)) offOpen(handler: handler);
+      if (data.containsKey(UhstSocketEventType.open)) {
+        offOpen(handler: handler);
+      }
     });
   }
 }

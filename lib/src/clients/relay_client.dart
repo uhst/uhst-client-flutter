@@ -1,4 +1,13 @@
-part of uhst_clients;
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:universal_html/html.dart' as html;
+
+import '../contracts/contracts.dart';
+import '../models/models.dart';
+import '../utils/utils.dart';
+import 'network_client.dart';
 
 class _RelayClientConsts {
   static const requestHeaderContentName = 'Content-type';
@@ -6,25 +15,35 @@ class _RelayClientConsts {
   static const relayEvent = 'relay_event';
 }
 
-/// [RelayClient] is a standard host and client provider which used
+/// [RelayClient] is a standard host and client provider which is used
 /// to subscribe to event source, send messages and init [UhstHost]
-/// and Client [UhstSocket]
+/// and Client [UhstSocket].
 class RelayClient implements UhstRelayClient {
+  /// Creates a [RelayClient].
   RelayClient({
     required this.relayUrl,
   }) : networkClient = const NetworkClient();
+
+  /// The network client.
   final NetworkClient networkClient;
+
+  /// The relay URL.
   final String relayUrl;
 
   @override
-  Future<ClientConfiguration> initClient({required String hostId}) async {
+  Future<ClientConfiguration> initClient({
+    required String hostId,
+  }) async {
     final qParams = <String, String>{
       'action': 'join',
       'hostId': hostId,
     };
     try {
       final response = ClientConfiguration.fromJson(
-        await networkClient.post(url: relayUrl, queryParameters: qParams),
+        await networkClient.post(
+          url: relayUrl,
+          queryParameters: qParams,
+        ),
       );
       return response;
     } on Exception catch (e) {
@@ -48,7 +67,11 @@ class RelayClient implements UhstRelayClient {
     }
     try {
       final response = HostConfiguration.fromJson(
-          await networkClient.post(url: relayUrl, queryParameters: qParams));
+        await networkClient.post(
+          url: relayUrl,
+          queryParameters: qParams,
+        ),
+      );
       return response;
     } on Exception catch (e) {
       if (e is NetworkException) {

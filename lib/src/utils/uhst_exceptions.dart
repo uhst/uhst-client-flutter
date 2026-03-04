@@ -11,69 +11,80 @@
 /// a wrong way or stuffs like that.
 /// `For the most part` you, as an app developer, will always `use exceptions`.
 /// Errors tend to be reserved for unexpected and fatal problems.
-part of uhst_utils;
 
-class HostDisconnected extends _ExceptionMessage {
-  /// This exception is used for Relay connection,
-  /// when socket receives [RelayEventType.hostClosed] event
-  HostDisconnected([message])
-      : super(exceptionName: 'HostDisconnected', message: message);
-}
+/// Base class for all UHST exceptions.
+sealed class UhstException implements Exception {
+  /// Creates an [UhstException] with an optional [message].
+  UhstException([this.message]);
 
-class InvalidHostId extends _ExceptionMessage {
-  InvalidHostId([message])
-      : super(exceptionName: 'InvalidHostId', message: message);
-}
-
-class HostIdAlreadyInUse extends _ExceptionMessage {
-  HostIdAlreadyInUse([message])
-      : super(exceptionName: 'HostIdAlreadyInUse', message: message);
-}
-
-class InvalidClientOrHostId extends _ExceptionMessage {
-  InvalidClientOrHostId([message])
-      : super(exceptionName: 'InvalidClientOrHostId', message: message);
-}
-
-class NetworkUnreachable extends _ExceptionMessage {
-  NetworkUnreachable([message])
-      : super(exceptionName: 'NetworkUnreachable', message: message);
-}
-
-class NetworkException extends _ExceptionMessage {
-  NetworkException({
-    required this.responseCode,
-    message,
-  }) : super(exceptionName: 'NetworkException', message: message);
-  final int responseCode;
-}
-
-class RelayUnreachable extends _ExceptionMessage {
-  RelayUnreachable([message])
-      : super(exceptionName: 'RelayUnreachable', message: message);
-}
-
-class RelayException extends _ExceptionMessage {
-  RelayException([message])
-      : super(exceptionName: 'RelayException', message: message);
-}
-
-class InvalidToken extends _ExceptionMessage {
-  InvalidToken(String? token)
-      : super(exceptionName: 'InvalidToken', message: token);
-}
-
-class _ExceptionMessage implements Exception {
-  _ExceptionMessage({
-    required this.exceptionName,
-    this.message,
-  });
+  /// The exception message.
   final dynamic message;
-  final String exceptionName;
+
   @override
   String toString() {
     final Object? message = this.message;
-    if (message == null) return exceptionName;
-    return '$exceptionName exception: $message';
+    if (message == null) return '$runtimeType';
+    return '$runtimeType: $message';
   }
+}
+
+/// This exception is used for Relay connection,
+/// when socket receives hostClosed event.
+final class HostDisconnected extends UhstException {
+  /// Creates a [HostDisconnected] exception.
+  HostDisconnected([super.message]);
+}
+
+/// Exception thrown when the host ID is invalid.
+final class InvalidHostId extends UhstException {
+  /// Creates an [InvalidHostId] exception.
+  InvalidHostId([super.message]);
+}
+
+/// Exception thrown when the host ID is already in use.
+final class HostIdAlreadyInUse extends UhstException {
+  /// Creates a [HostIdAlreadyInUse] exception.
+  HostIdAlreadyInUse([super.message]);
+}
+
+/// Exception thrown when the client or host ID is invalid.
+final class InvalidClientOrHostId extends UhstException {
+  /// Creates an [InvalidClientOrHostId] exception.
+  InvalidClientOrHostId([super.message]);
+}
+
+/// Exception thrown when the network is unreachable.
+final class NetworkUnreachable extends UhstException {
+  /// Creates a [NetworkUnreachable] exception.
+  NetworkUnreachable([super.message]);
+}
+
+/// Exception thrown for network-related errors with response codes.
+final class NetworkException extends UhstException {
+  /// Creates a [NetworkException] with a [responseCode].
+  NetworkException({
+    required this.responseCode,
+    dynamic message,
+  }) : super(message);
+
+  /// The HTTP response code.
+  final int responseCode;
+}
+
+/// Exception thrown when the relay server is unreachable.
+final class RelayUnreachable extends UhstException {
+  /// Creates a [RelayUnreachable] exception.
+  RelayUnreachable([super.message]);
+}
+
+/// Exception thrown for relay-related errors.
+final class RelayException extends UhstException {
+  /// Creates a [RelayException].
+  RelayException([super.message]);
+}
+
+/// Exception thrown when the token is invalid.
+final class InvalidToken extends UhstException {
+  /// Creates an [InvalidToken] exception.
+  InvalidToken([super.message]);
 }

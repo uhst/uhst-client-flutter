@@ -22,7 +22,7 @@ void main() {
     test('get payload type from string', () {
       final result = <PayloadType>[];
       for (final type in stringTypes) {
-        result.add(PayloadType.fromString[type]);
+        result.add(PayloadType.fromString(type));
       }
       expect(result, equals(payloadTypes));
     });

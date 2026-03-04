@@ -1,41 +1,22 @@
-part of uhst_contracts;
+import 'package:recase/recase.dart';
 
-/// Relay(Server) events happened on host or client side
+/// Relay(Server) events happened on host or client side.
 /// As all events are in snake_case they will be converted automatically
-/// to camelCase
+/// to camelCase.
 enum RelayEventType {
-  /// Server event name 'client_closed',
+  /// Server event name 'client_closed'.
   clientClosed,
 
-  /// Server event name 'host_closed',
-  hostClosed,
+  /// Server event name 'host_closed'.
+  hostClosed;
 
-  /// _from is used to get valid enum property from string
-  /// example:
-  ///
-  /// ```dart
-  /// RelayEventType.fromString['string'];
-  /// ```
-  ///
-  /// to get string value use toStringValue
-  /// example:
-  ///
-  /// ```dart
-  /// RelayEventType.string.toStringValue() // output: 'string'
-  /// ```
-  ///
-  fromJson,
-}
-
-///
-extension RelayEventTypeDescribe on RelayEventType {
-  /// Overload the [] getter to get the name of the fruit.
-  /// based on https://stackoverflow.com/a/60209631
-  RelayEventType operator [](String key) => getEnumValueFromEnumValues(
-        values: RelayEventType.values,
-        value: key.camelCase,
+  /// Convert from snake_case string to enum value.
+  static RelayEventType fromString(String value) =>
+      RelayEventType.values.firstWhere(
+        (e) => e.name == value.camelCase,
+        orElse: () => throw ArgumentError('Unknown RelayEventType: $value'),
       );
 
-  /// returns string for enum value only
-  String toStringValue() => describeEnum(this).snakeCase;
+  /// Returns snake_case string for enum value.
+  String toStringValue() => name.snakeCase;
 }

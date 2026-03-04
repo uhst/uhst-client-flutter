@@ -1,28 +1,10 @@
-# This file configures the analyzer, which statically analyzes Dart code to
-# check for errors, warnings, and lints.
-#
-# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
-# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
-# invoked from the command line by running `flutter analyze`.
+include: package:lints/recommended.yaml
 
-# The following line activates a set of recommended lints for Flutter apps,
-# packages, and plugins designed to encourage good coding practices.
-include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - example/
+
 linter:
-  # The lint rules applied to this project can be customized in the
-  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
-  # included above or to enable additional rules. A list of all available lints
-  # and their documentation is published at
-  # https://dart-lang.github.io/linter/lints/index.html.
-  #
-  # Instead of disabling a lint rule for the entire project in the
-  # section below, it can also be suppressed for a single line of code
-  # or a specific dart file by using the `// ignore: name_of_lint` and
-  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
-  # producing the lint.
   rules:
     # Errors
     use_build_context_synchronously: true
@@ -31,21 +13,16 @@ linter:
     test_types_in_equals: true
     no_adjacent_strings_in_list: true
     literal_only_boolean_expressions: true
-    invariant_booleans: true
-    diagnostic_describe_all_properties: true
-    comment_references: false
     close_sinks: true
     cancel_subscriptions: true
     avoid_type_to_string: true
     avoid_slow_async_io: true
-    avoid_returning_null_for_future: true
     avoid_dynamic_calls: true
     prefer_relative_imports: true
     # Style
     avoid_void_async: true
     avoid_setters_without_getters: true
     avoid_returning_this: true
-    avoid_returning_null: true
     avoid_redundant_argument_values: true
     avoid_private_typedef_functions: true
     avoid_positional_boolean_parameters: true
@@ -68,10 +45,8 @@ linter:
     cascade_invocations: true
     deprecated_consistency: true
     directives_ordering: true
-    flutter_style_todos: true
     join_return_with_assignment: true
     leading_newlines_in_multiline_strings: true
-    library_private_types_in_public_api: true
     lines_longer_than_80_chars: true
     missing_whitespace_between_adjacent_strings: true
     no_runtimeType_toString: true
@@ -116,8 +91,3 @@ linter:
     use_test_throws_matchers: true
     use_to_and_as_if_applicable: true
     depend_on_referenced_packages: true
-    # avoid_classes_with_only_static_members: false
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options

@@ -1,14 +1,14 @@
 # UHST
 
-> User Hosted Secure Transmission (UHST) for Flutter in Dart
+> User Hosted Secure Transmission (UHST) client for Dart
 
-[![Pub](https://img.shields.io/pub/v/uhst.svg)](https://pub.dartlang.org/packages/uhst)
-[![Gitter](https://badges.gitter.im/uhst/community.svg)](https://gitter.im/uhst/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Pub](https://img.shields.io/pub/v/uhst.svg)](https://pub.dev/packages/uhst)
+[![CI](https://github.com/uhst/uhst-client-flutter/actions/workflows/ci.yml/badge.svg)](https://github.com/uhst/uhst-client-flutter/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/github/license/uhst/uhst-client-flutter)](LICENSE)
 
 ## About
 
-UHST is client library for the User Hosted Secure Transmission framework.
+UHST is a pure Dart client library for the User Hosted Secure Transmission framework. It works with both Dart and Flutter projects.
 
 It is able to:
 
@@ -21,11 +21,15 @@ You can see [an implemented example](https://docs.uhst.io/uhst-client-flutter/) 
 Please notice current version limitations:
 
 - it supports string typed messages only.
-- require server with UHST implemented protocol. PLease see an example of ready to go server [on GitHub](https://github.com/uhst/uhst-server-node).
+- require server with UHST implemented protocol. Please see an example of ready to go server [on GitHub](https://github.com/uhst/uhst-server-node).
+
+### Requirements
+
+- Dart SDK `>=3.0.0 <4.0.0`
 
 ### Support and discussions
 
-Join us on [Gitter](https://gitter.im/uhst/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link) or StackOverflow .
+Join us on [Gitter](https://gitter.im/uhst/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link) or StackOverflow.
 
 ## Usage
 
@@ -177,30 +181,25 @@ This project uses [Dart documentation style guidlines](https://dart.dev/guides/l
 
 The project uses [dartdoc](https://github.com/dart-lang/dartdoc#dartdoc)
 
-If you don't have installed dartdoc, then to install the latest version of dartdoc compatible with your SDK run:
+To install dartdoc:
 
-- `pub global activate dartdoc`
-- for Flutter Snap version run `flutter pub global activate dartdoc`
+```shell
+dart pub global activate dartdoc
+```
 
-To generate documentation
+To generate documentation:
 
-- run `dartdoc`
-- for Flutter Snap version run `flutter pub global run dartdoc:dartdoc`
+```shell
+dart doc
+```
 
 ### View
 
-An easy way to run an HTTP server locally is to use the dhttpd package. For example:
+An easy way to run an HTTP server locally is to use the dhttpd package:
 
 ```shell
-$ pub global activate dhttpd
-$ dhttpd --path doc/api
-```
-
-for Flutter Snap
-
-```shell
-$ flutter pub global activate dhttpd
-$ flutter pub global run dhttpd:dhttpd --path doc/api
+dart pub global activate dhttpd
+dhttpd --path doc/api
 ```
 
 ## Contributing

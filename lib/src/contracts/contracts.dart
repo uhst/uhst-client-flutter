@@ -1,23 +1,9 @@
-library uhst_contracts;
-
-import 'dart:async';
-import 'dart:typed_data';
-
-import 'package:flutter/foundation.dart';
-import 'package:recase/recase.dart';
-import 'package:universal_html/html.dart';
-import 'package:universal_html/html.dart' as html;
-
-import '../extensions/extensions.dart';
-import '../models/models.dart';
-import '../utils/utils.dart';
-
-part 'relay_event_type.dart';
-part 'type_definitions.dart';
-part 'uhst_event_handlers.dart';
-part 'uhst_host_event.dart';
-part 'uhst_host_socket.dart';
-part 'uhst_relay_client.dart';
-part 'uhst_socket.dart';
-part 'uhst_socket_events.dart';
-part 'uhst_socket_provider.dart';
+export 'relay_event_type.dart';
+export 'type_definitions.dart';
+export 'uhst_event_handlers.dart';
+export 'uhst_host_event.dart';
+export 'uhst_host_socket.dart';
+export 'uhst_relay_client.dart';
+export 'uhst_socket.dart';
+export 'uhst_socket_events.dart';
+export 'uhst_socket_provider.dart';

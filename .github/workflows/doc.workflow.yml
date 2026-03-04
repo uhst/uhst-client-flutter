@@ -10,24 +10,19 @@ jobs:
       my_secret: ${{secrets.COMMIT_SECRET}}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: subosito/flutter-action@v1
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
-          channel: "dev"
-      - run: flutter config --enable-web
+          channel: "stable"
       - run: |
           cd example
           flutter pub get
-          flutter build web --release --no-sound-null-safety
+          flutter build web --release
           cd build/web
           git init
-          # type configurations: your user.email and user.name followed lines 
-          # git config --global user.email your_email 
-          # git config --global user.name your_name
           git config --global user.email ${{secrets.USER_EMAIL}}
           git config --global user.name ${{secrets.USER_NAME}}
           git status
-          # change this remote url for examle your remote url is then the following:
           git remote add origin https://${{secrets.COMMIT_SECRET}}@github.com/uhst/uhst-client-flutter.git
           git checkout -b gh-pages
           git add --all
